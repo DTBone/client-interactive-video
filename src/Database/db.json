@@ -1,0 +1,234 @@
+{
+    "Users": [
+        {
+            "_id": {
+                "$oid": "64f64c7e58b94a67e3b0a123"
+            },
+            "username": "john_doe",
+            "email": "john.doe@example.com",
+            "password": "$2b$10$abcxyz",
+            "fullName": "John Doe",
+            "role": "student",
+            "createdAt": {
+                "$date": "2023-09-09T08:30:00Z"
+            },
+            "updatedAt": {
+                "$date": "2023-09-09T09:00:00Z"
+            },
+            "lastLoginAt": {
+                "$date": "2023-09-09T10:00:00Z"
+            }
+        }
+    ],
+    "Courses": [
+        {
+            "_id": {
+                "$oid": "64f64c7e58b94a67e3b0a124"
+            },
+            "title": "Learn JavaScript",
+            "description": "Comprehensive JavaScript course for beginners",
+            "instructor": {
+                "$oid": "64f64c7e58b94a67e3b0a125"
+            },
+            "price": 50,
+            "level": "beginner",
+            "tags": [
+                "JavaScript",
+                "Programming"
+            ],
+            "averageRating": 4.8,
+            "totalRatings": 250,
+            "enrollmentCount": 1000,
+            "createdAt": {
+                "$date": "2023-09-09T08:30:00Z"
+            },
+            "updatedAt": {
+                "$date": "2023-09-09T09:00:00Z"
+            },
+            "isApproved": true,
+            "approvedBy": {
+                "$oid": "64f64c7e58b94a67e3b0a126"
+            }
+        }
+    ],
+    "Lessons": [
+        {
+            "_id": {
+                "$oid": "64f64c7e58b94a67e3b0a127"
+            },
+            "courseId": {
+                "$oid": "64f64c7e58b94a67e3b0a124"
+            },
+            "title": "Introduction to JavaScript",
+            "description": "An introduction to the basics of JavaScript",
+            "videoUrl": "https://example.com/video1",
+            "duration": 30,
+            "order": 1,
+            "resources": [
+                {
+                    "type": "pdf",
+                    "url": "https://example.com/resource1.pdf"
+                }
+            ],
+            "createdAt": {
+                "$date": "2023-09-09T08:30:00Z"
+            },
+            "updatedAt": {
+                "$date": "2023-09-09T09:00:00Z"
+            }
+        }
+    ],
+    "Enrollments": [
+        {
+            "_id": {
+                "$oid": "64f64c7e58b94a67e3b0a128"
+            },
+            "userId": {
+                "$oid": "64f64c7e58b94a67e3b0a123"
+            },
+            "courseId": {
+                "$oid": "64f64c7e58b94a67e3b0a124"
+            },
+            "enrolledAt": {
+                "$date": "2023-09-09T08:30:00Z"
+            },
+            "lastAccessedAt": {
+                "$date": "2023-09-09T09:00:00Z"
+            },
+            "progress": [
+                {
+                    "lessonId": {
+                        "$oid": "64f64c7e58b94a67e3b0a127"
+                    },
+                    "status": "in_progress",
+                    "completedAt": null
+                }
+            ],
+            "overallProgress": 10,
+            "certificateIssued": false,
+            "certificateIssuedAt": null
+        }
+    ],
+    "CodeSubmissions": [
+        {
+            "_id": {
+                "$oid": "64f64c7e58b94a67e3b0a129"
+            },
+            "userId": {
+                "$oid": "64f64c7e58b94a67e3b0a123"
+            },
+            "lessonId": {
+                "$oid": "64f64c7e58b94a67e3b0a127"
+            },
+            "code": "console.log('Hello World');",
+            "language": "JavaScript",
+            "status": "submitted",
+            "result": "pass",
+            "score": 100,
+            "feedback": "Great job!",
+            "submittedAt": {
+                "$date": "2023-09-09T08:30:00Z"
+            },
+            "gradedAt": {
+                "$date": "2023-09-09T09:00:00Z"
+            },
+            "gradedBy": {
+                "$oid": "64f64c7e58b94a67e3b0a125"
+            }
+        }
+    ],
+    "UserCourseStats": [
+        {
+            "_id": {
+                "$oid": "64f64c7e58b94a67e3b0a130"
+            },
+            "userId": {
+                "$oid": "64f64c7e58b94a67e3b0a123"
+            },
+            "courseId": {
+                "$oid": "64f64c7e58b94a67e3b0a124"
+            },
+            "totalSubmissions": 5,
+            "totalScore": 480,
+            "averageScore": 96,
+            "highestScore": 100,
+            "lastSubmissionAt": {
+                "$date": "2023-09-09T08:30:00Z"
+            }
+        }
+    ],
+    "CourseReviews": [
+        {
+            "_id": {
+                "$oid": "64f64c7e58b94a67e3b0a131"
+            },
+            "userId": {
+                "$oid": "64f64c7e58b94a67e3b0a123"
+            },
+            "courseId": {
+                "$oid": "64f64c7e58b94a67e3b0a124"
+            },
+            "rating": 5,
+            "review": "Great course!",
+            "createdAt": {
+                "$date": "2023-09-09T08:30:00Z"
+            },
+            "updatedAt": {
+                "$date": "2023-09-09T09:00:00Z"
+            },
+            "helpfulVotes": 20,
+            "reportCount": 0
+        }
+    ],
+    "Payments": [
+        {
+            "_id": {
+                "$oid": "64f64c7e58b94a67e3b0a132"
+            },
+            "userId": {
+                "$oid": "64f64c7e58b94a67e3b0a123"
+            },
+            "courseId": {
+                "$oid": "64f64c7e58b94a67e3b0a124"
+            },
+            "amount": 50,
+            "currency": "USD",
+            "status": "completed",
+            "paymentMethod": "credit_card",
+            "transactionId": "tx123456",
+            "createdAt": {
+                "$date": "2023-09-09T08:30:00Z"
+            },
+            "updatedAt": {
+                "$date": "2023-09-09T09:00:00Z"
+            }
+        }
+    ],
+    "ForumTopics": [
+        {
+            "_id": {
+                "$oid": "64f64c7e58b94a67e3b0a133"
+            },
+            "courseId": {
+                "$oid": "64f64c7e58b94a67e3b0a124"
+            },
+            "userId": {
+                "$oid": "64f64c7e58b94a67e3b0a123"
+            },
+            "title": "How do I install Node.js?",
+            "content": "I'm having trouble installing Node.js on my machine.",
+            "tags": [
+                "Node.js",
+                "installation"
+            ],
+            "createdAt": {
+                "$date": "2023-09-09T08:30:00Z"
+            },
+            "updatedAt": {
+                "$date": "2023-09-09T09:00:00Z"
+            },
+            "viewCount": 100,
+            "isResolved": false
+        }
+    ]
+}

@@ -1,0 +1,195 @@
+// Users Collection
+{
+  _id: ObjectId,
+  username: String,
+  email: String,
+  password: String, // Hashed
+  fullName: String,
+  role: String, // "student", "instructor", "admin", "support"
+  createdAt: Date,
+  updatedAt: Date,
+  lastLoginAt: Date
+}
+
+// Courses Collection
+{
+  _id: ObjectId,
+  title: String,
+  description: String,
+  instructor: ObjectId, // Reference to Users Collection
+  price: Number,
+  level: String, // "beginner", "intermediate", "advanced"
+  tags: [String],
+  averageRating: Number,
+  totalRatings: Number,
+  enrollmentCount: Number,
+  createdAt: Date,
+  updatedAt: Date,
+  isApproved: Boolean,
+  approvedBy: ObjectId // Reference to Users Collection (admin)
+}
+
+// Lessons Collection
+{
+  _id: ObjectId,
+  courseId: ObjectId, // Reference to Courses Collection
+  title: String,
+  description: String,
+  videoUrl: String,
+  duration: Number, // in minutes
+  order: Number, // Lesson order in the course
+  resources: [{ type: String, url: String }], // Additional resources
+  createdAt: Date,
+  updatedAt: Date
+}
+
+// Enrollments Collection
+{
+  _id: ObjectId,
+  userId: ObjectId, // Reference to Users Collection
+  courseId: ObjectId, // Reference to Courses Collection
+  enrolledAt: Date,
+  lastAccessedAt: Date,
+  progress: [
+    {
+      lessonId: ObjectId, // Reference to Lessons Collection
+      status: String, // "not_started", "in_progress", "completed"
+      completedAt: Date
+    }
+  ],
+  overallProgress: Number, // Percentage of course completed
+  certificateIssued: Boolean,
+  certificateIssuedAt: Date
+}
+
+// CodeSubmissions Collection
+{
+  _id: ObjectId,
+  userId: ObjectId, // Reference to Users Collection
+  lessonId: ObjectId, // Reference to Lessons Collection
+  code: String,
+  language: String,
+  status: String, // "submitted", "graded"
+  result: String, // "pass", "fail"
+  score: Number, // Score for this submission (e.g., 0-100)
+  feedback: String,
+  submittedAt: Date,
+  gradedAt: Date,
+  gradedBy: ObjectId // Reference to Users Collection (instructor)
+}
+
+// UserCourseStats Collection
+{
+  _id: ObjectId,
+  userId: ObjectId, // Reference to Users Collection
+  courseId: ObjectId, // Reference to Courses Collection
+  totalSubmissions: Number,
+  totalScore: Number,
+  averageScore: Number,
+  highestScore: Number,
+  lastSubmissionAt: Date
+}
+
+// CourseReviews Collection
+{
+  _id: ObjectId,
+  userId: ObjectId, // Reference to Users Collection
+  courseId: ObjectId, // Reference to Courses Collection
+  rating: Number, // Rating from 1 to 5
+  review: String, // Text review
+  createdAt: Date,
+  updatedAt: Date,
+  helpfulVotes: Number,
+  reportCount: Number
+}
+
+// Payments Collection
+{
+  _id: ObjectId,
+  userId: ObjectId, // Reference to Users Collection
+  courseId: ObjectId, // Reference to Courses Collection
+  amount: Number,
+  currency: String,
+  status: String, // "pending", "completed", "failed"
+  paymentMethod: String,
+  transactionId: String,
+  createdAt: Date,
+  updatedAt: Date
+}
+
+// ForumTopics Collection
+{
+  _id: ObjectId,
+  courseId: ObjectId, // Reference to Courses Collection
+  userId: ObjectId, // Reference to Users Collection (creator)
+  title: String,
+  content: String,
+  tags: [String],
+  createdAt: Date,
+  updatedAt: Date,
+  viewCount: Number,
+  isResolved: Boolean
+}
+
+// ForumReplies Collection
+{
+  _id: ObjectId,
+  topicId: ObjectId, // Reference to ForumTopics Collection
+  userId: ObjectId, // Reference to Users Collection
+  content: String,
+  createdAt: Date,
+  updatedAt: Date,
+  isAcceptedAnswer: Boolean
+}
+
+// SupportTickets Collection
+//{
+//  _id: ObjectId,
+//  userId: ObjectId, // Reference to Users Collection
+//  subject: String,
+// description: String,
+//  status: String, // "open", "in_progress", "resolved", "closed"
+//  priority: String, // "low", "medium", "high"
+//  assignedTo: ObjectId, // Reference to Users Collection (support staff)
+//  createdAt: Date,
+//  updatedAt: Date,
+//  resolvedAt: Date
+//}
+
+// Certificates Collection
+{
+  _id: ObjectId,
+  userId: ObjectId, // Reference to Users Collection
+  courseId: ObjectId, // Reference to Courses Collection
+  certificateNumber: String,
+  issuedAt: Date,
+  expiresAt: Date,
+  pdfUrl: String
+}
+
+// LiveSessions Collection
+{
+  _id: ObjectId,
+  courseId: ObjectId, // Reference to Courses Collection
+  instructorId: ObjectId, // Reference to Users Collection
+  title: String,
+  description: String,
+  startTime: Date,
+  endTime: Date,
+  status: String, // "scheduled", "in_progress", "completed", "cancelled"
+  maxParticipants: Number,
+  currentParticipants: Number,
+  recordingUrl: String
+}
+
+// Analytics Collection
+{
+  _id: ObjectId,
+  courseId: ObjectId, // Reference to Courses Collection
+  date: Date,
+  enrollments: Number,
+  completions: Number,
+  averageProgress: Number,
+  averageRating: Number,
+  revenue: Number
+} 
