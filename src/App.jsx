@@ -1,14 +1,18 @@
 import { Route, Routes } from 'react-router-dom';
-import './App.css'
+
 import Authentication from './Components/Authentication/Authentication';
+import HomePage from './Components/HomePage/HomePage';
+import EnrollToCourse from './Components/CourseDetail/EnrollToCourse';
 
 function App() {
 
 
   return (
     <>
-      <Authentication />
-
+      <Routes>
+        <Route path="/*" element={<HomePage />}></Route>
+        {/* <Route path="/*" element={<EnrollToCourse />}></Route> */}
+      </Routes>
     </>
   )
 }
