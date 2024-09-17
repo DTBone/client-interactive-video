@@ -9,7 +9,7 @@ import './index.css';
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
-    <CssVarsProvider theme={theme}>
+    <CssVarsProvider >
 
       <CssBaseline />
       <BrowserRouter>

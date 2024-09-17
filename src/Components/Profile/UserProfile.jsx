@@ -1,6 +1,6 @@
 import React from 'react'
 
-const HeaderCourse = () => {
+const UserProfile = () => {
     return (
         <div>
 
@@ -8,4 +8,4 @@ const HeaderCourse = () => {
     )
 }
 
-export default HeaderCourse
+export default UserProfile
