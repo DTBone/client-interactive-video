@@ -1,11 +1,34 @@
-import { Box, Button, Typography } from '@mui/material'
-import React, { useState } from 'react'
+import { Button, Typography } from '@mui/material'
+import { useEffect, useState } from 'react'
 import HeaderCourse from '../Common/Header/HeaderCourse'
 import Breadcrumb from '../Common/Breadcrumbs/Breadcrumb'
 import EnrollCourseBtn from '../Button/EnrollCourseBtn'
+import CourseRegisFailed from '../Notification/CourseRegisFailed';
+import SuccessfulCourseRegis from '../Notification/SuccessfulCourseRegis';
 
 const EnrollToCourse = () => {
-    const [enrollCourse, getState] = useState(true);
+    const [enrollCourse, setState] = useState(false);
+    const [isSubmit, setSubmit] = useState(false);
+    const handleDataFromButotnSubmit = (data) => {
+        setState(data);
+        setSubmit(data);
+        openSnackbar();
+    };
+    useEffect(() => { }, [enrollCourse])
+
+    const [snackbarState, setSnackbarState] = useState({
+        open: false,
+        vertical: 'top',
+        horizontal: 'right',
+    });
+
+    const openSnackbar = () => {
+        setSnackbarState({ ...snackbarState, open: true });
+    };
+
+    const closeSnackbar = () => {
+        setSnackbarState({ ...snackbarState, open: false });
+    };
     return (
         <div className=''>
             <section className='ml-6 space-y-2'>
@@ -25,23 +48,35 @@ const EnrollToCourse = () => {
                         <Typography>Intrucstors:</Typography>
 
                         <div className='mt-auto mb-6'>
-                            {enrollCourse ? (<div>
-                                <Button variant='contained' sx={{ width: "18rem", height: "4rem", background: "#0048b0" }}>
-                                    Go To COursse
-                                </Button>
-                                <span className="ml-4 text-sm text-gray-500">Allready go to course</span>
-                            </div>) : (<EnrollCourseBtn />)}
+                            {enrollCourse ? (
+                                <div>
+                                    <Button variant='contained' sx={{ width: "18rem", height: "4rem", background: "#0048b0" }}>
+                                        Go To Course
+                                    </Button>
+                                    <span className="ml-4 text-sm text-gray-500">Already go to course</span>
+                                </div>
+                            ) : (
+                                <EnrollCourseBtn submitCourse={handleDataFromButotnSubmit} />
+                            )}
+                            {isSubmit ? (
+                                <SuccessfulCourseRegis
+                                    snackbarState={snackbarState}
+                                    openSnackbar={openSnackbar}
+                                    closeSnackbar={closeSnackbar}
+                                />
 
+                            ) : (
+                                <CourseRegisFailed
+                                    snackbarState={snackbarState}
+                                    openSnackbar={openSnackbar}
+                                    closeSnackbar={closeSnackbar}
+                                />
 
-
+                            )}
                         </div>
-
-
                     </div>
-
                 </div>
                 <div className="flex-grow-[4]  bg-blue-600">Hello</div>
-
             </section>
         </div>
     )

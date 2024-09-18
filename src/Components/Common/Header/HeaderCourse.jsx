@@ -1,5 +1,4 @@
 import React from 'react'
-import Switcher from '../../SwitcherDarkMode/Switcher'
 import { useFormik } from "formik"
 import * as Yup from "yup"
 import { Button } from '@mui/material'
@@ -60,8 +59,8 @@ const HeaderCourse = () => {
 
                     <Button
                         variant='contained'
-                        // type="submit"
-                        onClick={() => handleNavigation(`/profile`)}
+                        type="submit"
+                        // onClick={() => handleNavigation(`/profile`)}
                         sx={{
                             height: "100%",
                             borderTopLeftRadius: '0px',

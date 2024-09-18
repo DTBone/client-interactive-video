@@ -1,4 +1,3 @@
-import React from 'react';
 import {
     Box,
     Typography,
@@ -13,7 +12,11 @@ import {
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
 
-const FreeTrial = ({ onClose }) => {
+
+const FreeTrial = ({ onClose, onSubmit }) => {
+
+
+
     const features = [
         {
             title: 'Unlimited access to all courses in the Specialization',
@@ -55,9 +58,11 @@ const FreeTrial = ({ onClose }) => {
                 ))}
             </List>
             <Box sx={{ mt: 2 }}>
-                <Button variant="contained" color="primary" fullWidth>
+                <Button variant="contained" color="primary" fullWidth onClick={onSubmit}>
                     Start Free Trial
                 </Button>
+
+
             </Box>
         </Paper>
     );
