@@ -5,7 +5,7 @@ import DefaultLayout from '~/components/Layout/DefaultLayout'
 import HomeSection from './Home'
 import ErrorPage from './ErrorPage'
 import EnrollToCourse from '~/Components/MainSection/EnrollToCourse'
-
+import Login from '~/modules/Authentication/Login'
 
 const RouterPage = () => {
     return (
@@ -17,7 +17,8 @@ const RouterPage = () => {
                 <Route path="/specializations" element={<EnrollToCourse />}></Route>
                 <Route path="/profile" element={<HomeSection />}></Route>
                 <Route path="/account" element={<HomeSection />}></Route>
-
+                <Route path="/login" element={<Login isLoginForm={true}/>}></Route>
+                <Route path="/signup" element={<Login isLoginForm={false}/>}></Route>
             </Routes>
         </div>
     )
