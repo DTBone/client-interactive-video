@@ -2,6 +2,7 @@ import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Modal from '@mui/material/Modal';
 import FreeTrial from './FreeTrial';
+import { useState } from 'react';
 
 
 const style = {
@@ -19,7 +20,7 @@ const EnrollCourseBtn = ({ submitCourse }) => {
 
     const handleOpen = () => setOpen(true);
     const handleClose = () => setOpen(false);
-    const [open, setOpen] = React.useState(false);
+    const [open, setOpen] = useState(false);
     const handleSubmit = () => {
         setOpen(true);
         submitCourse(open);

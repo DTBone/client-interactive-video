@@ -1,10 +1,11 @@
-import { Button, Typography } from '@mui/material'
+import { Button, Divider, Typography } from '@mui/material'
 import { useEffect, useState } from 'react'
 import HeaderCourse from '../Common/Header/HeaderCourse'
 import Breadcrumb from '../Common/Breadcrumbs/Breadcrumb'
-import EnrollCourseBtn from '../Button/EnrollCourseBtn'
-import CourseRegisFailed from '../Notification/CourseRegisFailed';
-import SuccessfulCourseRegis from '../Notification/SuccessfulCourseRegis';
+import EnrollCourseBtn from './Button/EnrollCourseBtn'
+import CourseRegisFailed from './Notification/CourseRegisFailed';
+import SuccessfulCourseRegis from './Notification/SuccessfulCourseRegis';
+import Tabcourse from './Tab/tabcourse'
 
 const EnrollToCourse = () => {
     const [enrollCourse, setState] = useState(false);
@@ -30,14 +31,19 @@ const EnrollToCourse = () => {
         setSnackbarState({ ...snackbarState, open: false });
     };
     return (
-        <div className=''>
-            <section className='ml-6 space-y-2'>
+        <div className='space-y-2'>
+            <section className=' '>
                 <HeaderCourse />
+                <Divider />
+
+            </section>
+            <section className='ml-5'>
+
                 <Breadcrumb />
             </section>
 
             <section className="bg-[#f2f6fd] w-full h-3/4 mt-2 flex flex-row justify-center items-center ">
-                <div className="flex-grow-[6]  ml-6 max-w-4xl ">
+                <div className="flex-grow-[6]  ml-5 max-w-4xl ">
                     <div className='flex flex-col gap-4 justify-start items-start h-[400px]'>
                         <Typography
                             variant='h2'
@@ -77,6 +83,9 @@ const EnrollToCourse = () => {
                     </div>
                 </div>
                 <div className="flex-grow-[4]  bg-blue-600">Hello</div>
+            </section>
+            <section className='ml-5 space-y-2 mr-6'>
+                <Tabcourse />
             </section>
         </div>
     )

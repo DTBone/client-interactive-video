@@ -1,11 +1,11 @@
-import React from 'react'
 import { Route, Routes } from 'react-router-dom'
 
 
 
 import HomeSection from './Home'
 import ErrorPage from './ErrorPage'
-import EnrollToCourse from '~/Components/MainSection/EnrollToCourse'
+import EnrollToCourse from '~/Components/EnrollToCourse/EnrollToCourse'
+import CourseDetail from '~/Components/CourseDetail/CourseDetail'
 
 
 const HomePage = () => {
@@ -18,6 +18,7 @@ const HomePage = () => {
                 <Route path="/specializations" element={<EnrollToCourse />}></Route>
                 <Route path="/profile" element={<HomeSection />}></Route>
                 <Route path="/account" element={<HomeSection />}></Route>
+                <Route path="/coursedetail" element={<CourseDetail />}></Route>
 
             </Routes>
         </div>

@@ -40,7 +40,7 @@ const HeaderCourse = () => {
     }
 
     return (
-        <div className="flex flex-row justify-between border-b-slate-50 border-b-2 pt-1 pb-1 pr-1 items-center">
+        <div className="flex flex-row justify-between  pt-1 pb-1 pr-1 items-center ml-5">
             <div className=" flex flex-row h-1/6 w-3/4 ">
 
                 <div className="font-bold text-3xl text-[#0056d2]  mr-5 ">codechef</div>
