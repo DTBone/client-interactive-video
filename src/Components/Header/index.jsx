@@ -1,6 +1,7 @@
 import ModeSwitcher from './components/ModeSwitch/ModeSwitch';
 import styles from './Header.module.scss';
 import Navbar from './components/Navbar';
+import { Link } from 'react-router-dom';
 function Header() {
     return ( 
         <header>
@@ -13,8 +14,8 @@ function Header() {
                     <Navbar/>
                     <div className={styles.groupButton}>
                         <ModeSwitcher/>
-                        <button className={styles.logIn}>Log In</button>
-                        <button className={styles.signUp}>Sign Up</button>
+                        <Link to='/login' className={styles.logIn} >Log In</Link>
+                        <Link to='/signup' className={styles.signUp}>Sign Up</Link>
                     </div>
                 </div>
             </div>
