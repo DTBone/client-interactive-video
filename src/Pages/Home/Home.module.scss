@@ -1,0 +1,50 @@
+.container{
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    margin: 0 200px;
+    gap: 20px;
+    align-items: center;
+    .leftContent{
+        width: 40%;
+        height: 70%;
+        border: rgb(221, 213, 213) 4px solid;
+        border-radius: 20px;
+        padding: 20px;
+        display: flex;
+        font-size: 20px;
+        flex-direction: column;
+        align-items: center;
+    }
+    .rightContent{
+        width: 40%;
+        border-radius: 20px;
+        img{
+            width: 100%;
+            border-radius: 25px;
+        }
+    }
+    button{
+        background-color: #ffffff;
+        color: #313EAC;
+        border: #000 1px solid;
+        padding: 10px 20px;
+        border-radius: 10px;
+    }
+}
+
+@media screen and (max-width: 768px){
+    .container{
+        flex-direction: column-reverse;
+        margin: 0 20px;
+        padding: 0;
+        .leftContent{
+            color: #000000;
+            width: 100%;
+        }
+        .rightContent{
+            width: 100%;
+        }
+    }
+    
+}
