@@ -7,6 +7,10 @@ import DashboardLayout from '~/components/Layout/DashBoardLayout'
 import EnrollToCourse from '../modules/EnrollToCourse/EnrollToCourse';
 import DefaultLayout from '~/Components/Layout/DefaultLayout'
 import CourseDetail from '~/modules/CourseDetail/CourseDetail'
+import Grades from '~/modules/CourseDetail/MainSection/Grades'
+import Messages from '~/modules/CourseDetail/MainSection/Messages'
+import CourseInfo from '~/modules/CourseDetail/MainSection/CourseInfo'
+import Module from '~/modules/CourseDetail/MainSection/Modules/Module'
 
 const HomePage = () => {
     return (
@@ -23,7 +27,13 @@ const HomePage = () => {
                 <Route path="/homeuser" element={<DashboardLayout><HomeUser /></DashboardLayout>}></Route>
 
 
-                <Route path="/learn/:id/home" element={<CourseDetail />}></Route>
+                <Route path="/learn/:courseID/home" element={<CourseDetail />}>
+                    <Route path="welcome" element={<CourseDetail />} />
+                    <Route path="assignments" element={<Grades />}></Route>
+                    <Route path="course-inbox" element={<Messages />}></Route>
+                    <Route path="info" element={<CourseInfo />}></Route>
+                    <Route path="module/:moduleID" element={<Module />}></Route>
+                </Route>
 
             </Routes>
         </div>

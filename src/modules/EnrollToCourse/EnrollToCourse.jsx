@@ -1,4 +1,4 @@
-import { Button, Divider, Typography } from '@mui/material'
+import { Button, Typography } from '@mui/material'
 import { useEffect, useState } from 'react'
 import HeaderCourse from '../../Components/Common/Header/HeaderCourse'
 import Breadcrumb from '../../Components/Common/Breadcrumbs/Breadcrumb'
@@ -34,7 +34,7 @@ const EnrollToCourse = () => {
         <div className='space-y-2'>
             <section className=' '>
                 <HeaderCourse />
-                <Divider />
+
 
             </section>
             <section className='ml-5'>
