@@ -55,7 +55,7 @@ const CourseDetail = () => {
                     <Grid item xs={2} sm={3} md={4} lg={3} className="relative ">
                         <div className="ml-6 overflow-y-auto h-[calc(100vh-90px)] relative">
 
-                            <div className="w-full bg-blue-500 h-[200px] flex justify-center items-center ">
+                            <div className="w-full bg-transparent h-[200px] flex justify-start items-center ">
                                 <Typography variant='h4' fontSize="bold" sx={{ textTransform: "none" }}>Course Name</Typography>
 
                             </div>

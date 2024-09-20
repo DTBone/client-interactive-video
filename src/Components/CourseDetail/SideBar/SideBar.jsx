@@ -116,22 +116,28 @@ const SideBar = () => {
     ]
 
     return (
-        <CustomAccordion>
-            <CustomAccordionSummary
-                expandIcon={<ExpandMoreIcon />}
-                aria-controls="panel1-content"
-                id="panel1-header"
-            >
-                Course Material
-            </CustomAccordionSummary>
-            <CustomAccordionDetails>
-                {buttonItem.map((item, index) => (
-                    <CustomButton key={index} fullWidth > <Circle sx={{ color: '#c1cad9' }} />
-                        {item}
-                    </CustomButton>
-                ))}
-            </CustomAccordionDetails>
-        </CustomAccordion>
+        <div>
+            <CustomAccordion>
+                <CustomAccordionSummary
+                    expandIcon={<ExpandMoreIcon />}
+                    aria-controls="panel1-content"
+                    id="panel1-header"
+                >
+                    Course Material
+                </CustomAccordionSummary>
+                <CustomAccordionDetails>
+                    {buttonItem.map((item, index) => (
+                        <CustomButton key={index} fullWidth > <Circle sx={{ color: '#c1cad9' }} />
+                            {item}
+                        </CustomButton>
+                    ))}
+                </CustomAccordionDetails>
+            </CustomAccordion>
+            {/* <CustomButton  >Grades</CustomButton>
+
+            <CustomButton>Messages</CustomButton>
+            <CustomButton >Course Info</CustomButton> */}
+        </div>
     )
 }
 
