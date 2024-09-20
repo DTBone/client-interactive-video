@@ -6,6 +6,8 @@ import HomeSection from './Home'
 import ErrorPage from './ErrorPage'
 import EnrollToCourse from '~/Components/MainSection/EnrollToCourse'
 import Login from '~/modules/Authentication/Login'
+import HomeUser from '~/modules/User/HomeUser'
+import DashboardLayout from '~/components/Layout/DashBoardLayout'
 
 const RouterPage = () => {
     return (
@@ -19,6 +21,7 @@ const RouterPage = () => {
                 <Route path="/account" element={<HomeSection />}></Route>
                 <Route path="/login" element={<Login isLoginForm={true}/>}></Route>
                 <Route path="/signup" element={<Login isLoginForm={false}/>}></Route>
+                <Route path="/homeuser" element={<DashboardLayout><HomeUser /></DashboardLayout>}></Route>
             </Routes>
         </div>
     )
