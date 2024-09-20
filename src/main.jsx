@@ -9,8 +9,7 @@ import './index.css';
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
-    <CssVarsProvider >
-
+    <CssVarsProvider theme={theme} >
       <CssBaseline />
       <BrowserRouter>
         <App />

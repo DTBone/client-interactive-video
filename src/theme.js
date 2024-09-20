@@ -1,35 +1,31 @@
-import { cyan, deepOrange, orange, teal } from '@mui/material/colors';
-import { experimental_extendTheme as extendTheme } from '@mui/material/styles';
-import '@fontsource/roboto/300.css';
-import '@fontsource/roboto/400.css';
-import '@fontsource/roboto/500.css';
-import '@fontsource/roboto/700.css';
+// import { createTheme } from '@mui/material/styles'
+import { cyan, deepOrange, orange, teal } from '@mui/material/colors'
+import { experimental_extendTheme as extendTheme } from '@mui/material/styles'
 
 // Create a theme instance.
 const theme = extendTheme({
-    componentSize: {
-        appBarHeight: '48px',
-        boardBarHeight: '58px',
-    },
-    fontFamily: 'Roboto, sans-serif',
-    colorSchemes: {
-        light: {
-            palette: {
-                primary: teal,
-                secondary: deepOrange,
-
-            },
-            //spacing: (factor) => `${0.25 * factor}rem`
+  colorSchemes: {
+    light: {
+      palette: {
+        primary: {
+          main: teal[900]
         },
-        dark: {
-            palette: {
-                primary: cyan,
-                secondary: orange,
-            },
-            //spacing: (factor) => `${0.25 * factor}rem`
+        secondary: {
+          main: deepOrange[500]
         }
+      }
+    },
+    dark: {
+      palette: {
+        primary: {
+          main: cyan[500]
+        },
+        secondary: {
+          main: orange[500]
+        }
+      }
     }
-    // ...other properties
+  }
 })
 
-export default theme;
+export default theme
