@@ -10,14 +10,25 @@ import { styled } from '@mui/material/styles';
 import { Circle } from '@mui/icons-material';
 import { useState } from 'react';
 
+import { useNavigate, useParams } from 'react-router-dom';
+import { Typography } from '@mui/material';
 
-
-const SideBar = ({ onSelectContent }) => {
+const SideBar = () => {
+    // const { id } = useParams();
+    const navigate = useNavigate();
 
     const [activeButton, setActiveButton] = useState(null);
 
     const handleButtonClick = (buttonId) => {
-        setActiveButton(buttonId);
+        setActiveButton(`${buttonId.toLowerCase()}`);
+        navigate(`${buttonId.toLowerCase().replace(/\s+/g, '/')}`);
+
+
+    };
+    const [expanded, setExpanded] = useState(false);
+
+    const handleChange = (panel) => (event, isExpanded) => {
+        setExpanded(isExpanded ? panel : false);
     };
 
     const CustomAccordion = styled(Accordion)(() => ({
@@ -58,7 +69,7 @@ const SideBar = ({ onSelectContent }) => {
         fontWeight: 'bold',
         textTransform: "none",
         color: "#000000",
-        fontSize: "20px",
+        fontSize: "16px",
     }));
 
 
@@ -72,17 +83,14 @@ const SideBar = ({ onSelectContent }) => {
 
     }));
     const CustomButton1 = styled(Button)(({ isActive }) => ({
-
         width: '100%',
         height: '64px',
         justifyContent: 'flex-start',
         paddingLeft: '48px',
-
         fontWeight: 'bold',
         textTransform: "none",
         color: "#000000",
-        fontSize: "20px",
-
+        fontSize: "16px",
         background: isActive ? "#f2f5fa" : "transparent",
         borderLeftColor: isActive ? "#0056d2" : "transparent",
         borderLeftWidth: isActive ? "4px" : "0",
@@ -100,16 +108,7 @@ const SideBar = ({ onSelectContent }) => {
         },
         '&:hover': {
             background: "#f0f6ff",
-
         },
-        '&:active': {
-            background: "#f2f5fa",
-            borderLeftColor: "#0056d2",
-            borderLeftWidth: "4px",
-            borderRadius: "0 4px 4px 0",
-            borderLeftStyle: 'solid',
-        }
-
     }));
 
 
@@ -120,13 +119,16 @@ const SideBar = ({ onSelectContent }) => {
         paddingLeft: theme.spacing(4),
         width: '100%',
         height: '64px',
-        background: "transparent",
-
-        borderRadius: "0 4px 4px 0",
         //fontWeight: 'bold',
         textTransform: "none",
         color: "#000000",
         fontSize: "20px",
+        background: isActive ? "#f2f5fa" : "transparent",
+        borderLeftColor: isActive ? "#0056d2" : "transparent",
+        borderLeftWidth: isActive ? "4px" : "0",
+        borderRadius: isActive ? "4px" : "0 4px 4px 0",
+        borderLeftStyle: isActive ? 'solid' : 'none',
+
         '&::before': {
             content: '""',
             position: 'absolute',
@@ -139,16 +141,6 @@ const SideBar = ({ onSelectContent }) => {
         },
         '&:hover': {
             background: "#f0f6ff",
-            textDecoration: 'underline',
-
-
-        },
-        '&:active': {
-            background: "#f2f5fa",
-            borderLeftColor: "#0056d2",
-            borderLeftWidth: "4px",
-            borderRadius: "0 4px 4px 0",
-            borderLeftStyle: 'solid',
             textDecoration: 'underline',
         },
 
@@ -167,25 +159,30 @@ const SideBar = ({ onSelectContent }) => {
 
     return (
         <div>
-            <CustomAccordion>
+            <div className="w-full bg-transparent h-[200px] flex justify-start items-center p-2">
+                <Typography variant='h4' fontSize="bold" sx={{ textTransform: "none" }}>Course Name</Typography>
+
+            </div>
+            <CustomAccordion expanded={expanded === 'panel'} onChange={handleChange('panel')}>
                 <CustomAccordionSummary
                     expandIcon={<ExpandMoreIcon />}
-                    aria-controls="panel1-content"
-                    id="panel1-header"
+                    aria-controls="panel-content"
+                    id="panel-header"
                 >
                     Course Material
                 </CustomAccordionSummary>
                 <CustomAccordionDetails>
                     {buttonItem.map((item, index) => (
-                        <CustomButton key={index} fullWidth onClick={() => { onSelectContent(item); handleButtonClick(item) }} isActive={activeButton === item} > <Circle sx={{ color: '#c1cad9' }} />
+                        <CustomButton key={index} fullWidth onClick={() => handleButtonClick(item)} isActive={activeButton === item} > <Circle sx={{ color: '#c1cad9' }} />
                             {item}
                         </CustomButton>
                     ))}
                 </CustomAccordionDetails>
             </CustomAccordion>
-            <CustomButton1 onClick={() => { onSelectContent("Grades"); handleButtonClick("Grades") }} isActive={activeButton === 'Grades'}>Grades</CustomButton1>
-            <CustomButton1 onClick={() => { onSelectContent("Messages"); handleButtonClick("Messages") }} isActive={activeButton === 'Messages'}>Messages</CustomButton1>
-            <CustomButton1 onClick={() => { onSelectContent("CourseInfo"); handleButtonClick("CourseInfo") }} isActive={activeButton === 'CourseInfo'}>Course Info</CustomButton1>
+            <CustomButton1 onClick={() => handleButtonClick("assignments")} isActive={activeButton === 'assignments'}>Grades</CustomButton1>
+            <CustomButton1 onClick={() => handleButtonClick("course-inbox")} isActive={activeButton === 'course-inbox'}>Messages</CustomButton1>
+            <CustomButton1 onClick={() => handleButtonClick("info")} isActive={activeButton === 'info'}>Course Info</CustomButton1>
+
         </div >
     )
 }
