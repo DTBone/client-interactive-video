@@ -1,8 +1,9 @@
-import React from 'react'
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Modal from '@mui/material/Modal';
 import FreeTrial from './FreeTrial';
+import { useState } from 'react';
+
 
 const style = {
     position: 'absolute',
@@ -15,10 +16,17 @@ const style = {
 
 };
 
-const EnrollCourseBtn = () => {
-    const [open, setOpen] = React.useState(false);
+const EnrollCourseBtn = ({ submitCourse }) => {
+
     const handleOpen = () => setOpen(true);
     const handleClose = () => setOpen(false);
+    const [open, setOpen] = useState(false);
+    const handleSubmit = () => {
+        setOpen(true);
+        submitCourse(open);
+        handleClose();
+    }
+
 
     return (
         <div>
@@ -37,7 +45,8 @@ const EnrollCourseBtn = () => {
                 sx={{ width: '100%' }}
             >
                 <Box sx={style}>
-                    <FreeTrial onClose={handleClose} />
+                    <FreeTrial onClose={handleClose} onSubmit={handleSubmit} />
+
                 </Box>
             </Modal>
 
