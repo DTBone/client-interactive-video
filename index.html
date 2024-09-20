@@ -45,6 +45,67 @@
       line-height: 1.5;
       text-rendering: optimizeLegibility;
     }
+
+    /* width */
+    ::-webkit-scrollbar {
+      width: 10px;
+      padding: 0;
+      margin: 0;
+    }
+
+    /* Track */
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    /* Handle */
+    ::-webkit-scrollbar-thumb {
+      border-radius: 10px;
+      background: #888;
+    }
+
+    /* Handle on hover */
+    ::-webkit-scrollbar-thumb:hover {
+      border-radius: 10px;
+      background: #555;
+    }
+
+    /* Button */
+
+    ::-webkit-scrollbar-button {
+      width: 0;
+      /* Không có độ rộng thực */
+      height: 0;
+      /* Không có chiều cao thực */
+    }
+
+    /* Nút cuộn lên */
+    ::-webkit-scrollbar-button:single-button:up {
+      background: transparent;
+      /* Nền trong suốt */
+      border-left: 6px solid transparent;
+      /* Tạo tam giác */
+      border-right: 6px solid transparent;
+      /* Tạo tam giác */
+      border-bottom: 6px solid #3f3e3e;
+      /* Màu nền của tam giác */
+      margin: 2px 0;
+      /* Thêm khoảng cách */
+    }
+
+    /* Nút cuộn xuống */
+    ::-webkit-scrollbar-button:single-button:down {
+      background: transparent;
+      /* Nền trong suốt */
+      border-left: 6px solid transparent;
+      /* Tạo tam giác */
+      border-right: 6px solid transparent;
+      /* Tạo tam giác */
+      border-top: 6px solid #3f3e3e;
+      /* Màu nền của tam giác */
+      margin: 2px 0;
+      /* Thêm khoảng cách */
+    }
   </style>
 </head>
 

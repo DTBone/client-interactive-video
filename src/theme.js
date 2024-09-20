@@ -1,15 +1,17 @@
 // import { createTheme } from '@mui/material/styles'
-import { cyan, deepOrange, orange } from '@mui/material/colors'
+import { cyan, deepOrange, orange, teal } from '@mui/material/colors'
 import { experimental_extendTheme as extendTheme } from '@mui/material/styles'
 
 // Create a theme instance.
 const theme = extendTheme({
+  palette: {
+    mode: 'light',
+  },
   colorSchemes: {
     light: {
       palette: {
         primary: {
-          main: '#27BCEB',
-          mainChannel: '0 0 0'
+          main: teal[900]
         },
         secondary: {
           main: deepOrange[500]
@@ -28,5 +30,6 @@ const theme = extendTheme({
     }
   }
 })
+
 
 export default theme
