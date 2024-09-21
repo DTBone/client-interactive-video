@@ -10,8 +10,9 @@ import { styled } from '@mui/material/styles';
 import { Circle } from '@mui/icons-material';
 import { useState } from 'react';
 
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Typography } from '@mui/material';
+import Module from '../MainSection/Modules/Module';
 
 const SideBar = () => {
     // const { id } = useParams();
@@ -22,6 +23,12 @@ const SideBar = () => {
     const handleButtonClick = (buttonId) => {
         setActiveButton(`${buttonId.toLowerCase()}`);
         navigate(`${buttonId.toLowerCase().replace(/\s+/g, '/')}`);
+
+
+    };
+    const handleModuleItemClick = (buttonId, module) => {
+        setActiveButton(`${buttonId.toLowerCase()}`);
+        navigate(`${buttonId.toLowerCase().replace(/\s+/g, '/')}`, { state: { module } });
 
 
     };
@@ -149,12 +156,136 @@ const SideBar = () => {
         gap: "8px",
 
     }));
-    const buttonItem = [
-        'module 1',
-        'module 2',
-        'module 3',
-        'module 4',
-        'module 5',
+    const modules = [
+        {
+            id: 'module 1',
+            name: 'Mergsort',
+            description: 'We study the mergesort algorithm and show that it guarantees to sort any array of n items with at most n lg n compares. We also consider a nonrecursive, bottom-up version. We prove that any compare-based sorting algorithm must make at least n lg n compares in the worst case. We discuss using different orderings for the objects that we are sorting and the related concept of stability.',
+            content: [
+                {
+                    icon: 'video',
+                    title: '48 min of video left',
+                },
+                {
+                    icon: 'read',
+                    title: 'All readings completed',
+                }, {
+                    icon: 'assignment',
+                    title: '1 graded assessment left',
+                }],
+            item: [
+                {
+                    icon: 'read',
+                    title: 'Overview',
+                    type: 'reading'
+                },
+                {
+                    icon: 'read',
+                    title: 'Lecture Slides',
+                    type: 'reading'
+                },
+                {
+                    icon: 'video',
+                    title: 'Mergesort',
+                    type: 'video'
+                },
+                {
+                    icon: 'quiz',
+                    title: 'Interview Questions',
+                    type: 'practice quiz',
+                },
+                {
+                    icon: 'code',
+                    title: 'Collinear Points',
+                    type: 'programming assignment',
+                }]
+        },
+        {
+            id: 'module 2',
+            name: 'Quicksort',
+            description: 'We introduce the quicksort algorithm and analyze its performance. We also consider randomized quicksort, a simple randomized algorithm that is guaranteed to have good performance.',
+            content: [
+                {
+                    icon: 'video',
+                    title: '48 min of video left',
+                },
+                {
+                    icon: 'read',
+                    title: 'All readings completed',
+                }, {
+                    icon: 'assignment',
+                    title: '1 graded assessment left',
+                }],
+            item: [
+                {
+                    icon: 'read',
+                    title: 'Overview',
+                    type: 'reading'
+                },
+                {
+                    icon: 'read',
+                    title: 'Lecture Slides',
+                    type: 'reading'
+                },
+                {
+                    icon: 'video',
+                    title: 'Quicksort',
+                    type: 'video'
+                },
+                {
+                    icon: 'quiz',
+                    title: 'Interview Questions',
+                    type: 'practice quiz',
+                },
+                {
+                    icon: 'code',
+                    title: 'Collinear Points',
+                    type: 'programming assignment',
+                }]
+        },
+        {
+            id: 'module 3',
+            name: 'Priority Queues',
+            description: 'We introduce a queue abstraction that allows clients to insert keys into a collection and then remove the largest key. We consider two implementations: one based on an unordered array and the other based on a heap.',
+            content: [
+                {
+                    icon: 'video',
+                    title: '48 min of video left',
+                },
+                {
+                    icon: 'read',
+                    title: 'All readings completed',
+                }, {
+                    icon: 'assignment',
+                    title: '1 graded assessment left',
+                }],
+            item: [
+                {
+                    icon: 'read',
+                    title: 'Overview',
+                    type: 'reading'
+                },
+                {
+                    icon: 'read',
+                    title: 'Lecture Slides',
+                    type: 'reading'
+                },
+                {
+                    icon: 'video',
+                    title: 'Priority Queues',
+                    type: 'video'
+                },
+                {
+                    icon: 'quiz',
+                    title: 'Interview Questions',
+                    type: 'practice quiz',
+                },
+                {
+                    icon: 'code',
+                    title: 'Collinear Points',
+                    type: 'programming assignment',
+                }]
+        }
     ]
 
     return (
@@ -172,9 +303,10 @@ const SideBar = () => {
                     Course Material
                 </CustomAccordionSummary>
                 <CustomAccordionDetails>
-                    {buttonItem.map((item, index) => (
-                        <CustomButton key={index} fullWidth onClick={() => handleButtonClick(item)} isActive={activeButton === item} > <Circle sx={{ color: '#c1cad9' }} />
-                            {item}
+                    {modules.map((item, index) => (
+                        <CustomButton key={index} fullWidth onClick={() => handleModuleItemClick(item.id, item)} isActive={activeButton === item.id} > <Circle sx={{ color: '#c1cad9' }} />
+                            {item.id}
+
                         </CustomButton>
                     ))}
                 </CustomAccordionDetails>

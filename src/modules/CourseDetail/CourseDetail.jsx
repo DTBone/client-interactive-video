@@ -15,7 +15,7 @@ import { Outlet } from 'react-router-dom';
 
 const CourseDetail = () => {
 
-    const [selectedContent, setSelectedContent] = useState('Overview');
+    //const [selectedContent, setSelectedContent] = useState('Overview');
     // const renderContent = () => {
     //     switch (selectedContent) {
     //         case 'overview': return <Overview />;

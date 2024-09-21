@@ -76,8 +76,8 @@ const Grades = () => {
             <Typography variant='h4' className='font-bold pb-4'>Grades</Typography>
             <TableContainer component={Paper} className='shadow-lg'>
                 <Table className='min-w-full'>
-                    <TableHead>
-                        <TableRow className="bg-gray-100">
+                    <TableHead classname="mb-4">
+                        <TableRow className="bg-transparent">
                             <TableCell sx={{ fontWeight: 'bold' }}>Item</TableCell>
                             <TableCell sx={{ fontWeight: 'bold' }}>Status</TableCell>
                             <TableCell sx={{ fontWeight: 'bold' }}>Due</TableCell>
