@@ -1,26 +1,16 @@
 
 import { Typography, List, ListItem, ListItemIcon, ListItemText, Divider } from '@mui/material';
-import { PlayCircle, Article, QuizOutlined, Code, Assignment } from '@mui/icons-material';
 import { useState } from 'react';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import { useLocation } from 'react-router-dom';
 import HeaderModule from './HeaderModule';
 import ModuleItem from './ModuleItem';
 
-const IconComponent = ({ icon }) => {
-    switch (icon) {
-        case 'video': return <PlayCircle />;
-        case 'read': return <Article />;
-        case 'quiz': return <QuizOutlined />;
-        case 'code': return <Code />;
-        case 'assignment': return <Assignment />;
-        default: return null;
-    }
-};
 const Module = () => {
     const [isOpen, setIsOpen] = useState(false);
     const location = useLocation();
     const module = location.state?.module;
+    console.log(module);
     return (
         <div className="border border-gray-200 rounded-md overflow-hidden hover:border-sky-200">
             <div
@@ -34,13 +24,13 @@ const Module = () => {
 
             </div>
             {isOpen && (
-                <div className=" bg-transparent">
-                    <div>
+                <div className=" bg-transparent ">
+                    <div className="">
                         <HeaderModule content={module.content} />
 
                         <Divider />
                     </div>
-                    <div className="p-4">
+                    <div className="p-4 ml-5">
                         <Typography >{module.description}</Typography>
                         <List>
                             {module.item.map((item, index) => (

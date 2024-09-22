@@ -11,6 +11,11 @@ import Grades from '~/modules/CourseDetail/MainSection/Grades'
 import Messages from '~/modules/CourseDetail/MainSection/Messages'
 import CourseInfo from '~/modules/CourseDetail/MainSection/CourseInfo'
 import Module from '~/modules/CourseDetail/MainSection/Modules/Module'
+import GeneralLessons from '~/modules/Lesson/GeneralLessons'
+import Supplement from '~/modules/Lesson/MainSection/Supplement'
+import Lecture from '~/modules/Lesson/MainSection/Lecture'
+import Quiz from '~/modules/Lesson/MainSection/Quiz'
+import Programming from '~/modules/Lesson/MainSection/Programming'
 
 const HomePage = () => {
     return (
@@ -33,6 +38,13 @@ const HomePage = () => {
                     <Route path="course-inbox" element={<Messages />}></Route>
                     <Route path="info" element={<CourseInfo />}></Route>
                     <Route path="module/:moduleID" element={<Module />}></Route>
+                </Route>
+
+                <Route path="learn/:courseID/lessons" element={<GeneralLessons />}>
+                    <Route path="supplement/:supplementID" element={<Supplement />} />
+                    <Route path="lecture:/lectureID" element={<Lecture />} />
+                    <Route path="quiz/:quizID" element={<Quiz />} />
+                    <Route path="programming/:programmingID" element={<Programming />} />
                 </Route>
 
             </Routes>
