@@ -11,7 +11,7 @@ import { Circle } from '@mui/icons-material';
 import { useState } from 'react';
 
 import { useNavigate } from 'react-router-dom';
-import { Typography } from '@mui/material';
+import { Divider, Typography } from '@mui/material';
 import Module from '../MainSection/Modules/Module';
 
 const SideBar = () => {
@@ -95,7 +95,7 @@ const SideBar = () => {
         justifyContent: 'flex-start',
         paddingLeft: '48px',
         fontWeight: 'bold',
-        textTransform: "none",
+        textTransform: "capitalize",
         color: "#000000",
         fontSize: "16px",
         background: isActive ? "#f2f5fa" : "transparent",
@@ -127,14 +127,15 @@ const SideBar = () => {
         width: '100%',
         height: '64px',
         //fontWeight: 'bold',
-        textTransform: "none",
+        textTransform: "capitalize",
         color: "#000000",
-        fontSize: "20px",
+        fontSize: "16px",
         background: isActive ? "#f2f5fa" : "transparent",
         borderLeftColor: isActive ? "#0056d2" : "transparent",
         borderLeftWidth: isActive ? "4px" : "0",
         borderRadius: isActive ? "4px" : "0 4px 4px 0",
         borderLeftStyle: isActive ? 'solid' : 'none',
+        textDecoration: isActive ? 'underline' : 'none',
 
         '&::before': {
             content: '""',
@@ -148,7 +149,7 @@ const SideBar = () => {
         },
         '&:hover': {
             background: "#f0f6ff",
-            textDecoration: 'underline',
+            //textDecoration: 'underline',
         },
 
         display: 'flex',
@@ -245,6 +246,135 @@ const SideBar = () => {
         },
         {
             id: 'module 3',
+            name: 'Priority Queues',
+            description: 'We introduce a queue abstraction that allows clients to insert keys into a collection and then remove the largest key. We consider two implementations: one based on an unordered array and the other based on a heap.',
+            content: [
+                {
+                    icon: 'video',
+                    title: '48 min of video left',
+                },
+                {
+                    icon: 'read',
+                    title: 'All readings completed',
+                }, {
+                    icon: 'assignment',
+                    title: '1 graded assessment left',
+                }],
+            item: [
+                {
+                    icon: 'read',
+                    title: 'Overview',
+                    type: 'reading'
+                },
+                {
+                    icon: 'read',
+                    title: 'Lecture Slides',
+                    type: 'reading'
+                },
+                {
+                    icon: 'video',
+                    title: 'Priority Queues',
+                    type: 'video'
+                },
+                {
+                    icon: 'quiz',
+                    title: 'Interview Questions',
+                    type: 'practice quiz',
+                },
+                {
+                    icon: 'code',
+                    title: 'Collinear Points',
+                    type: 'programming assignment',
+                }]
+        },
+        {
+            id: 'module 4',
+            name: 'Priority Queues',
+            description: 'We introduce a queue abstraction that allows clients to insert keys into a collection and then remove the largest key. We consider two implementations: one based on an unordered array and the other based on a heap.',
+            content: [
+                {
+                    icon: 'video',
+                    title: '48 min of video left',
+                },
+                {
+                    icon: 'read',
+                    title: 'All readings completed',
+                }, {
+                    icon: 'assignment',
+                    title: '1 graded assessment left',
+                }],
+            item: [
+                {
+                    icon: 'read',
+                    title: 'Overview',
+                    type: 'reading'
+                },
+                {
+                    icon: 'read',
+                    title: 'Lecture Slides',
+                    type: 'reading'
+                },
+                {
+                    icon: 'video',
+                    title: 'Priority Queues',
+                    type: 'video'
+                },
+                {
+                    icon: 'quiz',
+                    title: 'Interview Questions',
+                    type: 'practice quiz',
+                },
+                {
+                    icon: 'code',
+                    title: 'Collinear Points',
+                    type: 'programming assignment',
+                }]
+        },
+        {
+            id: 'module 5',
+            name: 'Priority Queues',
+            description: 'We introduce a queue abstraction that allows clients to insert keys into a collection and then remove the largest key. We consider two implementations: one based on an unordered array and the other based on a heap.',
+            content: [
+                {
+                    icon: 'video',
+                    title: '48 min of video left',
+                },
+                {
+                    icon: 'read',
+                    title: 'All readings completed',
+                }, {
+                    icon: 'assignment',
+                    title: '1 graded assessment left',
+                }],
+            item: [
+                {
+                    icon: 'read',
+                    title: 'Overview',
+                    type: 'reading'
+                },
+                {
+                    icon: 'read',
+                    title: 'Lecture Slides',
+                    type: 'reading'
+                },
+                {
+                    icon: 'video',
+                    title: 'Priority Queues',
+                    type: 'video'
+                },
+                {
+                    icon: 'quiz',
+                    title: 'Interview Questions',
+                    type: 'practice quiz',
+                },
+                {
+                    icon: 'code',
+                    title: 'Collinear Points',
+                    type: 'programming assignment',
+                }]
+        },
+        {
+            id: 'module 6',
             name: 'Priority Queues',
             description: 'We introduce a queue abstraction that allows clients to insert keys into a collection and then remove the largest key. We consider two implementations: one based on an unordered array and the other based on a heap.',
             content: [
