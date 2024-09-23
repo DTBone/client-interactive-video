@@ -1,5 +1,5 @@
 import { Typography } from "@mui/material"
-import IconComponent from "./IconComponent"
+import IconComponent from "../../../../Components/Common/Button/IconComponent"
 
 
 const HeaderModule = ({ content }) => {
