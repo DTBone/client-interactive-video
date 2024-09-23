@@ -1,7 +1,7 @@
 import React from 'react'
 import { useFormik } from "formik"
 import * as Yup from "yup"
-import { Button, Divider } from '@mui/material'
+import { Box, Button, Divider } from '@mui/material'
 import NotificationsActiveOutlinedIcon from '@mui/icons-material/NotificationsActiveOutlined';
 import Avatar from '@mui/material/Avatar';
 import Menu from '@mui/material/Menu';
@@ -67,53 +67,59 @@ const HeaderCourse = () => {
                                 borderTopLeftRadius: '0px',
                                 borderBottomLeftRadius: '0px',
                                 background: "#0056d2",
-                                textTransform: 'none'
+                                textTransform: 'none',
+                                '&:hover': {
+                                    background: "#0067fc",
+                                },
                             }}>Search</Button>
 
                     </form>
                 </div>
                 <div className="w-1/4  flex flex-row justify-end items-center   space-x-2">
-                    <div className='p-2 hover:bg-[#f0f6ff] rounded-lg text-[#1a1a1a] '>
-                        <NotificationsActiveOutlinedIcon className="focus:text-[#bed5f2] " fontSize="medium" />
+                    <Box sx={{ display: "flex", flexDirection: "row", justifyContent: "center", alignItems: "center" }}>
+                        <div className='p-2 hover:bg-[#f0f6ff] rounded-lg text-[#1a1a1a] '>
+                            <NotificationsActiveOutlinedIcon className="focus:text-[#bed5f2] " fontSize="medium" />
 
-                    </div>
-                    <div className='w-16 border-s-2 border-gray-100 ps-4 pe-6 hover:bg-[#f0f0f0] '>
+                        </div>
+                        <Divider orientation="vertical" variant="middle" flexItem />
+                        <div className='w-16  ps-4 pe-6 hover:bg-[#f0f0f0] '>
 
-                        <Avatar
-                            className="transform -translate-y-24"
-                            alt="Avater User"
-                            src="/chef.svg"
-                            sx={{ width: "36px", height: "36px", border: "4px solid white" }}
-                            id="avt-button"
-                            aria-controls={open ? 'avt-menu' : undefined}
-                            aria-haspopup="true"
-                            aria-expanded={open ? 'true' : undefined}
-                            onClick={handleClick}
-                        />
-                        <Menu
-                            autoFocus={false}
-                            id="avt-menu"
-                            anchorEl={anchorEl}
-                            open={open}
-                            onClose={handleCloseMenu}
-                            MenuListProps={{
-                                'aria-labelledby': 'avt-button',
-                            }}
-                            sx={{
-                                width: "20rem",
-                            }}
-                            PaperProps={{
-                                style: {
-                                    paddingTop: "0",
-                                    width: 180,
-                                },
-                            }}
-                        >
-                            <MenuItem onClick={() => handleNavigation(`/profile`)}>Profile</MenuItem>
-                            <MenuItem onClick={() => handleNavigation(`/account`)}>Account</MenuItem>
-                            <MenuItem onClick={() => handleNavigation(`/logout`)}>Logout</MenuItem>
-                        </Menu>
-                    </div>
+                            <Avatar
+                                className="transform -translate-y-24"
+                                alt="Avater User"
+                                src="/chef.svg"
+                                sx={{ width: "36px", height: "36px", border: "4px solid white" }}
+                                id="avt-button"
+                                aria-controls={open ? 'avt-menu' : undefined}
+                                aria-haspopup="true"
+                                aria-expanded={open ? 'true' : undefined}
+                                onClick={handleClick}
+                            />
+                            <Menu
+                                autoFocus={false}
+                                id="avt-menu"
+                                anchorEl={anchorEl}
+                                open={open}
+                                onClose={handleCloseMenu}
+                                MenuListProps={{
+                                    'aria-labelledby': 'avt-button',
+                                }}
+                                sx={{
+                                    width: "20rem",
+                                }}
+                                PaperProps={{
+                                    style: {
+                                        paddingTop: "0",
+                                        width: 180,
+                                    },
+                                }}
+                            >
+                                <MenuItem onClick={() => handleNavigation(`/profile`)}>Profile</MenuItem>
+                                <MenuItem onClick={() => handleNavigation(`/account`)}>Account</MenuItem>
+                                <MenuItem onClick={() => handleNavigation(`/logout`)}>Logout</MenuItem>
+                            </Menu>
+                        </div>
+                    </Box>
 
 
                     {/* <Switcher /> */}

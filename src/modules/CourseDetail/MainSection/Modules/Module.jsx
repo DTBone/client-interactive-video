@@ -7,7 +7,7 @@ import HeaderModule from './HeaderModule';
 import ModuleItem from './ModuleItem';
 
 const Module = () => {
-    const [isOpen, setIsOpen] = useState(false);
+    const [isOpen, setIsOpen] = useState(true);
     const location = useLocation();
     const module = location.state?.module;
     console.log(module);

@@ -42,7 +42,7 @@ const HomePage = () => {
 
                 <Route path="learn/:courseID/lessons" element={<GeneralLessons />}>
                     <Route path="supplement/:supplementID" element={<Supplement />} />
-                    <Route path="lecture:/lectureID" element={<Lecture />} />
+                    <Route path="lecture/:lectureID" element={<Lecture />} />
                     <Route path="quiz/:quizID" element={<Quiz />} />
                     <Route path="programming/:programmingID" element={<Programming />} />
                 </Route>

@@ -101,7 +101,7 @@ const SideBar = () => {
         background: isActive ? "#f2f5fa" : "transparent",
         borderLeftColor: isActive ? "#0056d2" : "transparent",
         borderLeftWidth: isActive ? "4px" : "0",
-        borderRadius: isActive ? "4px" : "0 4px 4px 0",
+        borderRadius: isActive ? "0 4px 4px 0" : "4px",
         borderLeftStyle: isActive ? 'solid' : 'none',
         '&::before': {
             content: '""',
@@ -419,8 +419,8 @@ const SideBar = () => {
     ]
 
     return (
-        <div>
-            <div className="w-full bg-transparent h-[200px] flex justify-start items-center p-2">
+        <div className="">
+            <div className="w-full bg-transparent h-full flex justify-start items-center py-8 ">
                 <Typography variant='h4' fontSize="bold" sx={{ textTransform: "none" }}>Course Name</Typography>
 
             </div>
@@ -434,7 +434,12 @@ const SideBar = () => {
                 </CustomAccordionSummary>
                 <CustomAccordionDetails>
                     {modules.map((item, index) => (
-                        <CustomButton key={index} fullWidth onClick={() => handleModuleItemClick(item.id, item)} isActive={activeButton === item.id} > <Circle sx={{ color: '#c1cad9' }} />
+                        <CustomButton
+                            key={index}
+                            fullWidth
+                            onClick={() => handleModuleItemClick(item.id, item)}
+                            isActive={activeButton === item.id} >
+                            <Circle sx={{ color: '#c1cad9' }} />
                             {item.id}
 
                         </CustomButton>
