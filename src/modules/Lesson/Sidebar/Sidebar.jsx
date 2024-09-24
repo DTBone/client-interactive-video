@@ -6,14 +6,9 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import MenuList from "./MenuList";
 
-const Sidebar = () => {
-    const [isExpanded, setIsExpanded] = useState(true);
-    const [sidebarWidth, setSidebarWidth] = useState(255);
+const Sidebar = ({ handleSidebarButtonClick, isExpanded }) => {
 
-    const handleSidebarButtonClick = () => {
-        setIsExpanded(!isExpanded);
-        setSidebarWidth(isExpanded ? 55 : 255);
-    };
+
 
     const module = {
         title: "Merge Sort Algorithm",
@@ -51,12 +46,12 @@ const Sidebar = () => {
             },
             {
                 id: "3",
-                name: "Merge Sort Pseudocode",
+                name: "Mergesort algorithm ",
                 navigation: "quiz",
                 type: "Practice Quiz",
                 icon: "quiz",
                 status: "",
-                note: "",
+                note: "3 min",
                 difficulty: "medium",
                 references: [
                     {
@@ -69,7 +64,7 @@ const Sidebar = () => {
                 id: "4",
                 name: "Merge Sort Code",
                 navigation: "programming",
-                type: "Programming",
+                type: "Programming Assignment",
                 icon: "code",
                 status: "",
                 note: "",
@@ -89,15 +84,17 @@ const Sidebar = () => {
 
     return (
         <div style={{
-            width: isExpanded ? `${sidebarWidth}px` : '55px',
-            minWidth: isExpanded ? `${sidebarWidth}px` : '55px',
+            //width: isExpanded ? `${sidebarWidth}px` : '55px',
+            //minWidth: isExpanded ? `${sidebarWidth}px` : '55px',
             //transition: 'width 0.01s, min-width 0.3s',
-        }} className="flex flex-col">
+        }} className="flex flex-col w-full">
             <div onClick={handleSidebarButtonClick} className="flex items-center justify-center">
                 {isExpanded ?
                     (<ExpandBtn />) : (<HideBtn />) // change the button based on the state
                 }
             </div>
+            {isExpanded ? (<MenuList module={module} />) : null}
+            {isExpanded ? (<MenuList module={module} />) : null}
             {isExpanded ? (<MenuList module={module} />) : null}
 
         </div>

@@ -24,13 +24,13 @@ const HomePage = () => {
                 <Route path="/*" element={<DefaultLayout><HomeSection /></DefaultLayout>}></Route>
                 <Route path="/home" element={<DefaultLayout><HomeSection /></DefaultLayout>}></Route>
                 <Route path="/error" element={<ErrorPage />}></Route>
-                <Route path="/course" element={<EnrollToCourse />}></Route>
                 <Route path="/profile" element={<DefaultLayout><HomeSection /></DefaultLayout>}></Route>
                 <Route path="/account" element={<DefaultLayout><HomeSection /></DefaultLayout>}></Route>
                 <Route path="/login" element={<Login isLoginForm={true} />}></Route>
                 <Route path="/signup" element={<Login isLoginForm={false} />}></Route>
                 <Route path="/homeuser" element={<DashboardLayout><HomeUser /></DashboardLayout>}></Route>
 
+                <Route path="/course" element={<EnrollToCourse />}></Route>
 
                 <Route path="/learn/:courseID/home" element={<CourseDetail />}>
                     <Route path="welcome" element={<CourseDetail />} />

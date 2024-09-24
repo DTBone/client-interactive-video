@@ -110,6 +110,29 @@ const Grades = () => {
                                 <TableCell>{assignment.grade}</TableCell>
                             </TableRow>
                         ))}
+                        {assignments.map((assignment, index) => (
+                            <TableRow key={index} className="hover:bg-gray-50">
+                                <TableCell className="flex items-center space-x-2">
+
+                                    <div className="flex flex-row space-x-3">
+                                        {assignment.icon === 'clock' ? (
+                                            <AccessTime className="text-yellow-500" />
+                                        ) : (
+                                            <Code className="text-blue-500" />
+                                        )}
+                                        <div>
+
+                                            <div onClick={() => handleRowClick(assignment.name, assignment.module)} className="text-blue-600 font-medium hover:underline">{assignment.name}</div>
+                                            <div className="text-gray-500 text-sm">{assignment.type}</div>
+                                        </div>
+                                    </div>
+                                </TableCell>
+                                <TableCell>{assignment.status}</TableCell>
+                                <TableCell>{assignment.due}</TableCell>
+                                <TableCell>{assignment.weight}</TableCell>
+                                <TableCell>{assignment.grade}</TableCell>
+                            </TableRow>
+                        ))}
                     </TableBody>
                 </Table>
             </TableContainer>

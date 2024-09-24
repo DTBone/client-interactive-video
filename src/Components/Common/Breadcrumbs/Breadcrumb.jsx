@@ -13,19 +13,29 @@ function handleClick(event) {
 export default function Breadcrumb() {
     const navigate = useNavigate();
     return (
-        <div role="presentation" onClick={handleClick}>
+        <div role="presentation" onClick={handleClick} className="pl-0 pr-0 ml-0 mx-auto sticky">
             <Breadcrumbs aria-label="breadcrumb">
 
-                <HomeIcon sx={{ mr: 0.5, }} fontSize="inherit" className="text-black hover:bg-slate-200" onClick={() => navigate(`/home`)} />
+                <HomeIcon sx={{ mr: 0.5 }} fontSize="inherit" className="text-black hover:bg-slate-200" onClick={() => navigate(`/home`)} />
 
 
                 <Link
+                    onClick={() => navigate(`/home`)}
                     underline="hover"
                     sx={{ display: 'flex', alignItems: 'center' }}
                     color="inherit"
                     href="/material-ui/getting-started/installation/"
                 >
                     Browse
+                </Link>
+                <Link
+                    onClick={() => navigate(`/home`)}
+                    underline="hover"
+                    sx={{ display: 'flex', alignItems: 'center' }}
+                    color="inherit"
+                    href="/material-ui/getting-started/installation/"
+                >
+                    Course
                 </Link>
                 <Typography
                     sx={{ color: 'text.primary', display: 'flex', alignItems: 'center' }}

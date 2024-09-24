@@ -1,41 +1,66 @@
-import Button from '@mui/material/Button';
-import { styled } from '@mui/material/styles';
+import React from 'react';
+import styled from 'styled-components';
 
-const CustomMenuItemButton = styled(Button)(({ isActive }) => ({
-    width: '100%',
-    justifyContent: 'flex-start',
-    alignItems: 'center',
-    paddingLeft: '32px',
-    textTransform: "capitalize",
-    color: "#000000",
-    fontSize: "13px",
-    background: isActive ? "#f2f5fa" : "transparent",
-    borderLeftColor: isActive ? "#0056d2" : "transparent",
-    borderLeftWidth: isActive ? "4px" : "0",
-    borderRadius: isActive ? "0 4px 4px 0" : "4px",
-    borderLeftStyle: isActive ? 'solid' : 'none',
-    '&::before': {
-        content: '""',
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        width: '4px',
-        height: '100%',
-        backgroundColor: 'transparent',
-        transition: 'background-color 0.3s',
-    },
-    '&:hover': {
-        background: "#f0f6ff",
-        //borderLeftColor: "#0056d2",
+const StyledButton = styled.button`
+  width: 100%;
+  display: flex;
+  align-items: flex-start;
+  padding: 8px 16px 8px 32px;
+  color: #000000;
+  font-size: 13px;
+  background: ${props => props.isActive ? "#f2f5fa" : "transparent"};
+  border: none;
+  border-left: ${props => props.isActive ? "4px solid #0056d2" : "4px solid transparent"};
+  border-radius: 0 4px 4px 0;
+  position: relative;
+  cursor: pointer;
+  transition: background-color 0.3s, border-left-color 0.3s;
+  text-align: left;
+  min-height: 48px;
 
-    },
-    '&: hover:: before': {
-        borderLeftColor: "#0056d2",
-        borderLeftWidth: isActive ? "0" : "4px",
-        //borderRadius: "0 4px 4px 0",
-    }
+  &:hover {
+    background: #f0f6ff;
+    border-left-color: #0056d2;
+  }
+`;
 
-}));
+const IconWrapper = styled.span`
+  margin-right: 8px;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+`;
 
+const TextWrapper = styled.span`
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  word-break: keep-all;
+  overflow-wrap: break-word;
+  hyphens: auto;
+`;
 
-export default CustomMenuItemButton
+const MainText = styled.span`
+  display: inline-block;
+  white-space: normal;
+`;
+
+const TimeWrapper = styled.span`
+  font-size: 12px;
+  color: #666;
+  margin-top: 4px;
+`;
+
+const CustomMenuItemButton = ({ isActive, children, icon, time, ...props }) => {
+    return (
+        <StyledButton isActive={isActive} {...props}>
+            {icon && <IconWrapper>{icon}</IconWrapper>}
+            <TextWrapper>
+                <MainText>{children}</MainText>
+                {time && <TimeWrapper>{time}</TimeWrapper>}
+            </TextWrapper>
+        </StyledButton>
+    );
+};
+
+export default CustomMenuItemButton;

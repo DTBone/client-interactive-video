@@ -3,28 +3,47 @@ import HeaderCourse from '~/Components/Common/Header/HeaderCourse'
 import SideBar from './SideBar/SideBar';
 import { Divider } from '@mui/material';
 import { Outlet } from 'react-router-dom';
+import Breadcrumb from '~/Components/Common/Breadcrumbs/Breadcrumb';
+import { useState } from 'react';
+import CustomScrollbar from '~/Components/Common/CustomScrollbar';
 
 const GeneralLessons = () => {
+    const [isVisible, setIsVisible] = useState(true);
+    const [isExpanded, setIsExpanded] = useState(true);
+    const handleSidebarButtonClick = () => {
+        setIsExpanded(!isExpanded);
+        //setSidebarWidth(isExpanded ? 55 : 255);
+    };
     return (
-        <div className="h-screen flex flex-col">
+        <div className="h-screen flex flex-col overflow-hidden">
             <header className=' '>
                 <HeaderCourse />
             </header>
             <div className="flex h-full ">
                 <Grid container className=" justify-between ">
-                    <Grid item xs={2} sm={3} md={4} lg={3} className="relative ">
-                        <div className="flex flex-row  h-full w-200px">
-                            <div className=" overflow-y-auto h-[calc(100vh-90px)] scrollbar-custom mt-2 ">
-                                <SideBar />
+                    <Grid item xs={2} sm={3} md={4} lg={isExpanded ? 2.3 : 0.5} className="relative ">
+                        <CustomScrollbar className=''>
+
+                            <div className="flex flex-row overflow-y-scroll h-[calc(100vh-90px)]">
+                                <div className=" mt-2 ">
+                                    <SideBar handleSidebarButtonClick={handleSidebarButtonClick} isExpanded={isExpanded} />
+                                </div>
+                                <Divider orientation="vertical" flexItem />
                             </div>
-                            <Divider orientation="vertical" flexItem />
-                        </div>
+                        </CustomScrollbar>
                     </Grid>
 
-                    <Grid item xs={12} sm={9} md={8} lg={9} className="px-5 lg:px-9 relative ">
-                        <div className="container mx-auto p-4">
-                            <Outlet />
-                        </div>
+                    <Grid item xs={12} sm={9} md={8} lg={isExpanded ? 9.7 : 11.5} className=" relative ">
+                        <section className='p-3 sticky top-0 z-10'>
+
+                            <Breadcrumb />
+                        </section>
+                        <CustomScrollbar className=''>
+
+                            <div className=" overflow-y-scroll  h-[calc(100vh-90px)] p-3">
+                                <Outlet />
+                            </div>
+                        </CustomScrollbar>
                     </Grid>
                 </Grid>
             </div>
