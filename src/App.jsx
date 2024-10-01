@@ -1,8 +1,4 @@
 import { Route, Routes } from 'react-router-dom';
-
-
-
-
 import RouterPage from './pages/RouterPage';
 
 function App() {

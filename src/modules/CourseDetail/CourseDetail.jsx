@@ -17,7 +17,7 @@ const CourseDetail = () => {
                     <Grid item xs={2} sm={3} md={4} lg={3} className="relative  ">
                         <div className="flex flex-row  h-full">
                             <CustomScrollbar>
-                                <div className="ml-6  mt-2  h-[calc(100vh-90px)] overflow-y-scroll">
+                                <div className="ml-6  mt-2  h-[calc(100vh-80px)] overflow-y-scroll">
                                     <SideBar />
                                 </div>
                                 <Divider orientation="vertical" flexItem />
@@ -30,7 +30,7 @@ const CourseDetail = () => {
 
                         <CustomScrollbar className=''>
 
-                            <div className="container mx-auto  overflow-y-scroll  h-[calc(100vh-90px)] p-3 w-full">
+                            <div className="container mx-auto  overflow-y-scroll  h-[calc(100vh-1px)] pt-3 pl-3 pr-3 w-full">
                                 <Outlet />
                             </div>
                         </CustomScrollbar>

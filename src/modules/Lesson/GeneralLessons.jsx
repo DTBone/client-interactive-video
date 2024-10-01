@@ -8,7 +8,7 @@ import { useState } from 'react';
 import CustomScrollbar from '~/Components/Common/CustomScrollbar';
 
 const GeneralLessons = () => {
-    const [isVisible, setIsVisible] = useState(true);
+
     const [isExpanded, setIsExpanded] = useState(true);
     const handleSidebarButtonClick = () => {
         setIsExpanded(!isExpanded);
@@ -21,10 +21,10 @@ const GeneralLessons = () => {
             </header>
             <div className="flex h-full ">
                 <Grid container className=" justify-between ">
-                    <Grid item xs={2} sm={3} md={4} lg={isExpanded ? 2.3 : 0.5} className="relative ">
+                    <Grid item xs={2} sm={3} md={4} lg={isExpanded ? 2.3 : 0.6} className="relative ">
                         <CustomScrollbar className=''>
 
-                            <div className="flex flex-row overflow-y-scroll h-[calc(100vh-90px)]">
+                            <div className="flex flex-row overflow-y-scroll h-[calc(100vh-1px)]">
                                 <div className=" mt-2 ">
                                     <SideBar handleSidebarButtonClick={handleSidebarButtonClick} isExpanded={isExpanded} />
                                 </div>
@@ -33,14 +33,14 @@ const GeneralLessons = () => {
                         </CustomScrollbar>
                     </Grid>
 
-                    <Grid item xs={12} sm={9} md={8} lg={isExpanded ? 9.7 : 11.5} className=" relative ">
+                    <Grid item xs={12} sm={9} md={8} lg={isExpanded ? 9.7 : 11.4} className=" relative ">
                         <section className='p-3 sticky top-0 z-10'>
 
                             <Breadcrumb />
                         </section>
                         <CustomScrollbar className=''>
 
-                            <div className=" overflow-y-scroll  h-[calc(100vh-90px)] p-3">
+                            <div className=" overflow-y-scroll  h-[calc(100vh-90px)] pt-3 pl-3 pr-3">
                                 <Outlet />
                             </div>
                         </CustomScrollbar>

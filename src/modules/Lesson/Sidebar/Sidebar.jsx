@@ -87,15 +87,14 @@ const Sidebar = ({ handleSidebarButtonClick, isExpanded }) => {
             //width: isExpanded ? `${sidebarWidth}px` : '55px',
             //minWidth: isExpanded ? `${sidebarWidth}px` : '55px',
             //transition: 'width 0.01s, min-width 0.3s',
-        }} className="flex flex-col w-full">
+        }} className="flex flex-col ">
             <div onClick={handleSidebarButtonClick} className="flex items-center justify-center">
                 {isExpanded ?
                     (<ExpandBtn />) : (<HideBtn />) // change the button based on the state
                 }
             </div>
             {isExpanded ? (<MenuList module={module} />) : null}
-            {isExpanded ? (<MenuList module={module} />) : null}
-            {isExpanded ? (<MenuList module={module} />) : null}
+
 
         </div>
     )
