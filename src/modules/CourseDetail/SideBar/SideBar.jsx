@@ -11,8 +11,8 @@ import { Circle } from '@mui/icons-material';
 import { useState } from 'react';
 
 import { useNavigate } from 'react-router-dom';
-import { Divider, Typography } from '@mui/material';
-import Module from '../MainSection/Modules/Module';
+import { Typography } from '@mui/material';
+
 
 const SideBar = () => {
     // const { id } = useParams();
@@ -44,13 +44,13 @@ const SideBar = () => {
         '&:before': {
             display: 'none',
         },
-        flexDirection: 'row-reverse',
-        // '& .MuiAccordionSummary-expandIconWrapper.Mui-expanded': {
-        //     transform: 'rotate(90deg)',
-        // },
-        // '& .MuiAccordionSummary-content': {
-        //     // marginLeft: theme.spacing(1),
-        // },
+
+        '& .MuiAccordionSummary-expandIconWrapper.Mui-expanded': {
+            transform: 'rotate(90deg)',
+        },
+        '& .MuiAccordionSummary-content': {
+            marginLeft: '1 rem',
+        },
         fontWeight: 'bold'
     }));
 
@@ -71,12 +71,15 @@ const SideBar = () => {
             borderRadius: '0 4px 4px 0',
         },
         '& .MuiAccordionSummary-expandIconWrapper': {
-            marginLeft: 'auto',
+            //marginLeft: 'auto',
         },
         fontWeight: 'bold',
         textTransform: "none",
         color: "#000000",
         fontSize: "16px",
+        display: "flex",
+        // flexDirection: 'row-reverse',
+        // alignItems: 'center',
     }));
 
 
@@ -426,7 +429,8 @@ const SideBar = () => {
             </div>
             <CustomAccordion expanded={expanded === 'panel'} onChange={handleChange('panel')}>
                 <CustomAccordionSummary
-                    expandIcon={<ExpandMoreIcon />}
+                    expandIcon={<ExpandMoreIcon style={{ width: '24px', height: '24px', color: 'black' }} />}
+                    // expandIcon={<ExpandMoreIcon />}
                     aria-controls="panel-content"
                     id="panel-header"
                 >

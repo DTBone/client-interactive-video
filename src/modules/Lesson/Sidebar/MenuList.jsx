@@ -10,13 +10,13 @@ const MenuList = ({ module }) => {
     const [activeButton, setActiveButton] = useState(null);
 
     const handleModuleItemClick = (buttoName, buttonNavigation, buttonID, module) => {
-        setActiveButton(`${buttonID.toLowerCase()}`);
-        navigate(`${buttonNavigation.toLowerCase().replace(/\s+/g, '-')}` + "/" + `${buttoName.toLowerCase().replace(/\s+/g, '-')}`, { state: { module } });
+        setActiveButton(`${buttonID.toLowerCase().trim()}`);
+        navigate(`${buttonNavigation.trim().toLowerCase().replace(/\s+/g, '-')}` + "/" + `${buttoName.trim().toLowerCase().replace(/\s+/g, '-')}`, { state: { module } });
 
 
     };
     return (
-        <div className="flex flex-col  items-start ml-6 text-wrap pr-2">
+        <div className="flex flex-col  items-start ml-4  pr-2">
             <Typography sx={{ fontWeight: "bold", fontSize: "medium", paddingLeft: "32px" }} >{module.title}</Typography>
             {module.moduleItem.map((item, index) => (
                 <CustomMenuItemButton
@@ -24,12 +24,13 @@ const MenuList = ({ module }) => {
                     fullWidth
                     onClick={() => handleModuleItemClick(item.name, item.navigation, item.id, item)}
                     isActive={activeButton === item.id}
-                    sx={{
-
-                    }}
+                    icon={<IconComponent icon={item.icon} />}
+                //sx={{ display: 'flex', alignItems: 'flex-start' }}
                 >
-                    <IconComponent icon={item.icon} />
-                    {item.name}
+                    <Typography fontWeight="bold" fontSize='12px' sx={{ display: 'inline', textTransform: 'capitalize' }}> {item.type}</Typography>
+                    <Typography fontSize='12px' sx={{ display: 'inline', textTransform: 'capitalize', marginLeft: '8px' }}>{item.name}</Typography>
+                    <Typography fontSize='10px' sx={{ textTransform: 'lowercase', }} color='#5b6790'> {item.note}</Typography>
+
                 </CustomMenuItemButton>
             ))}
         </div>

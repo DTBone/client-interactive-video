@@ -16,6 +16,7 @@ import Supplement from '~/modules/Lesson/MainSection/Supplement'
 import Lecture from '~/modules/Lesson/MainSection/Lecture'
 import Quiz from '~/modules/Lesson/MainSection/Quiz'
 import Programming from '~/modules/Lesson/MainSection/Programming'
+import CodeCompiler from '~/modules/OnlineCodeCompiler/CodeCompiler'
 
 const HomePage = () => {
     return (
@@ -24,13 +25,13 @@ const HomePage = () => {
                 <Route path="/*" element={<DefaultLayout><HomeSection /></DefaultLayout>}></Route>
                 <Route path="/home" element={<DefaultLayout><HomeSection /></DefaultLayout>}></Route>
                 <Route path="/error" element={<ErrorPage />}></Route>
-                <Route path="/course" element={<EnrollToCourse />}></Route>
                 <Route path="/profile" element={<DefaultLayout><HomeSection /></DefaultLayout>}></Route>
                 <Route path="/account" element={<DefaultLayout><HomeSection /></DefaultLayout>}></Route>
                 <Route path="/login" element={<Login isLoginForm={true} />}></Route>
                 <Route path="/signup" element={<Login isLoginForm={false} />}></Route>
                 <Route path="/homeuser" element={<DashboardLayout><HomeUser /></DashboardLayout>}></Route>
 
+                <Route path="/course" element={<EnrollToCourse />}></Route>
 
                 <Route path="/learn/:courseID/home" element={<CourseDetail />}>
                     <Route path="welcome" element={<CourseDetail />} />
@@ -46,6 +47,8 @@ const HomePage = () => {
                     <Route path="quiz/:quizID" element={<Quiz />} />
                     <Route path="programming/:programmingID" element={<Programming />} />
                 </Route>
+
+                <Route path="compiler/problems/:problemsID" element={<CodeCompiler />} />
 
             </Routes>
         </div>
