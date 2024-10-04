@@ -16,6 +16,7 @@ import Supplement from '~/modules/Lesson/MainSection/Supplement'
 import Lecture from '~/modules/Lesson/MainSection/Lecture'
 import Quiz from '~/modules/Lesson/MainSection/Quiz'
 import Programming from '~/modules/Lesson/MainSection/Programming'
+import CodeCompiler from '~/modules/OnlineCodeCompiler/CodeCompiler'
 
 const HomePage = () => {
     return (
@@ -46,6 +47,8 @@ const HomePage = () => {
                     <Route path="quiz/:quizID" element={<Quiz />} />
                     <Route path="programming/:programmingID" element={<Programming />} />
                 </Route>
+
+                <Route path="compiler/problems/:problemsID" element={<CodeCompiler />} />
 
             </Routes>
         </div>

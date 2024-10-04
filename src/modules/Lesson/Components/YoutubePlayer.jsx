@@ -5,46 +5,46 @@ const YoutubePlayer = ({ videoId }) => {
     const [player, setPlayer] = useState(null);
     const containerRef = useRef(null);
     const [dimensions, setDimensions] = useState({ width: '100%', height: '100%' });
+    const aspectRatio = 9 / 20; // Standard YouTube aspect ratio
 
     useEffect(() => {
         const updateDimensions = () => {
             if (containerRef.current) {
                 const { width } = containerRef.current.getBoundingClientRect();
-                const height = width * (9 / 20);
+                const height = width * aspectRatio;
                 setDimensions({
-                    width: `${width}px`,
-                    height: `${height}px`
+                    width: width,
+                    height: height
                 });
             }
         };
 
-        window.addEventListener('resize', updateDimensions);
-        updateDimensions();
+        const debouncedUpdateDimensions = debounce(updateDimensions, 250);
 
-        return () => window.removeEventListener('resize', updateDimensions);
-    }, []);
+        window.addEventListener('resize', debouncedUpdateDimensions);
+        updateDimensions(); // Initial call
+
+        return () => window.removeEventListener('resize', debouncedUpdateDimensions);
+    }, [aspectRatio]);
 
     const onPlayerReady = (event) => {
         setPlayer(event.target);
-        // Uncomment the next line if you want the video to pause when loaded
-        // event.target.pauseVideo();
     }
 
     const onStateChange = (event) => {
-        // You can add state change handling here if needed
         console.log('Player state changed:', event.data);
     }
 
     const opts = {
-        width: dimensions.width,
-        height: dimensions.height,
+        width: '100%',
+        height: '100%',
         playerVars: {
             autoplay: 1,
         },
     };
 
     return (
-        <div ref={containerRef} className="w-full  bg-transparent overflow-hidden">
+        <div ref={containerRef} style={{ width: '100%', height: `${dimensions.height}px` }} className="bg-transparent overflow-hidden">
             <YouTube
                 videoId={videoId}
                 opts={opts}
@@ -53,8 +53,19 @@ const YoutubePlayer = ({ videoId }) => {
                 className="w-full h-full"
             />
         </div>
-
     )
 }
 
 export default YoutubePlayer;
+
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
