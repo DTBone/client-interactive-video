@@ -10,7 +10,7 @@ import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import MemoryIcon from '@mui/icons-material/Memory';
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 import { styled } from '@mui/material/styles';
-import { useTab } from '../Context/TabContext';
+import { useTab } from './Context/TabContext';
 
 const SubmissionTab = () => {
     const { setOpenDetailSubmission, setSubmissionStatus, setSubmissionData } = useTab();

@@ -4,7 +4,7 @@ import { Divider } from '@mui/material';
 import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined';
 import ImportContactsOutlinedIcon from '@mui/icons-material/ImportContactsOutlined';
 import HistoryOutlinedIcon from '@mui/icons-material/HistoryOutlined';
-import { useTab } from '../Context/TabContext';
+import { useTab } from './Context/TabContext';
 import CloseIcon from '@mui/icons-material/Close';
 
 const Nav = ({ onNavClick }) => {
@@ -14,7 +14,7 @@ const Nav = ({ onNavClick }) => {
     }
     return (
         <div className="bg-[#fafafa] w-full h-5 flex items-center ">
-            <Stack direction="row" alignItems="center" sx={{ padding: '3px', }}>
+            <Stack direction="row" alignItems="center" sx={{ padding: '4px', }}>
                 <Button
                     variant="text"
                     onClick={() => onNavClick('description')}

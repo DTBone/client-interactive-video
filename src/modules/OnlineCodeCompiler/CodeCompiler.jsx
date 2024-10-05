@@ -1,6 +1,7 @@
 import HeaderCourse from '~/Components/Common/Header/HeaderCourse'
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels';
 import TabSection from './Tab/TabSection';
+import CodeSection from './Code/CodeSection';
 
 
 function CodeCompiler() {
@@ -21,8 +22,7 @@ function CodeCompiler() {
                         <PanelGroup direction="vertical">
                             <Panel defaultSize={70} minSize={50} maxSize={80}>
                                 <div className="h-full w-full mx-auto  bg-white shadow-lg rounded-lg">
-                                    {/* Content for the second panel */}
-                                    <h2>Panel 2</h2>
+                                    <CodeSection />
                                 </div>
                             </Panel>
                             <PanelResizeHandle className="h-1 bg-transparent  transition-colors" />
