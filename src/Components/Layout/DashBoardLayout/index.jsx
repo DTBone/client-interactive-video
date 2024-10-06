@@ -1,5 +1,6 @@
 /* eslint-disable react/prop-types */
-import * as React from 'react';
+import { useEffect } from 'react';
+import React from 'react';
 import '~/index.css'
 import { styled } from '@mui/material/styles';
 import Box from '@mui/material/Box';
@@ -14,8 +15,13 @@ import MenuOpenIcon from '@mui/icons-material/MenuOpen';
 
 import Header from '~/components/Header';
 import ListButton from './ListButton';
+import userService from '~/services/api/userService';
+import { useDispatch, useSelector } from 'react-redux';
+import { setUser } from '~/store/userSlice';
+import ErrorModal from '~/pages/ErrorModal';
 
 const drawerWidth = 260;
+
 
 const openedMixin = (theme) => ({
   width: drawerWidth,
@@ -42,19 +48,21 @@ const DrawerHeader = styled('div')(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'flex-end',
-  padding: theme.spacing(7.7, 1),
+  padding: theme.spacing(6, 1),
   // necessary for content to be below app bar
   ...theme.mixins.toolbar,
+  zIndex: 999,
 }));
 
 const AppBar = styled(MuiAppBar, {
-  shouldForwardProp: (prop) => prop !== 'open',
-})(({ theme }) => ({
+  shouldForwardProp: (prop) => prop !== 'open',})(({ theme }) => ({
   zIndex: theme.zIndex.drawer + 1,
   transition: theme.transitions.create(['width', 'margin'], {
     easing: theme.transitions.easing.sharp,
     duration: theme.transitions.duration.leavingScreen,
   }),
+  backgroundImage: 'linear-gradient(to right, #3b82f6, #2dd4bf)',
+  backgroundColor: 'transparent',
 }));
 
 const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== 'open' })(
@@ -76,16 +84,42 @@ const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== 'open' 
 
 export default function MiniDrawer({ children }) {
   const [open, setOpen] = React.useState(false);
-
+  const urlParams = new URLSearchParams(window.location.search);
+  const userId = urlParams.get('userId');
+  const token = localStorage.getItem('userToken');
+  const [error, setError] = React.useState(null);
+  const dispatch = useDispatch();
+  var user = useSelector((state) => state.user.user);  // Lấy user từ Redux store
+  if (!user) {
+    const localUser = localStorage.getItem('user');
+    user = localUser ? JSON.parse(localUser) : null;
+  }
+  
+  // Re-run if `userId` changes
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const data = await userService.getUserById(userId, token);
+        dispatch(setUser(data)); 
+         // Set the user data
+      } catch (err) {
+        console.log(err);
+        setError(err.message);
+      }
+    };
+    if (userId && !user) {
+      fetchUser();  // Gọi hàm fetchUser khi userId tồn tại
+    }
+  }, [userId, user, dispatch, token]);
   const handleDrawerOpen = () => {
     setOpen(!open);
   };
-
   // const handleDrawerClose = () => {
   //   setOpen(false);
   // };
   return (
     <Box sx={{ display: 'flex' }}>
+      <ErrorModal error={error}/>
       <CssBaseline />
       <AppBar position="fixed" open={open}>
         <Toolbar>
@@ -101,7 +135,7 @@ export default function MiniDrawer({ children }) {
           >
             {!open ? <MenuIcon fontSize="large" /> : <MenuOpenIcon fontSize="large" />}
           </IconButton>
-          <Header className='h-4' isLogin={true}/>
+          <Header className='h-4' isLogin={true} user={user} />
         </Toolbar>
       </AppBar>
       <Drawer variant="permanent" open={open}>
@@ -113,7 +147,7 @@ export default function MiniDrawer({ children }) {
       <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
         <DrawerHeader />
         <div className='h-screen'>
-          {children}
+        {React.cloneElement(children, { user } )}
         </div>
       </Box>
     </Box>
