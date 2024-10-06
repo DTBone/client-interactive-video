@@ -1,4 +1,4 @@
-const RightPart = () => {
+const Quiz = () => {
     return (
         <div>
 
@@ -6,4 +6,4 @@ const RightPart = () => {
     )
 }
 
-export default RightPart
+export default Quiz

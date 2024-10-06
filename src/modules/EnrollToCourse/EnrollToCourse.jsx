@@ -1,7 +1,7 @@
-import { Button, Divider, Typography } from '@mui/material'
+import { Button, Typography } from '@mui/material'
 import { useEffect, useState } from 'react'
-import HeaderCourse from '../Common/Header/HeaderCourse'
-import Breadcrumb from '../Common/Breadcrumbs/Breadcrumb'
+import HeaderCourse from '../../Components/Common/Header/HeaderCourse'
+import Breadcrumb from '../../Components/Common/Breadcrumbs/Breadcrumb'
 import EnrollCourseBtn from './Button/EnrollCourseBtn'
 import CourseRegisFailed from './Notification/CourseRegisFailed';
 import SuccessfulCourseRegis from './Notification/SuccessfulCourseRegis';
@@ -34,7 +34,7 @@ const EnrollToCourse = () => {
         <div className='space-y-2'>
             <section className=' '>
                 <HeaderCourse />
-                <Divider />
+
 
             </section>
             <section className='ml-5'>

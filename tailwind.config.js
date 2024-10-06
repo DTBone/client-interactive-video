@@ -1,4 +1,6 @@
+
 /** @type {import('tailwindcss').Config} */
+
 export default {
   content: ["./src/**/*.{js,jsx,ts,tsx}",],
   //darkMode: "class",
@@ -17,24 +19,25 @@ export default {
         "5xl": "64rem",
         "6xl": "72rem",
       },
-      // colors: {
-      //   primary: {
-      //     light: '#3B82F6', // màu chính cho light mode
-      //     dark: '#60A5FA',  // màu chính cho dark mode
-      //   },
-      //   secondary: {
-      //     light: '#10B981', // màu phụ cho light mode
-      //     dark: '#34D399',  // màu phụ cho dark mode
-      //   },
-      //   background: {
-      //     light: '#F3F4F6', // màu nền cho light mode
-      //     dark: '#1F2937',  // màu nền cho dark mode
-      //   },
-      //   text: {
-      //     light: '#1F2937', // màu chữ cho light mode
-      //     dark: '#F9FAFB',  // màu chữ cho dark mode
-      //   },
-      // },
+      colors: {
+        'scrollbar-thumb': 'rgb(107, 114, 128)',
+        primary: {
+          light: '#3B82F6', // màu chính cho light mode
+          dark: '#60A5FA',  // màu chính cho dark mode
+        },
+        secondary: {
+          light: '#10B981', // màu phụ cho light mode
+          dark: '#34D399',  // màu phụ cho dark mode
+        },
+        background: {
+          light: '#F3F4F6', // màu nền cho light mode
+          dark: '#1F2937',  // màu nền cho dark mode
+        },
+        text: {
+          light: '#1F2937', // màu chữ cho light mode
+          dark: '#F9FAFB',  // màu chữ cho dark mode
+        },
+      },
     },
     container: {
       center: true,
@@ -81,6 +84,9 @@ export default {
     fontFamily: {
       display: ['Gilroy', 'sans-serif'],
       body: ['Graphik', 'sans-serif'],
+    },
+    variants: {
+      scrollbar: ['rounded']
     },
 
   },
