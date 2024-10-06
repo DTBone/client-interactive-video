@@ -4,8 +4,14 @@ import { Code2 } from "lucide-react";
 import LanguageButtonSelector from "./LanguageSelector";
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import CloudDoneIcon from '@mui/icons-material/CloudDone';
+import compile from './Compile';
+import { useCode } from '../CodeContext';
 
-const Navbar = ({ userLanguage, setUserLanguage }) => {
+const Navbar = () => {
+    //const context = useCode();
+    // console.log('Context in Navbar:', context);
+    const { userLang, setLoading, setUserOutput, userCode, userInput } = useCode();
+    // console.log('userLang:', userLang, 'userCode:', userCode);
     return (
         <div className="flex flex-col w-full">
             <div className="flex flex-row items-center h-5 bg-[#fafafa] w-full px-4">
@@ -26,13 +32,22 @@ const Navbar = ({ userLanguage, setUserLanguage }) => {
 
             <div className="flex flex-row justify-between items-center px-4 py-2 h-">
                 <div className="flex-grow">
-                    <LanguageButtonSelector userLanguage={userLanguage} setUserLanguage={setUserLanguage} />
+                    <LanguageButtonSelector />
                 </div>
 
                 <div>
                     <Button
                         variant="contained"
                         color="primary"
+                        onClick={() => compile(
+                            {
+                                setLoading,
+                                setUserOutput,
+                                userCode,
+                                userLang,
+                                userInput,
+                            }
+                        )}
                         sx={{
                             mr: 1, background: "#e5e6e8", width: "7rem", height: "2rem", color: "#000000",
                             '&:hover': {
@@ -47,6 +62,7 @@ const Navbar = ({ userLanguage, setUserLanguage }) => {
                     <Button
                         variant="contained"
                         color="secondary"
+
                         sx={{
                             background: "#0037eb", width: "7rem", height: "2rem", color: "#FFFFFF",
                             '&:hover': {

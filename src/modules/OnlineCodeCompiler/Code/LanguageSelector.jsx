@@ -1,14 +1,16 @@
 import React, { useState } from 'react';
 import { Button, Menu, MenuItem, MenuList, Typography } from '@mui/material';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+import { useCode } from '../CodeContext';
 
-const LanguageButtonSelector = ({ userLanguage, setUserLanguage }) => {
-
+const LanguageButtonSelector = () => {
+    const { userLang, setUserLang } = useCode();
+    //console.log('userLang:', userLang);
     const [anchorEl, setAnchorEl] = useState(null);
     const open = Boolean(anchorEl);
 
     const handleClick = (event) => {
-        console.log(userLanguage);
+        console.log(userLang);
         setAnchorEl(event.currentTarget);
     };
 
@@ -17,11 +19,26 @@ const LanguageButtonSelector = ({ userLanguage, setUserLanguage }) => {
     };
 
     const handleLanguageSelect = (selectedLanguage) => {
-        setUserLanguage(selectedLanguage);
+        const mappedLang = languageMap[selectedLanguage];
+        setUserLang(mappedLang);
+        //console.log(mappedLang)
         handleClose();
     };
 
-    const languages = ['Java', 'Python', 'C++', 'JavaScript'];
+    const languages = ['Java', 'Python', 'C++', 'C'];
+    const languageMap = {
+        'Java': 'java',
+        'Python': 'python',
+        'C++': 'cpp',
+        'C': 'c'
+    };
+
+    const reverseLanguageMap = {
+        'java': 'Java',
+        'python': 'Python',
+        'cpp': 'C++',
+        'c': 'C'
+    };
 
     return (
         <>
@@ -35,7 +52,7 @@ const LanguageButtonSelector = ({ userLanguage, setUserLanguage }) => {
                     },
                 }}
             >
-                {userLanguage}
+                {reverseLanguageMap[userLang]}
                 < KeyboardArrowDownIcon />
             </Typography >
             <Menu

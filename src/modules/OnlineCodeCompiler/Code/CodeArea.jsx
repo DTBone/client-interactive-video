@@ -1,7 +1,19 @@
 import Editor from "@monaco-editor/react";
 import { light } from '@mui/material/styles/createPalette';
+import { useCode } from "../CodeContext";
+import { useEffect } from "react";
 
-const CodeArea = ({ userLang, setUserCode }) => {
+const CodeArea = () => {
+    const { userLang, setUserCode } = useCode();
+
+    const { userInput, setUserInput, userOutput, setUserOutput } = useCode();
+
+    useEffect(() => {
+        localStorage.setItem('userInput', userInput);
+        localStorage.setItem('userOutput', userOutput);
+    }, [userInput, userOutput]);
+
+
     const editorOptions = {
         minimap: { enabled: false },
         scrollBeyondLastLine: false,
