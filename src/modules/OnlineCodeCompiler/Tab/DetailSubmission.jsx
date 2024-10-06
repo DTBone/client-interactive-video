@@ -1,7 +1,7 @@
 import React from 'react'
-import { useTab } from '../Context/TabContext'
+import { useTab } from './Context/TabContext'
 import { Divider, Typography } from '@mui/material';
-import CodeDisplay from '../CodeDisplay/CodeDisplay';
+import CodeDisplay from './CodeDisplay/CodeDisplay';
 
 const DetailSubmission = () => {
     const { submissionData } = useTab();

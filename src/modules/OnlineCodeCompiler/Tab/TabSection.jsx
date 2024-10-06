@@ -3,7 +3,7 @@ import Description from './Description';
 import Editorial from './Editorial';
 import Nav from './Nav'
 import SubmissionTab from './Submission';
-import { TabProvider, useTab } from '../Context/TabContext';
+import { TabProvider, useTab } from './Context/TabContext';
 import DetailSubmission from './DetailSubmission';
 
 

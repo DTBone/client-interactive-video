@@ -17,8 +17,9 @@ const Lecture = () => {
     return (
         <div>
             {/* <VideoPlayer src="http://media.w3.org/2010/05/bunny/movie.mp4" /> */}
+            {/* https://youtu.be/eGZZ1kNWlQo */}
 
-            <YoutubePlayer videoId="Ttl8Gg-P-Ao" />
+            <YoutubePlayer videoId="eGZZ1kNWlQo" />
             <h1 className="text-3xl font-bold text-start mb-4 mt-2 text-gray-800">Video name lesson</h1>
             <div>
                 <Box sx={{ width: '100%', typography: 'body1' }}>

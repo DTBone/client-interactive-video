@@ -25,7 +25,7 @@ const theme = extendTheme({
           secondary: '#3a4550',
         },
         action: {
-          hover: '#f0f6ff',
+          hover: '#b0cbff',
           active: '#f2f5fa',
         },
       },
