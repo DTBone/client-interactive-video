@@ -29,8 +29,12 @@ function ListButton() {
                   minHeight: 48,
                   justifyContent: open ? 'initial' : 'center',
                   px: 2.5,
+                  bgcolor: opened === index ? 'rgb(0 0 0 / 20%)' : 'transparent',
+                  ":hover": {
+                    bgcolor: 'rgb(0 0 0 / 20%)'
+                  }
                 }}
-                selected={opened === index}
+                // selected={opened === index}
                 onClick={() => handleClick(index)}
               >
                 <ListItemIcon

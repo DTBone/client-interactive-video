@@ -1,0 +1,89 @@
+import { Button, TextField } from "@mui/material";
+import { useState } from "react";
+import ErrorModal from "~/pages/ErrorModal";
+import axiosInstance from "~/services/api/axiosInstance";
+import { useRef } from "react";
+import '~/index.css';
+
+function ForgetPassword() {
+    const [email, setEmail] = useState('');
+    const [error, setError] = useState(null);
+    const submitBtn = useRef(null);
+    const checkEmail = (email) => {
+        const re = /\S+@\S+\.\S+/;
+        return re.test(email
+        );
+    };
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        submitBtn.current.disabled = true;
+        submitBtn.current.style.backgroundColor = "gray";
+        if (!checkEmail(email)) {
+            setError('Invalid Email');
+            submitBtn.current.disabled = false;
+            submitBtn.current.style.backgroundColor = "white";
+            setEmail('');
+            return;
+        }
+        try {
+            const response = await axiosInstance.post('/forgot-password', {
+                email
+            });
+            if (response.status === "success") {
+                setError('Success Please check your email for further instructions');
+            }   
+        }
+        catch (error) {
+            setError(error.message);
+        }
+        
+  };
+  return (
+        <div className="flex flex-col justify-center">
+            <div className="flex flex-col justify-center items-center p-5 w-3/5 self-center">
+                <ErrorModal error={error}/>
+            <h2 className="font-bold text-3xl text-blue-500 uppercase">
+                Forget Password
+            </h2>
+            <h3 className="font-bold text-xl text-blue-700">
+                Please enter your email
+            </h3>
+            <form
+                onSubmit={handleSubmit}
+                className="w-4/5 h-auto p-5 flex flex-col items-center gap-2 bg-gradient-to-r from-blue-500 to-teal-400 rounded-lg"
+            >
+                <TextField
+                required
+                autoComplete="off"
+                id="filled-required"
+                variant="filled"
+                label="Enter Email"
+                type="text"
+                value={email}
+                placeholder="johnjoe@gmail.com"
+                onChange={(e) => setEmail(e.target.value)}
+                sx={{
+                    width: "100%",
+                    backgroundColor: "white",
+                    borderRadius: "5px",
+                }}
+                color="primary"
+                />
+
+
+                <Button
+                type="submit"
+                className="w-full"
+                variant="contained"
+                color="secondary"
+                ref = {submitBtn}
+                sx={{ backgroundColor: "white", color: "black" }}
+                >
+                Submit
+                </Button>
+            </form>
+            </div>
+        </div>
+    );
+}
+export default ForgetPassword;
