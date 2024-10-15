@@ -22,13 +22,13 @@ const MenuList = ({ module }) => {
                 <CustomMenuItemButton
                     key={index}
                     fullWidth
-                    onClick={() => handleModuleItemClick(item.name, item.navigation, item.id, item)}
+                    onClick={() => handleModuleItemClick(item.title, item.type, item.id, item)}
                     isActive={activeButton === item.id}
                     icon={<IconComponent icon={item.icon} />}
                 //sx={{ display: 'flex', alignItems: 'flex-start' }}
                 >
-                    <Typography fontWeight="bold" fontSize='12px' sx={{ display: 'inline', textTransform: 'capitalize' }}> {item.type}</Typography>
-                    <Typography fontSize='12px' sx={{ display: 'inline', textTransform: 'capitalize', marginLeft: '8px' }}>{item.name}</Typography>
+                    <Typography fontWeight="bold" fontSize='12px' sx={{ display: 'inline', textTransform: 'capitalize' }}> {item.contentType}</Typography>
+                    <Typography fontSize='12px' sx={{ display: 'inline', textTransform: 'capitalize', marginLeft: '8px' }}>{item.title}</Typography>
                     <Typography fontSize='10px' sx={{ textTransform: 'lowercase', }} color='#5b6790'> {item.note}</Typography>
 
                 </CustomMenuItemButton>

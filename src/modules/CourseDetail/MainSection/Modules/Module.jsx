@@ -1,5 +1,5 @@
 
-import { Typography, List, ListItem, ListItemIcon, ListItemText, Divider } from '@mui/material';
+import { Typography, List, Divider } from '@mui/material';
 import { useState } from 'react';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import { useLocation } from 'react-router-dom';
