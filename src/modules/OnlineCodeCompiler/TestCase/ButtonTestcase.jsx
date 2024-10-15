@@ -6,8 +6,10 @@ const ButtonTestcase = ({ index, handleClickTestcase, isSelected }) => {
         <Button
             variant="text"
             onClick={() => handleClickTestcase(index)}
+            noWrap
             sx={{
                 width: "7rem",
+                whiteSpace: 'nowrap',
                 height: "2rem",
                 borderRadius: "0rem",
                 borderBottom: isSelected ? '2px solid black' : 'none',
