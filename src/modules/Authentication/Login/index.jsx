@@ -142,7 +142,6 @@ function Login( { isLoginForm } ) {
     var handleLogin = async (e) => {
         e.preventDefault();
         setMessage(null);
-        submitBtn.current.disabled = true;
         if(isLogin) {
             try {
                 const credentials = { email, password };
@@ -153,6 +152,7 @@ function Login( { isLoginForm } ) {
                 localStorage.setItem('user', JSON.stringify(data.data.user));
                 dispatch(setUser(data.data.user));
                 const user = data.data.user;
+                submitBtn.current.disabled = true;
                 // Chuyển hướng đến trang chính sau khi đăng nhập thành công
                 navigate(`/homeuser?userid=${user.userId}`, {state: {user: user}});
             } catch (err) {

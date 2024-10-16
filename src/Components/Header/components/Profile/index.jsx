@@ -1,94 +1,120 @@
 /* eslint-disable react/prop-types */
 import * as React from 'react';
 import Box from '@mui/material/Box';
-import Popper from '@mui/material/Popper';
-import Fade from '@mui/material/Fade';
-import { Avatar, Button } from '@mui/material';
-import { useDispatch } from 'react-redux';
-import { logout } from '~/store/userSlice';
+import Avatar from '@mui/material/Avatar';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import Divider from '@mui/material/Divider';
+import IconButton from '@mui/material/IconButton';
+import Tooltip from '@mui/material/Tooltip';
+import Settings from '@mui/icons-material/Settings';
+import Logout from '@mui/icons-material/Logout';
 import { useNavigate } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
+import authService from '~/services/auth/authService';
+import { logout } from '~/store/userSlice';
 
-export default function AvatarProfile({user}) {
-  const [open, setOpen] = React.useState(false);
+export default function AccountMenu({user}) {
   const [anchorEl, setAnchorEl] = React.useState(null);
+  const open = Boolean(anchorEl);
   const dispatch = useDispatch();
-  function stringToColor(string) {
-    let hash = 0;
-    let i;
-  
-    for (i = 0; i < string.length; i += 1) {
-      hash = string.charCodeAt(i) + ((hash << 5) - hash);
-    }
-  
-    let color = '#';
-  
-    for (i = 0; i < 3; i += 1) {
-      const value = (hash >> (i * 8)) & 0xff;
-      color += `00${value.toString(16)}`.slice(-2);
-    }
-  
-    return color;
-  }
-  function stringAvatar(name) {
-    name = name.toUpperCase();
-    return {
-      sx: {
-        bgcolor: stringToColor(name),
-      },
-      children: `${name.split(' ')[0][0]}`,
-      onClick: handleClick,
-      onBlur: handleBlur
-    };
-  }
-  const navigate = useNavigate();
   const handleClick = (event) => {
     setAnchorEl(event.currentTarget);
-    setOpen((previousOpen) => !previousOpen);
   };
-
-  const canBeOpen = open && Boolean(anchorEl);
-  const id = canBeOpen ? 'transition-popper' : undefined;
-
-  const handleLogout = () => {
+  const navigate = useNavigate();
+  const handleLogout =async () => {
     localStorage.removeItem('userToken');
     localStorage.removeItem('user');
-    dispatch(logout());
-    setOpen(false);
-    navigate('/home');
+    handleClose();
+    try{
+      const response = await authService.logout();
+      if(response.status === 'success'){
+        dispatch(logout());
+        navigate('/home');
+      }
+    }
+    catch(error){
+      console.log(error);
+    }
 }
     const handleProfile = () => {
-      setOpen(false);
       navigate('/profile/' + user._id);
+      handleClose();
     }
-    const handleBlur = () => {
-      setOpen(false);
-    }
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
   return (
-    <div>
-      {user.profile.picture ? <Avatar src={user.profile.picture} alt={user.username} onBlur={handleBlur} onClick={handleClick}/> : <Avatar {...stringAvatar(user.username)} />}
-      <Popper id={id} open={open} anchorEl={anchorEl} transition sx={{ zIndex:'1203', padding:'0' }}>
-        {({ TransitionProps }) => (
-          <Fade {...TransitionProps} timeout={350}>
-            <Box sx={{ border: 'none', p: 1, 
-                bgcolor: '#27BCEB', 
-                display:'flex', 
-                flexDirection:'column', 
-                position:'relative', 
-                zIndex:'1',
-                boxShadow: '0 0 10px rgba(0,0,0,0.5)',
-                borderRadius: '5px',
-                padding: '10px',
-                marginTop: '6px',
-                minWidth: '150px',
-                color: 'white',
-                gap: '10px',
-                }}>
-            <Button variant='contained' onClick={handleProfile} >Profile</Button>
-            <Button variant='contained' onClick={handleLogout} >Log Out</Button>
-            </Box>
-          </Fade>
-        )}
-      </Popper>
-    </div>
+    <React.Fragment>
+      <Box sx={{ display: 'flex', alignItems: 'center', textAlign: 'center' }}>
+        <Tooltip title="Account settings">
+          <IconButton
+            onClick={handleClick}
+            size="small"
+            sx={{ ml: 2 }}
+            aria-controls={open ? 'account-menu' : undefined}
+            aria-haspopup="true"
+            aria-expanded={open ? 'true' : undefined}
+          >
+            <Avatar src={user?.profile?.picture} sx={{ width: 40, height: 40 }}></Avatar>
+          </IconButton>
+        </Tooltip>
+      </Box>
+      <Menu
+        anchorEl={anchorEl}
+        id="account-menu"
+        open={open}
+        onClose={handleClose}
+        onClick={handleClose}
+        slotProps={{
+          paper: {
+            elevation: 0,
+            sx: {
+              overflow: 'visible',
+              filter: 'drop-shadow(0px 2px 8px rgba(0,0,0,0.32))',
+              mt: 1.5,
+              '& .MuiAvatar-root': {
+                width: 32,
+                height: 32,
+                ml: -0.5,
+                mr: 1,
+              },
+              '&::before': {
+                content: '""',
+                display: 'block',
+                position: 'absolute',
+                top: 0,
+                right: 14,
+                width: 10,
+                height: 10,
+                bgcolor: 'background.paper',
+                transform: 'translateY(-50%) rotate(45deg)',
+                zIndex: 0,
+              },
+            },
+          },
+        }}
+        transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+        anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+      >
+        <MenuItem onClick={handleProfile}>
+          <Avatar />Your Profile
+        </MenuItem>
+        <Divider />
+        <MenuItem onClick={handleClose}>
+          <ListItemIcon>
+            <Settings fontSize="small" />
+          </ListItemIcon>
+          Settings
+        </MenuItem>
+        <MenuItem onClick={handleLogout}>
+          <ListItemIcon>
+            <Logout fontSize="small" />
+          </ListItemIcon>
+          Logout
+        </MenuItem>
+      </Menu>
+    </React.Fragment>
   );
 }

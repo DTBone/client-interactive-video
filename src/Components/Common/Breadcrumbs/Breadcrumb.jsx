@@ -12,6 +12,7 @@ function handleClick(event) {
 
 export default function Breadcrumb() {
     const navigate = useNavigate();
+    const user = JSON.parse(localStorage.getItem('user'));
     return (
         <div role="presentation" onClick={handleClick} className="pl-0 pr-0 ml-0 mx-auto sticky">
             <Breadcrumbs aria-label="breadcrumb">
@@ -20,7 +21,7 @@ export default function Breadcrumb() {
 
 
                 <Link
-                    onClick={() => navigate(`/home`)}
+                    onClick={() => navigate(`/homeuser?userId=${user._id}`)}
                     underline="hover"
                     sx={{ display: 'flex', alignItems: 'center' }}
                     color="inherit"
@@ -29,7 +30,7 @@ export default function Breadcrumb() {
                     Browse
                 </Link>
                 <Link
-                    onClick={() => navigate(`/home`)}
+                    onClick={() => navigate(`/homeuser?userId=${user._id}`)}
                     underline="hover"
                     sx={{ display: 'flex', alignItems: 'center' }}
                     color="inherit"

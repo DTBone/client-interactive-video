@@ -23,6 +23,7 @@ import Lecture from '~/modules/Lesson/MainSection/Lecture'
 import Quiz from '~/modules/Lesson/MainSection/Quiz'
 import Programming from '~/modules/Lesson/MainSection/Programming'
 import CodeCompiler from '~/modules/OnlineCodeCompiler/CodeCompiler'
+import RoadMap from '~/modules/User/RoadMap'
 
 const HomePage = () => {
     return (
@@ -45,8 +46,9 @@ const HomePage = () => {
                 <Route path="/login" element={<Login isLoginForm={true} />}></Route>
                 <Route path="/signup" element={<Login isLoginForm={false} />}></Route>
                 <Route path="/homeuser" element={<DashboardLayout><HomeUser /></DashboardLayout>}></Route>
+                <Route path="/roadmap" element={<DashboardLayout><RoadMap /></DashboardLayout>}></Route>
 
-                <Route path="/course" element={<EnrollToCourse />}></Route>
+                <Route path="/course/:id" element={<EnrollToCourse />}></Route>
 
                 <Route path="/learn/:courseID/home" element={<CourseDetail />}>
                     <Route path="welcome" element={<CourseDetail />} />

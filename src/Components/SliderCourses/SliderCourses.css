@@ -1,0 +1,6 @@
+.swiper-3d .swiper-slide-shadow-left{
+    background-image: linear-gradient(to left, rgba(133, 128, 192, 0.5), transparent);
+}
+.swiper-3d .swiper-slide-shadow-right{
+    background-image: linear-gradient(to right, rgba(133, 128, 192, 0.5), transparent);
+}
