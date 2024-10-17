@@ -6,6 +6,7 @@ import EnrollCourseBtn from './Button/EnrollCourseBtn'
 import CourseRegisFailed from './Notification/CourseRegisFailed';
 import SuccessfulCourseRegis from './Notification/SuccessfulCourseRegis';
 import Tabcourse from './Tab/tabcourse'
+import courseService from '../../services/api/courseService'
 import { useDispatch, useSelector } from 'react-redux'
 import { getAllCourse } from '~/store/Course/Action'
 
@@ -13,30 +14,43 @@ const EnrollToCourse = () => {
     const courseState = useSelector((store) => store.course);
     const dispatch = useDispatch(); // Gọi dispatch bên ngoài điều kiện
 
-    useEffect(() => {
-        dispatch(getAllCourse()); // Gọi API để lấy danh sách khóa học
-    }, [dispatch]);
+//     useEffect(() => {
+//         dispatch(getAllCourse()); // Gọi API để lấy danh sách khóa học
+//     }, [dispatch]);
 
-    if (!courseState) {
-        console.error("courseState is undefined");
-        return null; // Hoặc hiển thị loading state
-    }
+//     if (!courseState) {
+//         console.error("courseState is undefined");
+//         return null; // Hoặc hiển thị loading state
+//     }
 
     const { courses } = courseState;
     console.log("get all courses: " + JSON.stringify(courses));
 
 
     const [enrollCourse, setState] = useState(false);
+    const [course, setCourse] = useState({});
+    const [intructor, setIntructor] = useState({});
+    const courseId = window.location.pathname.split('/').at(-1);
     const [isSubmit, setSubmit] = useState(false);
+    const user = JSON.parse(localStorage.getItem('user'));
     const handleDataFromButotnSubmit = (data) => {
         setState(data);
         setSubmit(data);
         openSnackbar();
     };
-
-
-
-    // useEffect(() => { }, [enrollCourse])
+    useEffect(() => { 
+        const fetchCourse = async () => {
+            try {
+                const data = await courseService.getCourseById(courseId, user._id);
+                setCourse(data.data);
+                setIntructor(course.instructor);
+                setState(data.enrollCourse);
+            } catch (err) {
+                console.error(err);
+            }
+        };
+        fetchCourse();
+     }, [enrollCourse, courseId, user._id, course.instructor]);
 
     const [snackbarState, setSnackbarState] = useState({
         open: false,
@@ -70,9 +84,9 @@ const EnrollToCourse = () => {
                             variant='h2'
                             className='text-start font-bold'
                             sx={{ fontWeight: 500, marginTop: "16px" }}
-                            noWrap={false}>Course full name</Typography>
-                        <Typography noWrap={false} >Course description:</Typography>
-                        <Typography>Intrucstors:</Typography>
+                            noWrap={false}>{course?.title}</Typography>
+                        <Typography noWrap={false} >{course?.description}</Typography>
+                        <Typography>Intrucstors: {intructor?.profile?.full_name}</Typography>
 
                         <div className='mt-auto mb-6'>
                             {enrollCourse ? (

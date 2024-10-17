@@ -1,5 +1,5 @@
 /* eslint-disable react/prop-types */
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import React from 'react';
 import '~/index.css'
 import { styled } from '@mui/material/styles';
@@ -21,6 +21,7 @@ import { setUser } from '~/store/userSlice';
 import ErrorModal from '~/pages/ErrorModal';
 
 const drawerWidth = 260;
+
 
 
 const openedMixin = (theme) => ({
@@ -48,7 +49,7 @@ const DrawerHeader = styled('div')(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'flex-end',
-  padding: theme.spacing(6, 1),
+  padding: '41px 8px',
   // necessary for content to be below app bar
   ...theme.mixins.toolbar,
   zIndex: 999,
@@ -63,6 +64,8 @@ const AppBar = styled(MuiAppBar, {
   }),
   backgroundImage: 'linear-gradient(to right, #3b82f6, #2dd4bf)',
   backgroundColor: 'transparent',
+  height: '80px',
+  padding: '0 !important',
 }));
 
 const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== 'open' })(
@@ -83,7 +86,7 @@ const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== 'open' 
 );
 
 export default function MiniDrawer({ children }) {
-  const [open, setOpen] = React.useState(false);
+  const [open, setOpen] = useState(false);
   const urlParams = new URLSearchParams(window.location.search);
   const userId = urlParams.get('userId');
   const token = localStorage.getItem('userToken');
@@ -103,14 +106,13 @@ export default function MiniDrawer({ children }) {
         dispatch(setUser(data)); 
          // Set the user data
       } catch (err) {
-        console.log(err);
         setError(err.message);
       }
     };
     if (userId && !user) {
       fetchUser();  // Gọi hàm fetchUser khi userId tồn tại
     }
-  }, [userId, user, dispatch, token]);
+  }, [userId, user, dispatch, token, open]);
   const handleDrawerOpen = () => {
     setOpen(!open);
   };
@@ -146,7 +148,13 @@ export default function MiniDrawer({ children }) {
       </Drawer>
       <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
         <DrawerHeader />
-        <div className='h-screen'>
+        <div className='h-screen'
+        style={{
+          width: '100%',
+          transform: open == true ? 'translateX(0)' : 'translateX(0)',
+          transition: 'all 0.5s',
+        }}
+        >
         {React.cloneElement(children, { user } )}
         </div>
       </Box>
