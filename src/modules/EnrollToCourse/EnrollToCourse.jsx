@@ -7,8 +7,26 @@ import CourseRegisFailed from './Notification/CourseRegisFailed';
 import SuccessfulCourseRegis from './Notification/SuccessfulCourseRegis';
 import Tabcourse from './Tab/tabcourse'
 import courseService from '../../services/api/courseService'
+import { useDispatch, useSelector } from 'react-redux'
+import { getAllCourse } from '~/store/Course/Action'
 
 const EnrollToCourse = () => {
+    const courseState = useSelector((store) => store.course);
+    const dispatch = useDispatch(); // Gọi dispatch bên ngoài điều kiện
+
+//     useEffect(() => {
+//         dispatch(getAllCourse()); // Gọi API để lấy danh sách khóa học
+//     }, [dispatch]);
+
+//     if (!courseState) {
+//         console.error("courseState is undefined");
+//         return null; // Hoặc hiển thị loading state
+//     }
+
+    const { courses } = courseState;
+    console.log("get all courses: " + JSON.stringify(courses));
+
+
     const [enrollCourse, setState] = useState(false);
     const [course, setCourse] = useState({});
     const [intructor, setIntructor] = useState({});

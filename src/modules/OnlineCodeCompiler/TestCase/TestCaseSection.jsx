@@ -1,3 +1,4 @@
+import { Box, Stack } from "@mui/material"
 import { useCode } from "../CodeContext"
 import ButtonConsole from "./ButtonConsole"
 import ButtonTestcase from "./ButtonTestcase"
@@ -72,6 +73,7 @@ const TestCaseSection = () => {
         <div className="w-full h-full flex flex-col">
             <div className="w-full h-5 bg-[#fafafa]   ">
                 <div className="flex flex-row gap-2 overflow-x-auto">
+
                     <ButtonConsole
                         key={-1}
                         index={-1}
@@ -90,6 +92,7 @@ const TestCaseSection = () => {
                         />
 
                     ))}
+
 
                 </div>
             </div>

@@ -1,7 +1,7 @@
 const Supplement = () => {
     return (
         <div>
-
+            Reading
         </div>
     )
 }

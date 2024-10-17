@@ -7,7 +7,7 @@ const Programming = () => {
     const problemId = "sorting_problem";
 
     const handleCodeClick = () => {
-        const url = `/compiler/problems/${problemId}`;
+        const url = `/problems/${problemId}`;
         window.open(url, '_blank', 'noopener,noreferrer');
     };
 

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { useCode } from '../CodeContext'
 import { Typography } from '@mui/material';
-import spinner from '~/assets/spinner.svg';
+import spinnerLoading from '~/assets/spinnerLoading.gif';
 
 const Console = () => {
     const { userInput, userOutput, loading } = useCode();
@@ -13,8 +13,11 @@ const Console = () => {
     return (
         <div>
             {loading ? (
-                <div className="spinner-box">
-                    <img src={spinner} alt="Loading..." />
+                <div className="flex justify-center items-center h-1/4">
+                    <div className="m-auto">
+
+                        <img src={spinnerLoading} alt="Loading..." />
+                    </div>
                 </div>
             ) :
                 (
