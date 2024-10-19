@@ -20,6 +20,8 @@ import Quiz from '~/modules/Lesson/MainSection/Quiz'
 import Programming from '~/modules/Lesson/MainSection/Programming'
 import CodeCompiler from '~/modules/OnlineCodeCompiler/CodeCompiler'
 import Overview from '~/modules/CourseDetail/MainSection/Overview'
+import InstructorSection from '~/modules/Instructor/InstructorSection'
+import CourseSection from '~/modules/Instructor/Courses/CourseSection'
 
 const HomePage = () => {
     return (
@@ -64,6 +66,10 @@ const HomePage = () => {
                     <Route index element={<CodeCompiler />} />
                     <Route path=":problemId" element={<CodeCompiler />} />
                 </Route>
+
+                <Route path="/editcourses" element={<InstructorSection />}>  </Route>
+                <Route path="/editcourses/:courseId" element={<CourseSection />} />
+                <Route path="/editcourses/new-course" element={<CourseSection />} />
 
             </Routes>
         </div>
