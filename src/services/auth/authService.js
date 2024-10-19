@@ -13,7 +13,7 @@ const authService = {
 
     logout: async () => {
         try {
-            const response = await axiosInstance.post('/auth/logout');
+            const response = await axiosInstance.post('/logout');
             return response.data;
         } catch (error) {
             console.error("Error logging out", error);

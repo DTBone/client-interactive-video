@@ -1,0 +1,62 @@
+/* eslint-disable react/prop-types */
+// import styles from './Course.module.scss';
+import Card from '@mui/material/Card';
+import CardContent from '@mui/material/CardContent';
+import CardMedia from '@mui/material/CardMedia';
+import Typography from '@mui/material/Typography';
+import Button from '@mui/material/Button';
+import CardActionArea from '@mui/material/CardActionArea';
+import CardActions from '@mui/material/CardActions';
+import { useNavigate } from 'react-router-dom';
+function Course( { course } ) {
+  const navigate = useNavigate();
+  course.id = '670d4cc8efab2d564bc77617'
+  return ( 
+    <Card sx={{ width: '100%', height: '100%', minHeight: '420px', border: '1px #2ECAFF solid', transition: 'all 0.3s', borderRadius: 4, padding: 2, display:'flex', flexDirection:'column', justifyContent:'start', ":hover": {
+      scale: 1.05,
+      transition: 'all 0.3s',
+    } }}
+    onClick={() => {
+      navigate(`/course/${course.id}`);
+    }
+    }
+    >
+      <CardActionArea
+        sx={{
+          display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'space-between',
+            height: '85%',
+            minHeight: '340px',
+            marginBottom: '5px',
+        }}
+      >
+        <CardMedia
+          component="img"
+          image={course.photo === 'no-photo.jpg' ? 'https://res.cloudinary.com/drhf9fpvf/image/upload/v1728913682/logo_codechef_hzrtyf.png' : course.photo}
+          alt="codechef"
+          sx={{
+            borderRadius: 2,
+            height: 0.8,
+            padding: '5px',
+          }}
+        />
+        <CardContent>
+          <Typography gutterBottom variant="h5" component="div">
+            {course.title}
+          </Typography>
+          <Typography variant="body2" sx={{ color: 'text.secondary', display:'-webkit-box', WebkitBoxOrient:'vertical', WebkitLineClamp: 2, width : '100%', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+            {course.description}
+          </Typography>
+        </CardContent>
+      </CardActionArea>
+      <CardActions>
+        <Button size="small" color="primary" >
+          Start now
+        </Button>
+      </CardActions>
+    </Card>
+     );
+}
+
+export default Course;

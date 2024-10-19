@@ -19,6 +19,7 @@ import Lecture from '~/modules/Lesson/MainSection/Lecture'
 import Quiz from '~/modules/Lesson/MainSection/Quiz'
 import Programming from '~/modules/Lesson/MainSection/Programming'
 import CodeCompiler from '~/modules/OnlineCodeCompiler/CodeCompiler'
+import RoadMap from '~/modules/User/RoadMap'
 import Overview from '~/modules/CourseDetail/MainSection/Overview'
 import InstructorSection from '~/modules/Instructor/InstructorSection'
 import CourseSection from '~/modules/Instructor/Courses/CourseSection'
@@ -43,8 +44,9 @@ const HomePage = () => {
                 <Route path="/login" element={<Login isLoginForm={true} />}></Route>
                 <Route path="/signup" element={<Login isLoginForm={false} />}></Route>
                 <Route path="/homeuser" element={<DashboardLayout><HomeUser /></DashboardLayout>}></Route>
-
-                <Route path="/course/:courseId" element={<EnrollToCourse />}></Route>
+                <Route path="/roadmap" element={<DashboardLayout><RoadMap /></DashboardLayout>}></Route>
+                                                 
+                <Route path="/course/:id" element={<EnrollToCourse />}></Route>
 
                 <Route path="/learns/:courseId/" element={<CourseDetail />}>
                     <Route path="welcome" element={<Overview />} />
