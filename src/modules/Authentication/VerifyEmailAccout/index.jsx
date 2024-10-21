@@ -20,7 +20,7 @@ function VerifyEmailAccount() {
         });
         if (response.status === 200) {
             alert('Email verified successfully');
-            window.location.href = '/login';
+            window.location.href = '/signin';
         }   
     }
     catch (error) {

@@ -10,8 +10,9 @@ import { GoogleLogin } from '@react-oauth/google';
 import FacebookLogin from 'react-facebook-login';
 import { jwtDecode } from 'jwt-decode';
 
-import { login, verifyCaptcha } from '~/store/slices/Auth/action';
+import { login, register, verifyCaptcha } from '~/store/slices/Auth/action';
 import styles from './Login.module.scss';
+import { setUser } from '~/store/userSlice';
 
 function Login() {
     const dispatch = useDispatch();
@@ -88,14 +89,16 @@ function Login() {
                         submitBtn.current.disabled = true;
                     }
                     const { user, token } = resultAction.payload.data;
-                    //console.log('user', user);
+                    console.log('user', user);
                     //console.log('token login', token);
 
                     localStorage.setItem('token', token);
+                    localStorage.setItem('user', JSON.stringify(user));
+                    dispatch(setUser(user));
                     //console.log('Token saved:', localStorage.getItem('token'));
 
                     // Navigate to home page after successful login
-                    navigate('/home', { state: { user } });
+                    navigate(`/homeuser?userid=${user.userId}`, {state: {user: user}});
                 }
             } catch (err) {
                 setMessage('Login failed. Please check your credentials.');
@@ -118,9 +121,9 @@ function Login() {
                             email: formData.email,
                             password: formData.password
                         };
-                        const resultAction = await dispatch(login(credentials));
+                        const resultAction = await dispatch(register(credentials));
 
-                        if (login.fulfilled.match(resultAction)) {
+                        if (register.fulfilled.match(resultAction)) {
                             navigate('/verify-account', { state: { email: formData.email } });
                             setOpen(true);
                             setIsLogin(true);

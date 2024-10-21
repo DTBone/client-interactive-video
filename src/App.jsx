@@ -28,7 +28,10 @@ import Overview from '~/modules/CourseDetail/MainSection/Overview'
 import InstructorSection from '~/modules/Instructor/InstructorSection'
 import CourseSection from '~/modules/Instructor/Courses/CourseSection'
 import UnauthorizedPage from './Pages/UnauthorizedPage';
-import ProtectedRoute from './Components/ProtectedRoute';
+import Payment from './modules/EnrollToCourse/Payment';
+import PaymentStatus from './modules/EnrollToCourse/Payment/PaymentStatus';
+import DefaultLayoutV2 from '~/components/Layout/DefaultLayoutV2';
+import ProtectedRoute from '~/components/ProtectedRoute';
 
 
 function App() {
@@ -129,6 +132,14 @@ function App() {
           <EnrollToCourse />
         </ProtectedRoute>
       } />
+      <Route path="/payment/:userid" element={
+        <ProtectedRoute allowedRoles={['student']}>
+          <DefaultLayoutV2>
+            <Payment />
+          </DefaultLayoutV2>
+        </ProtectedRoute>
+      }></Route>
+      <Route path="/vnpay_return" element={<PaymentStatus/>}></Route>
       <Route path="/learns/:courseId/" element={
         <ProtectedRoute allowedRoles={['student', 'instructor', 'admin']}>
           <CourseDetail />

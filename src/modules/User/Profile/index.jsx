@@ -26,7 +26,7 @@ function Profile() {
     
     useEffect(() => {
         const fetchUser = async () => {
-            const token = localStorage.getItem('userToken');
+            const token = localStorage.getItem('token');
             try {
                 const response = await userService.getUserById(id, token);
                 setUser(response.data);
@@ -35,7 +35,7 @@ function Profile() {
                     // Gọi API để lấy access token mới
                     try {
                         const response = await userService.getResetAccessToken();
-                        localStorage.setItem('userToken', response.data.newToken);
+                        localStorage.setItem('token', response.data.newToken);
                         // Thử gọi lại API
                         fetchUser();
                     } catch (error) {
