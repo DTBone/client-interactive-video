@@ -8,7 +8,7 @@ const axiosInstance = axios.create({
     withCredentials: true,  // Gửi cookie khi gọi API từ domain khác
     headers: {
         'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': 'http://localhost:3000',
+        'Access-Control-Allow-Origin': '*',
         // Thêm token hoặc các headers khác ở đây nếu cần
     }
 });

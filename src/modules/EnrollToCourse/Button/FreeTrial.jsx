@@ -1,3 +1,4 @@
+/* eslint-disable react/prop-types */
 import {
     Box,
     Typography,
@@ -11,11 +12,15 @@ import {
 } from '@mui/material';
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
+import { useNavigate } from 'react-router-dom';
 
 
-const FreeTrial = ({ onClose, onSubmit }) => {
-
-
+const FreeTrial = ({ onClose, onSubmit, course }) => {
+    const userId = JSON.parse(localStorage.getItem('user'))._id;
+    const navigate = useNavigate();
+    const onPayment = () => {
+        navigate(`/payment/${userId}`, { state: { course: course } });
+    }
 
     const features = [
         {
@@ -61,7 +66,18 @@ const FreeTrial = ({ onClose, onSubmit }) => {
                 <Button variant="contained" color="primary" fullWidth onClick={onSubmit}>
                     Start Free Trial
                 </Button>
-
+                <Button variant="standard" color="primary" fullWidth onClick={onPayment}
+                sx={{ mt: 1,
+                    transition: '0.3s',
+                    ":hover": {
+                        scale: '1.05',
+                        transition: '0.3s',
+                        color: '#313EAC',
+                    }
+                 }}
+                >
+                    Enroll with payment
+                </Button>
 
             </Box>
         </Paper>
