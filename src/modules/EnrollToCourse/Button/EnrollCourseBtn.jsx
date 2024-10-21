@@ -16,8 +16,7 @@ const style = {
 
 };
 
-const EnrollCourseBtn = ({ submitCourse }) => {
-
+const EnrollCourseBtn = ({ course, submitCourse }) => {
     const handleOpen = () => setOpen(true);
     const handleClose = () => setOpen(false);
     const [open, setOpen] = useState(false);
@@ -45,7 +44,7 @@ const EnrollCourseBtn = ({ submitCourse }) => {
                 sx={{ width: '100%' }}
             >
                 <Box sx={style}>
-                    <FreeTrial onClose={handleClose} onSubmit={handleSubmit} />
+                    <FreeTrial course={course} onClose={handleClose} onSubmit={handleSubmit} />
 
                 </Box>
             </Modal>

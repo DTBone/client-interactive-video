@@ -1,4 +1,4 @@
-import { StrictMode } from "react";
+// import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import App from "./App.jsx";
 import CssBaseline from "@mui/material/CssBaseline";
@@ -12,14 +12,14 @@ import store from "./store/store.js";
 const GOOGLE_CLIENT_ID = '621276446588-2uh2c93nb5jnhje3u6q954bb1impgudk.apps.googleusercontent.com'
 
 createRoot(document.getElementById("root")).render(
-  <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
-    <StrictMode>
-      <CssBaseline />
-      <Provider store={store}>
-        <BrowserRouter>
-          <App />
-        </BrowserRouter>
-      </Provider>
-    </StrictMode>
-  </GoogleOAuthProvider>
+      <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
+        {/* Nhớ gắn strictmode */}
+          <CssBaseline />
+          <Provider store={store}>
+          <BrowserRouter>
+            <App />
+          </BrowserRouter>
+          </Provider>
+        
+        </GoogleOAuthProvider>
 );

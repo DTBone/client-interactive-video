@@ -1,4 +1,4 @@
-import { Button, Typography } from '@mui/material'
+import { Avatar, Button, Card, CardContent, CardMedia, Typography } from '@mui/material'
 import { useEffect, useState } from 'react'
 import HeaderCourse from '../../Components/Common/Header/HeaderCourse'
 import Breadcrumb from '../../Components/Common/Breadcrumbs/Breadcrumb'
@@ -8,10 +8,7 @@ import SuccessfulCourseRegis from './Notification/SuccessfulCourseRegis';
 import Tabcourse from './Tab/tabcourse'
 import courseService from '../../services/api/courseService'
 
-
 const EnrollToCourse = () => {
-
-
 
     // const [enrollCourse, setState] = useState(false);
     // const [isSubmit, setSubmit] = useState(false);
@@ -25,8 +22,6 @@ const EnrollToCourse = () => {
     //         console.error("courseState is undefined");
     //         return null; // Hoặc hiển thị loading state
     //     }
-
-
 
 
 
@@ -47,14 +42,15 @@ const EnrollToCourse = () => {
             try {
                 const data = await courseService.getCourseById(courseId, user._id);
                 setCourse(data.data);
-                setIntructor(course.instructor);
-                setState(data.enrollCourse);
+                setIntructor(data.data.instructor);
+                setState(data.isEnrolled);
             } catch (err) {
                 console.error(err);
             }
         };
         fetchCourse();
-    }, [enrollCourse, courseId, user._id, course.instructor]);
+     }, [courseId]);
+
 
     const [snackbarState, setSnackbarState] = useState({
         open: false,
@@ -90,7 +86,13 @@ const EnrollToCourse = () => {
                             sx={{ fontWeight: 500, marginTop: "16px" }}
                             noWrap={false}>{course?.title}</Typography>
                         <Typography noWrap={false} >{course?.description}</Typography>
-                        <Typography>Intrucstors: {intructor?.profile?.full_name}</Typography>
+                        <Typography>Intrucstors: {intructor?.profile?.fullname}
+                        <Avatar
+                            alt={intructor?.profile?.fullname}
+                            src={intructor?.profile?.picture}
+                            sx={{ width: 56, height: 56 }}
+                            />
+                        </Typography>
 
                         <div className='mt-auto mb-6'>
                             {enrollCourse ? (
@@ -101,7 +103,7 @@ const EnrollToCourse = () => {
                                     <span className="ml-4 text-sm text-gray-500">Already go to course</span>
                                 </div>
                             ) : (
-                                <EnrollCourseBtn submitCourse={handleDataFromButotnSubmit} />
+                                <EnrollCourseBtn course={course} submitCourse={handleDataFromButotnSubmit} />
                             )}
                             {isSubmit ? (
                                 <SuccessfulCourseRegis
@@ -121,7 +123,20 @@ const EnrollToCourse = () => {
                         </div>
                     </div>
                 </div>
-                <div className="flex-grow-[4]  bg-blue-600">Hello</div>
+                <div className="flex-grow-[4] ml-10">
+                <Card sx={{ maxWidth: 600, minHeight: 350 }}>
+                    <CardMedia
+                        sx={{ height: 300 }}
+                        image={course?.photo}
+                        title="green iguana"
+                    />
+                    <CardContent>
+                        <Typography gutterBottom variant="h5" component="div">
+                        {course?.title}
+                        </Typography>
+                    </CardContent>
+                    </Card>
+                </div>
             </section>
             <section className='ml-5 space-y-2 mr-6'>
                 <Tabcourse />

@@ -4,6 +4,7 @@ import Login from '~/modules/Authentication/Login'
 import HomeUser from '~/modules/User/HomeUser'
 import DashboardLayout from '~/components/Layout/DashBoardLayout'
 import DefaultLayout from '~/components/Layout/DefaultLayout'
+import DefaultLayoutV2 from '~/components/Layout/DefaultLayoutV2'
 import Profile from '~/modules/User/Profile'
 import VerifyEmailAccount from '~/modules/Authentication/VerifyEmailAccout'
 import ForgetPassword from '~/modules/Authentication/ForgetPassword'
@@ -21,8 +22,12 @@ import Programming from '~/modules/Lesson/MainSection/Programming'
 import CodeCompiler from '~/modules/OnlineCodeCompiler/CodeCompiler'
 import RoadMap from '~/modules/User/RoadMap'
 import Overview from '~/modules/CourseDetail/MainSection/Overview'
+import Payment from '~/modules/EnrollToCourse/Payment'
+import PaymentStatus from '~/modules/EnrollToCourse/Payment/PaymentStatus'
+import LiveStream from '~/modules/LiveStream'
 import InstructorSection from '~/modules/Instructor/InstructorSection'
 import CourseSection from '~/modules/Instructor/Courses/CourseSection'
+
 
 const HomePage = () => {
     return (
@@ -48,7 +53,8 @@ const HomePage = () => {
                 <Route path="/roadmap" element={<DashboardLayout><RoadMap /></DashboardLayout>}></Route>
 
                 <Route path="/course/:id" element={<EnrollToCourse />}></Route>
-
+                <Route path="/payment/:userid" element={<DefaultLayoutV2><Payment/></DefaultLayoutV2>}></Route>
+                <Route path="/vnpay_return" element={<PaymentStatus/>}></Route>
                 <Route path="/learns/:courseId/" element={<CourseDetail />}>
                     <Route path="welcome" element={<Overview />} />
                     <Route index element={<Overview />} />
@@ -56,6 +62,8 @@ const HomePage = () => {
                     <Route path="course-inbox" element={<Messages />}></Route>
                     <Route path="info" element={<CourseInfo />}></Route>
                 </Route>
+
+                <Route path="livestream/:id" element={<LiveStream/>}/>
 
                 <Route path="learns/:courseId/lessons" element={<GeneralLessons />}>
                     <Route index element={<Supplement />} />
