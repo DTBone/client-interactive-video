@@ -7,26 +7,24 @@ import CourseRegisFailed from './Notification/CourseRegisFailed';
 import SuccessfulCourseRegis from './Notification/SuccessfulCourseRegis';
 import Tabcourse from './Tab/tabcourse'
 import courseService from '../../services/api/courseService'
-import { useDispatch, useSelector } from 'react-redux'
-import { getAllCourse } from '~/store/Course/Action'
+
 
 const EnrollToCourse = () => {
-    const courses = useSelector((store) => store.course);
-    const dispatch = useDispatch();
 
 
-    const [enrollCourse, setState] = useState(false);
-    const [isSubmit, setSubmit] = useState(false);
 
-//     useEffect(() => {
-//         dispatch(getAllCourse()); // Gọi API để lấy danh sách khóa học
-//     }, [dispatch]);
+    // const [enrollCourse, setState] = useState(false);
+    // const [isSubmit, setSubmit] = useState(false);
+
+    //     useEffect(() => {
+    //         dispatch(getAllCourse()); // Gọi API để lấy danh sách khóa học
+    //     }, [dispatch]);
 
 
-//     if (!courseState) {
-//         console.error("courseState is undefined");
-//         return null; // Hoặc hiển thị loading state
-//     }
+    //     if (!courseState) {
+    //         console.error("courseState is undefined");
+    //         return null; // Hoặc hiển thị loading state
+    //     }
 
 
 
@@ -44,7 +42,7 @@ const EnrollToCourse = () => {
         setSubmit(data);
         openSnackbar();
     };
-    useEffect(() => { 
+    useEffect(() => {
         const fetchCourse = async () => {
             try {
                 const data = await courseService.getCourseById(courseId, user._id);
@@ -56,7 +54,7 @@ const EnrollToCourse = () => {
             }
         };
         fetchCourse();
-     }, [enrollCourse, courseId, user._id, course.instructor]);
+    }, [enrollCourse, courseId, user._id, course.instructor]);
 
     const [snackbarState, setSnackbarState] = useState({
         open: false,

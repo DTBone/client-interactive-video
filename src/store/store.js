@@ -1,15 +1,11 @@
-import { createLogger } from 'redux-logger';
-import { applyMiddleware, combineReducers, legacy_createStore } from "redux";
-import thunk from "redux-thunk";
-import courseReducer from "./Course/Reducer";
+import { configureStore } from '@reduxjs/toolkit';
+import rootReducer from './rootReducer';
+import logger from 'redux-logger';
 
-const logger = createLogger({
-    collapsed: true, // Ẩn chi tiết log ban đầu, chỉ mở ra khi nhấn vào
-    diff: true,      // Hiển thị sự khác biệt giữa các state
+const store = configureStore({
+    reducer: rootReducer,
+    middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(logger),
+    //devTools: process.env.NODE_ENV !== 'production',
 });
 
-const rootReducers = combineReducers({
-    course: courseReducer
-});
-
-export const store = legacy_createStore(rootReducers, applyMiddleware(thunk, logger));
+export default store;

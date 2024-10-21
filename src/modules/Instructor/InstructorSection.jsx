@@ -7,7 +7,7 @@ import { useNavigate } from 'react-router-dom';
 const InstructorSection = () => {
     const navigate = useNavigate();
     const handleClickNewCourse = () => {
-        navigate(`new-course`)
+        navigate(`/course/new-course`)
     }
     const Courses = [
         {
