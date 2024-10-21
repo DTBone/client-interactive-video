@@ -36,7 +36,7 @@ function App() {
   const navigate = useNavigate();
   const { isAuthenticated, isLoading } = useSelector(state => state.auth);
   const auth = useSelector(state => state.auth);
-
+    console.log('test inteliJ')
   useEffect(() => {
     const checkAuth = async () => {
       const token = localStorage.getItem('token');
