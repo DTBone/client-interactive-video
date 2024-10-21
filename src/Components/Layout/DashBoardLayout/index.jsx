@@ -16,8 +16,6 @@ import MenuOpenIcon from '@mui/icons-material/MenuOpen';
 import Header from '~/components/Header';
 import ListButton from './ListButton';
 import userService from '~/services/api/userService';
-import { useDispatch, useSelector } from 'react-redux';
-import { setUser } from '~/store/userSlice';
 import ErrorModal from '~/pages/ErrorModal';
 
 const drawerWidth = 260;
@@ -89,12 +87,12 @@ export default function MiniDrawer({ children }) {
   const [open, setOpen] = useState(false);
   const urlParams = new URLSearchParams(window.location.search);
   const userId = urlParams.get('userId');
-  const token = localStorage.getItem('userToken');
+  const token = localStorage.getItem('token');
   const [error, setError] = React.useState(null);
-  const dispatch = useDispatch();
-  var user = useSelector((state) => state.user.user);  // Lấy user từ Redux store
+  var user = null
   if (!user) {
     const localUser = localStorage.getItem('user');
+    console.log(localUser);
     user = localUser ? JSON.parse(localUser) : null;
   }
   
@@ -103,7 +101,7 @@ export default function MiniDrawer({ children }) {
     const fetchUser = async () => {
       try {
         const data = await userService.getUserById(userId, token);
-        dispatch(setUser(data)); 
+        localStorage.setItem('user', JSON.stringify(data)); 
          // Set the user data
       } catch (err) {
         setError(err.message);
@@ -112,7 +110,7 @@ export default function MiniDrawer({ children }) {
     if (userId && !user) {
       fetchUser();  // Gọi hàm fetchUser khi userId tồn tại
     }
-  }, [userId, user, dispatch, token, open]);
+  }, [userId, user, token, open]);
   const handleDrawerOpen = () => {
     setOpen(!open);
   };

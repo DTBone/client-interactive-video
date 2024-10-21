@@ -11,26 +11,23 @@ import Tooltip from '@mui/material/Tooltip';
 import Settings from '@mui/icons-material/Settings';
 import Logout from '@mui/icons-material/Logout';
 import { useNavigate } from 'react-router-dom';
-import { useDispatch } from 'react-redux';
 import authService from '~/services/auth/authService';
-import { logout } from '~/store/userSlice';
 
 export default function AccountMenu({user}) {
   const [anchorEl, setAnchorEl] = React.useState(null);
   const open = Boolean(anchorEl);
-  const dispatch = useDispatch();
   const handleClick = (event) => {
     setAnchorEl(event.currentTarget);
   };
   const navigate = useNavigate();
   const handleLogout =async () => {
-    localStorage.removeItem('userToken');
+    localStorage.removeItem('token');
     localStorage.removeItem('user');
     handleClose();
     try{
       const response = await authService.logout();
       if(response.status === 'success'){
-        dispatch(logout());
+        // dispatch(logout());
         navigate('/home');
       }
     }

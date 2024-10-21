@@ -10,7 +10,7 @@ const paymentService = {
             },
             {
                 headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('userToken')}`,
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`,
                 },
             });
             return response.data;

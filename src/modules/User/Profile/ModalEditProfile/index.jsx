@@ -10,8 +10,6 @@ import { Button, CircularProgress, TextField } from '@mui/material';
 import axiosInstance from '~/services/api/axiosInstance';
 import { styled } from '@mui/material/styles';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
-import { setUser } from '~/store/userSlice';
-import { useDispatch } from 'react-redux';
 
 const style = {
   position: 'absolute',
@@ -42,7 +40,6 @@ export default function ModalEditProfile({user, setOpen}) {
   const [phone, setPhone] = React.useState(user.profile.phone);
   const btnSend = React.useRef(null);
   const image = React.useRef(null);
-  const dispatch = useDispatch();
   const VisuallyHiddenInput = styled('input')({
     clip: 'rect(0 0 0 0)',
     clipPath: 'inset(50%)',
@@ -70,12 +67,10 @@ export default function ModalEditProfile({user, setOpen}) {
       const response = await axiosInstance.put(`${user._id}`, data, {
         headers: {
           'Content-Type': 'multipart/form-data',
-          'Authorization': `Bearer ${localStorage.getItem('userToken')}`,
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
         },
       });
-      setUser(response.data.data);
       localStorage.setItem('user', JSON.stringify(response.data.data));
-      dispatch(setUser(response.data.data));
       setLoading(false);
       setError('Update successfully');
     }

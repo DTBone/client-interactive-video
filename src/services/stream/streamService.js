@@ -11,7 +11,7 @@ const streamService = {
             },
             {
                 headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('userToken')}`,
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`,
                 },
             });
             return response.data;
@@ -24,7 +24,7 @@ const streamService = {
         try {
             const response = await axiosInstance.get(`/livestreams/${streamId}`, {
                 headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('userToken')}`,
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`,
                 }
             });
             return response.data;

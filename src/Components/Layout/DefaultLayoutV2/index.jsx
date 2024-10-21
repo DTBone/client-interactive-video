@@ -44,10 +44,10 @@ const AppBar = styled(MuiAppBar, {
 export default function MiniDrawer({ children }) {
   const urlParams = new URLSearchParams(window.location.search);
   const userId = urlParams.get('userId');
-  const token = localStorage.getItem('userToken');
+  const token = localStorage.getItem('token');
   const [error, setError] = React.useState(null);
   const dispatch = useDispatch();
-  var user = useSelector((state) => state.user.user);  // Lấy user từ Redux store
+  var user = null  // Lấy user từ Redux store
   if (!user) {
     const localUser = localStorage.getItem('user');
     user = localUser ? JSON.parse(localUser) : null;

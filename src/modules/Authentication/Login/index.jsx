@@ -101,7 +101,7 @@ function Login( { isLoginForm } ) {
             const data = await authService.login(credentials);
             setOpen(true);
             // Lưu token hoặc dữ liệu người dùng vào localStorage/sessionStorage nếu cần
-            localStorage.setItem('userToken', data.data.token);
+            localStorage.setItem('token', data.data.token);
             localStorage.setItem('user', JSON.stringify(data.data.user));
             dispatch(setUser(data.data.user));
             const user = data.data.user;
@@ -126,7 +126,7 @@ function Login( { isLoginForm } ) {
             const data = await authService.login(credentials);
             setOpen(true);
             // Lưu token hoặc dữ liệu người dùng vào localStorage/sessionStorage nếu cần
-            localStorage.setItem('userToken', data.data.token);
+            localStorage.setItem('token', data.data.token);
             localStorage.setItem('user', JSON.stringify(data.data.user));
             dispatch(setUser(data.data.user));
             const user = data.data.user;
@@ -148,7 +148,7 @@ function Login( { isLoginForm } ) {
                 const data = await authService.login(credentials);
                 setOpen(true);
                 // Lưu token hoặc dữ liệu người dùng vào localStorage/sessionStorage nếu cần
-                localStorage.setItem('userToken', data.data.token);
+                localStorage.setItem('token', data.data.token);
                 localStorage.setItem('user', JSON.stringify(data.data.user));
                 dispatch(setUser(data.data.user));
                 const user = data.data.user;
@@ -179,7 +179,7 @@ function Login( { isLoginForm } ) {
                             navigate('/verify-account', {state: {email: email}});
                 
                             // Lưu token hoặc dữ liệu người dùng vào localStorage/sessionStorage nếu cần
-                            localStorage.setItem('userToken', data.data.token);
+                            localStorage.setItem('token', data.data.token);
                             setOpen(true);
                             setIsLogin(true);
                         } catch (err) {
