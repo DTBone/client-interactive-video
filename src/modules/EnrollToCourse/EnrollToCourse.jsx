@@ -7,24 +7,22 @@ import CourseRegisFailed from './Notification/CourseRegisFailed';
 import SuccessfulCourseRegis from './Notification/SuccessfulCourseRegis';
 import Tabcourse from './Tab/tabcourse'
 import courseService from '../../services/api/courseService'
-// import { useDispatch, useSelector } from 'react-redux'
-// import { getAllCourse } from '~/store/Course/Action'
 
 const EnrollToCourse = () => {
-    // const courseState = useSelector((store) => store.course);
-    // const dispatch = useDispatch(); // Gọi dispatch bên ngoài điều kiện
 
-//     useEffect(() => {
-//         dispatch(getAllCourse()); // Gọi API để lấy danh sách khóa học
-//     }, [dispatch]);
+    // const [enrollCourse, setState] = useState(false);
+    // const [isSubmit, setSubmit] = useState(false);
 
-//     if (!courseState) {
-//         console.error("courseState is undefined");
-//         return null; // Hoặc hiển thị loading state
-//     }
+    //     useEffect(() => {
+    //         dispatch(getAllCourse()); // Gọi API để lấy danh sách khóa học
+    //     }, [dispatch]);
 
-    // const { courses } = courseState;
-    // console.log("get all courses: " + JSON.stringify(courses));
+
+    //     if (!courseState) {
+    //         console.error("courseState is undefined");
+    //         return null; // Hoặc hiển thị loading state
+    //     }
+
 
 
     const [enrollCourse, setState] = useState(false);
@@ -33,12 +31,13 @@ const EnrollToCourse = () => {
     const courseId = window.location.pathname.split('/').at(-1);
     const [isSubmit, setSubmit] = useState(false);
     const user = JSON.parse(localStorage.getItem('user'));
+
     const handleDataFromButotnSubmit = (data) => {
         setState(data);
         setSubmit(data);
         openSnackbar();
     };
-    useEffect(() => { 
+    useEffect(() => {
         const fetchCourse = async () => {
             try {
                 const data = await courseService.getCourseById(courseId, user._id);
@@ -51,6 +50,7 @@ const EnrollToCourse = () => {
         };
         fetchCourse();
      }, [courseId]);
+
 
     const [snackbarState, setSnackbarState] = useState({
         open: false,

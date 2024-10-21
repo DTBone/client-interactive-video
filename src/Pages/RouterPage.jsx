@@ -25,14 +25,18 @@ import Overview from '~/modules/CourseDetail/MainSection/Overview'
 import Payment from '~/modules/EnrollToCourse/Payment'
 import PaymentStatus from '~/modules/EnrollToCourse/Payment/PaymentStatus'
 import LiveStream from '~/modules/LiveStream'
+import InstructorSection from '~/modules/Instructor/InstructorSection'
+import CourseSection from '~/modules/Instructor/Courses/CourseSection'
+
 
 const HomePage = () => {
     return (
         <div>
             <Routes>
                 {/* <Route path="/*" element={<DefaultLayout><HomeSection /></DefaultLayout>}></Route> */}
-                <Route path="/*" element={<ErrorPage />}></Route>
+                <Route path="/error" element={<ErrorPage />}></Route>
                 <Route path="/home" element={<DefaultLayout><HomeSection /></DefaultLayout>}></Route>
+                <Route path="/" element={<DefaultLayout><HomeSection /></DefaultLayout>}></Route>
                 <Route path="/account" element={<HomeSection />}></Route>
                 <Route path="/login" element={<Login isLoginForm={true} />}></Route>
                 <Route path="/signup" element={<Login isLoginForm={false} />}></Route>
@@ -47,7 +51,7 @@ const HomePage = () => {
                 <Route path="/signup" element={<Login isLoginForm={false} />}></Route>
                 <Route path="/homeuser" element={<DashboardLayout><HomeUser /></DashboardLayout>}></Route>
                 <Route path="/roadmap" element={<DashboardLayout><RoadMap /></DashboardLayout>}></Route>
-                                                 
+
                 <Route path="/course/:id" element={<EnrollToCourse />}></Route>
                 <Route path="/payment/:userid" element={<DefaultLayoutV2><Payment/></DefaultLayoutV2>}></Route>
                 <Route path="/vnpay_return" element={<PaymentStatus/>}></Route>
@@ -73,6 +77,10 @@ const HomePage = () => {
                     <Route index element={<CodeCompiler />} />
                     <Route path=":problemId" element={<CodeCompiler />} />
                 </Route>
+
+                <Route path="/editcourses" element={<InstructorSection />}>  </Route>
+                <Route path="/editcourses/:courseId" element={<CourseSection />} />
+                <Route path="/course/new-course" element={<CourseSection />} />
 
             </Routes>
         </div>

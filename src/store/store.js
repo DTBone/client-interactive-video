@@ -1,8 +1,11 @@
-import { applyMiddleware, combineReducers, legacy_createStore } from "redux";
-import { courseReducer } from "./Course/Reducer";
-import { thunk } from "redux-thunk";
-const rootReducers = combineReducers({
-    course: courseReducer
+import { configureStore } from '@reduxjs/toolkit';
+import rootReducer from './rootReducer';
+import logger from 'redux-logger';
+
+const store = configureStore({
+    reducer: rootReducer,
+    middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(logger),
+    //devTools: process.env.NODE_ENV !== 'production',
 });
 
-export const store = legacy_createStore(rootReducers, applyMiddleware(thunk))
+export default store;

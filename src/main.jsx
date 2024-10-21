@@ -6,7 +6,8 @@ import { BrowserRouter } from "react-router-dom";
 import './index.css';
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import { Provider } from "react-redux";
-import store from "./store";
+import store from "./store/store.js";
+
 
 const GOOGLE_CLIENT_ID = '621276446588-2uh2c93nb5jnhje3u6q954bb1impgudk.apps.googleusercontent.com'
 
