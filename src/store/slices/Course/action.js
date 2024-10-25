@@ -1,5 +1,6 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { api } from '~/Config/api';
+import axiosInstance from '~/Config/axiosInstance';
 // Tạo async thunks
 export const getAllCourse = createAsyncThunk(
     'course/getAllCourse',
@@ -25,6 +26,19 @@ export const getCourseByID = createAsyncThunk(
     }
 );
 
+export const getCourseByInstructor = createAsyncThunk(
+    'course/getCourseByInstructor',
+    async (_, { rejectWithValue }) => {
+        try {
+            const { data } = await axiosInstance.get(`/learns/getCourseByInstructor`);
+            console.log('course/getCourseByInstructor', data);
+            return data;
+        } catch (error) {
+            return rejectWithValue(error.message);
+        }
+    }
+);
+
 export const createCourse = createAsyncThunk(
     'course/createCourse',
     async (courseData, { rejectWithValue }) => {
@@ -32,7 +46,12 @@ export const createCourse = createAsyncThunk(
             const { data } = await api.post("/learns", courseData);
             return data;
         } catch (error) {
-            return rejectWithValue(error.message);
+            const errorMessage = error.response?.data?.message ||
+                error.response?.data?.error ||
+                error.message ||
+                'Failed to create course';
+
+            return rejectWithValue(errorMessage);
         }
     }
 );
@@ -46,7 +65,12 @@ export const updateCourse = createAsyncThunk(
             console.log('API request body:', JSON.stringify(courseData));
             return data;
         } catch (error) {
-            return rejectWithValue(error.message);
+            const errorMessage = error.response?.data?.message ||
+                error.response?.data?.error ||
+                error.message ||
+                'Failed to update course';
+
+            return rejectWithValue(errorMessage);
         }
     }
 );

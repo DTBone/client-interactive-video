@@ -1,4 +1,4 @@
-import { createCourse, getAllCourse, getCourseByID, updateCourse } from "./action";
+import { createCourse, getAllCourse, getCourseByID, getCourseByInstructor, updateCourse } from "./action";
 import { createSlice } from '@reduxjs/toolkit';
 const courseSlice = createSlice({
     name: 'course',
@@ -8,7 +8,15 @@ const courseSlice = createSlice({
         loading: false,
         error: null,
     },
-    reducers: {},
+    reducers: {
+        clearCurrentCourse: (state) => {
+            state.currentCourse = null;
+            state.error = null;
+        },
+        clearError: (state) => {
+            state.error = null;
+        }
+    },
     extraReducers: (builder) => {
         builder
             .addCase(getAllCourse.pending, (state) => {
@@ -28,6 +36,7 @@ const courseSlice = createSlice({
             .addCase(getCourseByID.fulfilled, (state, action) => {
                 state.loading = false;
                 state.currentCourse = action.payload;
+                state.error = null;
             })
             .addCase(getCourseByID.rejected, (state, action) => {
                 state.loading = false;
@@ -35,10 +44,12 @@ const courseSlice = createSlice({
             })
             .addCase(createCourse.pending, (state) => {
                 state.loading = true;
+                state.error = null;
             })
             .addCase(createCourse.fulfilled, (state, action) => {
                 state.loading = false;
                 state.courses.push(action.payload);
+                state.error = null;
             })
             .addCase(createCourse.rejected, (state, action) => {
                 state.loading = false;
@@ -46,6 +57,7 @@ const courseSlice = createSlice({
             })
             .addCase(updateCourse.pending, (state) => {
                 state.loading = true;
+                state.error = null;
             })
             .addCase(updateCourse.fulfilled, (state, action) => {
                 state.loading = false;
@@ -53,12 +65,27 @@ const courseSlice = createSlice({
                 if (index !== -1) {
                     state.courses[index] = action.payload;
                 }
+                state.error = null;
             })
             .addCase(updateCourse.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload;
-            });
+            })
+
+            //get course by instructor
+            .addCase(getCourseByInstructor.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(getCourseByInstructor.fulfilled, (state, action) => {
+                state.loading = false;
+                state.courses = action.payload.data;
+            })
+            .addCase(getCourseByInstructor.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
     },
 });
+export const { clearCurrentCourse, clearError } = courseSlice.actions;
 
 export default courseSlice.reducer;

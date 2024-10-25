@@ -1,18 +1,19 @@
 import React from 'react';
-import { Card, CardContent, CardMedia, Typography } from '@mui/material';
+import { Button, Card, CardContent, CardMedia, Typography } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import defaultImage from '~/assets/DefaultImage/course.jpg';
 import { useNavigate } from 'react-router-dom';
 // Styled component for hover effect
 const StyledCard = styled(Card)(({ theme }) => ({
     width: 320,  // Fixed width
-    height: 280, // Fixed height
+    height: 320, // Fixed height
     transition: 'transform 0.3s ease-in-out',
     cursor: 'pointer',
     '&:hover': {
         transform: 'scale(1.1)',
     },
 }));
+
 
 const FreeTag = styled('div')(() => ({
     position: 'absolute',
@@ -42,11 +43,16 @@ const StyledCardContent = styled(CardContent)({
     },
 });
 
-const CourseItem = ({ isFree, courseImg, courseName, courseId, status }) => {
+const CourseItem = ({ isFree, courseImg, courseName, courseId, status, approveBy }) => {
     const navigate = useNavigate();
+    //console.log("imge url", courseImg)
     const handleClickCourseItem = (courseId) => {
         navigate(`${courseId.trim().toLowerCase().replace(/\s+/g, '-')}`)
     }
+    const handleClickListStudentOfCourse = (courseId) => {
+        navigate(`student/${courseId.trim().toLowerCase().replace(/\s+/g, '-')}`)
+    }
+    console.log("CourseId: ", approveBy)
     return (
         <StyledCard elevation={2}>
             <div style={{ position: 'relative', padding: '1rem' }}
@@ -78,6 +84,8 @@ const CourseItem = ({ isFree, courseImg, courseName, courseId, status }) => {
                         display: '-webkit-box',
                         WebkitLineClamp: 2,
                         WebkitBoxOrient: 'vertical',
+                        whiteSpace: 'nowrap',
+                        maxWidth: '80%',
                     }}
                 >
                     {courseName}
@@ -86,6 +94,16 @@ const CourseItem = ({ isFree, courseImg, courseName, courseId, status }) => {
                 <Typography variant="body2" color="text.secondary">
                     Status: {status}
                 </Typography>
+                <Typography variant="body2" color="text.secondary">
+                    Approve: {approveBy ? "Passed" : "Not Approve Yet"}
+                </Typography>
+                <div className='flex justify-end'>
+                    <Button
+                        variant="contained"
+                        onClick={() => handleClickListStudentOfCourse(courseId)}
+                        sx={{}}
+                    >List Student</Button>
+                </div>
             </StyledCardContent>
         </StyledCard >
     );
