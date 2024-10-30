@@ -16,9 +16,9 @@ import { useDispatch, useSelector } from 'react-redux';
 import { getCourseByID } from '~/store/slices/Course/action';
 
 import { clearError } from '~/store/slices/Course/courseSlice';
-import NoticeToastify from '~/Components/Common/NoticeToastify';
 import { useNotification } from '~/Hooks/useNotification';
-
+import AddIcon from '@mui/icons-material/Add';
+import IconComponent from './../../../../Components/Common/Button/IconComponent';
 
 const Sidebar = () => {
     const navigate = useNavigate();
@@ -76,13 +76,32 @@ const Sidebar = () => {
         setActiveButton(`${itemId.toLowerCase()}`);
         navigate(`${itemId.toLowerCase().replace(/\s+/g, '-')}`, { state: { module } });
 
-        showNotice('success', 'Create a new module successfully')
     };
+    const handleNewModuleClick = () => {
+        navigate(`/course-management/${courseId}/module/new-module`);
+    }
+    const handleNewModuleItemClick = (moduleIndex) => {
+
+        navigate(`/course-management/${courseId}/module/${moduleIndex}/new-module-item`);
+    }
+
+    const handleEditModuleClick = (curretnModule, moduleIndex) => {
+        navigate(`/course-management/${courseId}/module/${moduleIndex}`, { state: { curretnModule } });
+    }
+    const handleEditModuleItemClick = (curretnModuleItem, moduleIndex, moduleItemId) => {
+        console.log("handle ", curretnModuleItem, moduleIndex, moduleItemId);
+        navigate(`/course-management/${courseId}/module/${moduleIndex}/moduleitem/${moduleItemId}`, { state: { curretnModuleItem } });
+
+    }
 
 
     const handleChange = (panel) => (event, isExpanded) => {
+
         setExpanded(isExpanded ? panel : false);
     };
+    const testNotice = () => {
+        showNotice('error', 'Create a new module successfully')
+    }
 
     const CustomAccordion = styled(Accordion)(() => ({
         background: 'transparent',
@@ -174,6 +193,44 @@ const Sidebar = () => {
         gap: "8px",
 
     }));
+    const AddButton = styled(Button)(({ theme, isActive }) => ({
+
+        paddingLeft: theme.spacing(6),
+        paddingRight: theme.spacing(2),
+        width: '100%',
+        height: '64px',
+        //fontWeight: 'bold',
+        textTransform: "capitalize",
+        color: "#000000",
+        fontSize: "16px",
+        background: isActive ? "#f2f5fa" : "transparent",
+        borderLeftColor: isActive ? "#0056d2" : "transparent",
+        borderLeftWidth: isActive ? "4px" : "0",
+        borderRadius: isActive ? "4px" : "0 4px 4px 0",
+        borderLeftStyle: isActive ? 'solid' : 'none',
+        textDecoration: isActive ? 'underline' : 'none',
+
+        '&::before': {
+            content: '""',
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '4px',
+            height: '100%',
+            backgroundColor: 'transparent',
+            transition: 'background-color 0.3s',
+        },
+        '&:hover': {
+            background: "#f0f6ff",
+            //textDecoration: 'underline',
+        },
+
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: "space-between",
+        gap: "8px",
+
+    }));
     return (
         <div>
             <div className="w-full bg-transparent h-full flex justify-start items-center py-8 ">
@@ -187,6 +244,7 @@ const Sidebar = () => {
                             // expandIcon={<ExpandMoreIcon />}
                             aria-controls={`panel${index}-content`}
                             id={`panel${index}-header`}
+                            onClick={() => handleEditModuleClick(module, module.index)}
                         >
                             Module {module.index}
                         </CustomAccordionSummary>
@@ -195,17 +253,24 @@ const Sidebar = () => {
                                 <CustomButton
                                     key={idx}
                                     fullWidth
-                                    onClick={() => handleModuleItemClick(item._id, item)}
-                                    isActive={activeButton === item.id} >
+                                    onClick={() => handleEditModuleItemClick(item, module.index, item._id)}
+                                    isActive={activeButton === item._id} >
+                                    icon={<IconComponent icon={item.contentType} />}
                                     <Circle sx={{ color: '#c1cad9' }} />
                                     {item.title}
 
                                 </CustomButton>
                             ))}
+                            <AddButton onClick={() => handleNewModuleItemClick(module.index)}>New Module Item <AddIcon /></AddButton>
                         </CustomAccordionDetails>
                     </CustomAccordion>
                 </div>
             ))}
+            <AddButton onClick={() => handleNewModuleClick()} >
+                New Module
+                <AddIcon />
+            </AddButton>
+
         </div>
     )
 }

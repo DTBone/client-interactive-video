@@ -17,14 +17,18 @@ import ImageUpload from './UploadImage';
 import NoticeSnackbar from '~/Components/Common/NoticeSnackbar';
 import ArrowRightAltIcon from '@mui/icons-material/ArrowRightAlt';
 import { clearError } from '~/store/slices/Course/courseSlice';
+import { useNotification } from '~/Hooks/useNotification';
 
 const CourseSection = ({ state }) => {
     const { courseId } = useParams();
     const { currentCourse, loading, error } = useSelector((state) => state.course);
     const dispatch = useDispatch();
     const navigate = useNavigate();
+    const { showNotice } = useNotification();
 
-    const [courseData, setCourseData] = useState({});
+    const [courseData, setCourseData] = useState({
+
+    });
 
     const [openModuleDialog, setOpenModuleDialog] = useState(false);
     const [currentModule, setCurrentModule] = useState({
@@ -33,7 +37,7 @@ const CourseSection = ({ state }) => {
         title: '',
     });
 
-    const [imageUrl, setImageUrl] = useState(courseData.photo || '');
+    const [imageUrl, setImageUrl] = useState(currentCourse?.photo || '');
     const [isLoading, setIsLoading] = useState(false);
 
 
@@ -112,7 +116,7 @@ const CourseSection = ({ state }) => {
 
     useEffect(() => {
         if (error) {
-            showSnackbar('error', error);
+            showNotice('error', "Error fetching course");
             // Có thể clear error sau khi đã hiển thị
             dispatch(clearError());
         }
@@ -128,25 +132,25 @@ const CourseSection = ({ state }) => {
     // }, [state, courseData, currentCourse]);
     //snackbar
 
-    const [snackbar, setSnackbar] = React.useState({
-        status: 'success',
-        content: ''
-    });
-    const [open, setOpen] = useState(false);
-    const handleClose = (event, reason) => {
-        if (reason === 'clickaway') {
-            return;
-        }
-        setOpen(false);
-    };
+    // const [snackbar, setSnackbar] = React.useState({
+    //     status: 'success',
+    //     content: ''
+    // });
+    // const [open, setOpen] = useState(false);
+    // const handleClose = (event, reason) => {
+    //     if (reason === 'clickaway') {
+    //         return;
+    //     }
+    //     setOpen(false);
+    // };
 
-    const showSnackbar = (status, content) => {
-        setSnackbar({
-            status: status,
-            content: content
-        });
-        setOpen(true);  // Set open riêng
-    };
+    // const showSnackbar = (status, content) => {
+    //     setSnackbar({
+    //         status: status,
+    //         content: content
+    //     });
+    //     setOpen(true);  // Set open riêng
+    // };
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -233,6 +237,19 @@ const CourseSection = ({ state }) => {
     //     }
     // };
     const handleSubmit = async (actionType) => {
+        if (!courseData.courseId) {
+            showNotice("error", 'Please enter a course ID');
+            return;
+        }
+        if (!courseData.title) {
+            showNotice("error", 'Please enter a title');
+            return;
+        }
+        if (!courseData.description) {
+            showNotice("error", 'Please enter a description');
+            return;
+        }
+
         try {
             let updatedCourseData;
 
@@ -251,6 +268,7 @@ const CourseSection = ({ state }) => {
                     updatedCourseData = { ...courseData, status: 'draft' };
 
                     break;
+
                 default:
                     updatedCourseData = {
                         ...courseData,
@@ -261,31 +279,33 @@ const CourseSection = ({ state }) => {
             }
 
             setCourseData(updatedCourseData);
+            console.log("submit", courseData);
 
             // Thực hiện action tương ứng
             if (courseId) {
                 // Update existing course
                 await dispatch(updateCourse({
                     courseId,
-                    courseData
+                    courseData: updatedCourseData
                 })).unwrap();
 
 
-                showSnackbar('success', 'Course updated successfully!');
+                showNotice('success', 'Course updated successfully!');
                 // Fetch lại dữ liệu sau khi update thành công
                 await dispatch(getCourseByID(courseId));
 
             } else {
                 // Create new published course
-                await dispatch(createCourse(courseData)).unwrap();
+                await dispatch(createCourse(updatedCourseData)).unwrap();
 
 
-                showSnackbar('success', 'Course created successfully!');
-                await dispatch(getCourseByID(courseId));
+                showNotice('success', 'Course created successfully!');
+                //await dispatch(getCourseByID(courseId));
+                navigate(-1);
             }
 
         } catch (error) {
-            showSnackbar('error', "Error while performing ");
+            showNotice('error', "Error while performing ");
             console.error('Error details:', error);
         }
     };
@@ -353,11 +373,11 @@ const CourseSection = ({ state }) => {
                 };
 
             // Log trong callback để xem giá trị mới
-            console.log("Updated course data:", updatedData.modules);
+            //console.log("Updated course data:", updatedData.modules);
             return updatedData;
         });
-        console.log("course data: ", courseData)
-        console.log("module data: ", courseData.modules)
+        //console.log("course data: ", courseData)
+        //console.log("module data: ", courseData.modules)
         handleCloseModuleDialog();
     };
 
@@ -415,13 +435,13 @@ const CourseSection = ({ state }) => {
                 <HeaderCourse />
                 <Breadcrumb />
             </header>
-            {open ? <NoticeSnackbar
+            {/* {open ? <NoticeSnackbar
                 open={open}
                 handleClose={handleClose}
                 status={snackbar.status}
                 content={snackbar.content}
 
-            /> : null}
+            /> : null} */}
             <div className="flex h-full px-6 overflow-y-auto pt-5">
                 <form onSubmit={handleSubmit} className="w-full">
                     <Grid container spacing={3}>
@@ -622,7 +642,7 @@ const CourseSection = ({ state }) => {
                                 disabled={loading}
                                 fullWidth
                                 style={{ marginBottom: '10px' }}
-                                onClick={() => handleSubmit()}
+                                onClick={() => handleSubmit('create')}
                             >
                                 {loading ? <CircularProgress size={24} /> : (courseId ? 'Update Course' : 'Create Course')}
                             </Button>

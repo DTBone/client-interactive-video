@@ -54,9 +54,9 @@ const CourseItem = ({ isFree, courseImg, courseName, courseId, status, approveBy
     }
     console.log("CourseId: ", approveBy)
     return (
-        <StyledCard elevation={2}>
+        <StyledCard elevation={2} onClick={() => handleClickCourseItem(courseId)}>
             <div style={{ position: 'relative', padding: '1rem' }}
-                onClick={() => handleClickCourseItem(courseId)}
+
             >
                 <StyledCardMedia
                     component="img"
