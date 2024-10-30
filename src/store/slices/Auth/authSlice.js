@@ -9,6 +9,15 @@ const initialState = {
     isAuthenticated: false,
     captchaVerified: false,
 };
+const clearLocalStorage = () => {
+    try {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        localStorage.removeItem('isAuthenticated');
+    } catch (error) {
+        console.error('Error clearing localStorage:', error);
+    }
+};
 
 const authSlice = createSlice({
     name: 'auth',
@@ -17,6 +26,20 @@ const authSlice = createSlice({
         clearError: (state) => {
             state.error = null;
         },
+        clearState: (state) => {
+            state.error = null;
+            state.user = null;
+            state.token = null;
+            state.isAuthenticated = false;
+            state.verifyCaptcha = false;
+            try {
+                localStorage.removeItem('token');
+                localStorage.removeItem('user');
+                localStorage.removeItem('isAuthenticated');
+            } catch (error) {
+                console.error('Error clearing localStorage:', error);
+            }
+        }
     },
     extraReducers: (builder) => {
         builder
@@ -26,17 +49,25 @@ const authSlice = createSlice({
                 state.error = null;
             })
             .addCase(login.fulfilled, (state, action) => {
-                console.log("Action Payload:", action.payload); // Ghi log để kiểm tra payload
+                //console.log("Action Payload:", action.payload);
 
                 state.isLoading = false;
                 if (action.payload.data.user) {
-                    state.user = action.payload.data.user;  // Đảm bảo rằng action.payload.user tồn tại
+                    state.user = action.payload.data.user;
                 } else {
                     console.error('User not found in action payload');
                 }
                 state.token = action.payload.token;
                 state.isAuthenticated = true;
-                localStorage.setItem('token', action.payload.token);
+                try {
+                    localStorage.setItem('token', action.payload.data.token);
+                    localStorage.setItem('user', JSON.stringify(action.payload.data.user));
+                    localStorage.setItem('isAuthenticated', 'true');
+                } catch (error) {
+                    console.error('Error saving to localStorage:', error);
+                }
+
+                //console.log('localstorage data: ', localStorage.getItem('token'), JSON.parse(localStorage.getItem('user')), localStorage.getItem('isAuthenticated'))
             })
             .addCase(login.rejected, (state, action) => {
                 state.isLoading = false;
@@ -45,10 +76,11 @@ const authSlice = createSlice({
             })
             // Logout
             .addCase(logout.fulfilled, (state) => {
+                state.isLoading = false;
+                state.isAuthenticated = false;
                 state.user = null;
                 state.token = null;
-                state.isAuthenticated = false;
-                localStorage.removeItem('token');
+                clearLocalStorage();
             })
             // Register
             .addCase(register.pending, (state) => {
@@ -120,7 +152,7 @@ const authSlice = createSlice({
                 state.user = action.payload.data.user;
                 state.isAuthenticated = true;
                 state.token = localStorage.getItem('token');
-                console.log("action payload", state.user);
+                //console.log("action payload", state.user);
                 state.isLoading = false;
             })
             .addCase(checkAuthStatus.rejected, (state) => {
@@ -132,6 +164,6 @@ const authSlice = createSlice({
     },
 });
 
-export const { clearError } = authSlice.actions;
+export const { clearError, clearState } = authSlice.actions;
 
 export default authSlice.reducer;

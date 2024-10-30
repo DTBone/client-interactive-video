@@ -6,7 +6,7 @@ export const login = createAsyncThunk(
     async (credentials, { rejectWithValue }) => {
         try {
             const response = await axiosInstance.post('users/login', credentials);
-            console.log('API Response:', response);
+            //console.log('API Response:', response);
             return response.data;
         } catch (error) {
             return rejectWithValue(error.response?.data || 'Login failed');
@@ -57,7 +57,7 @@ export const getResetAccessToken = createAsyncThunk(
             const response = await axiosInstance.post(`users/reset-access-token`);
             return response.data;
         } catch (error) {
-            console.error(error.status);
+            //console.error(error.status);
             return rejectWithValue(error.response?.data || 'Failed to reset access token');
         }
     }
@@ -83,10 +83,17 @@ export const checkAuthStatus = createAsyncThunk(
     'auth/checkStatus',
     async (_, { rejectWithValue }) => {
         try {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                throw new Error('No token found');
+            }
             const response = await axiosInstance.get('users/check-auth');
-            console.log('check status', response.data);
+            //console.log('check status', response.data);
             return response.data;
         } catch (error) {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            localStorage.removeItem('isAuthenticated');
             return rejectWithValue(error.response?.data || 'Authentication check failed');
         }
     }

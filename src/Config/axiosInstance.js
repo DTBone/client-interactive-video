@@ -7,11 +7,11 @@ const axiosInstance = axios.create({
 axiosInstance.interceptors.request.use(
     (config) => {
         const token = localStorage.getItem('token');
-        console.log('Token from localStorage:', token);
+        //console.log('Token from localStorage:', token);
         if (token) {
             config.headers.Authorization = `Bearer ${token}`;
         }
-        console.log('Full request config:', JSON.stringify(config, null, 2));
+        //console.log('Full request config:', JSON.stringify(config, null, 2));
         return config;
     },
     (error) => {
@@ -22,7 +22,7 @@ axiosInstance.interceptors.request.use(
 
 axiosInstance.interceptors.response.use(
     (response) => {
-        console.log('Response:', response.status, response.data);
+        //console.log('Response:', response.status, response.data);
         return response;
     },
     (error) => {

@@ -7,11 +7,23 @@ import Avatar from '@mui/material/Avatar';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import { useNavigate } from 'react-router-dom'
+import { useDispatch } from 'react-redux';
+import { clearState } from '~/store/slices/Auth/authSlice';
 
 const validationSchema = Yup.object().shape({
     keyword: Yup.string().required("Keyword is required"),
 });
 const HeaderCourse = () => {
+    const getUserFromStorage = () => {
+        try {
+            const storedUser = localStorage.getItem('user');
+            return storedUser ? JSON.parse(storedUser) : null;
+        } catch (error) {
+            console.error('Error parsing user from localStorage:', error);
+            return null;
+        }
+    };
+    const user = getUserFromStorage() || '';
     const formik = useFormik({
         initialValues: {
             keyword: "",
@@ -26,6 +38,7 @@ const HeaderCourse = () => {
     const [anchorEl, setAnchorEl] = React.useState(null);
     const open = Boolean(anchorEl);
     const navigate = useNavigate();
+    const dispatch = useDispatch();
     const handleClick = (event) => {
         setAnchorEl(event.currentTarget);
     };
@@ -33,11 +46,19 @@ const HeaderCourse = () => {
         setAnchorEl(null);
     };
     const handleNavigation = (path) => {
-        console.log(path);
+        //console.log(path);
         navigate(path);
         handleCloseMenu();
 
     }
+    const handleHomeClick = () => {
+
+    };
+    const handleLogout = () => {
+        dispatch(clearState());
+        navigate('/signin');
+    };
+
 
     return (
         <div>
@@ -115,8 +136,20 @@ const HeaderCourse = () => {
                                 }}
                             >
                                 <MenuItem onClick={() => handleNavigation(`/profile`)}>Profile</MenuItem>
-                                <MenuItem onClick={() => handleNavigation(`/account`)}>Account</MenuItem>
-                                <MenuItem onClick={() => handleNavigation(`/logout`)}>Logout</MenuItem>
+                                {user.role === "instructor" ? (
+                                    <MenuItem onClick={() => handleNavigation(`/course-management`)}>
+                                        Course Management
+                                    </MenuItem>
+                                ) : user.role === "student" ? (
+                                    <MenuItem onClick={() => handleNavigation(`/learning`)}>
+                                        My Learning
+                                    </MenuItem>
+                                ) : (
+                                    <MenuItem onClick={() => handleNavigation(`/account`)}>
+                                        Account
+                                    </MenuItem>
+                                )}
+                                <MenuItem onClick={() => handleLogout()}>Logout</MenuItem>
                             </Menu>
                         </div>
                     </Box>

@@ -19,9 +19,6 @@ export const CodeProvider = ({ children }) => {
     // while fetching data
     const [loading, setLoading] = useState(false);
 
-
-
-
     return (
         <CodeContext.Provider
             value={{
