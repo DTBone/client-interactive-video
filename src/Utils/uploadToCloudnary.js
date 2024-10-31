@@ -39,7 +39,7 @@ export const uploadToCloudnary = async (pics) => {
             }
         } catch (error) {
             console.error("Error uploading file:", error);
-            throw error;
+            alert(error.message);
         }
     } else {
         console.log("Error: no file provided for upload");

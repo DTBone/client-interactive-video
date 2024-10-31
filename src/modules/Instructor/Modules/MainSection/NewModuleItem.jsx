@@ -80,11 +80,31 @@ const NewModuleItem = () => {
                 showNotice("error", 'Please select a content type');
                 return;
             }
-            console.log("module item data: ", moduleItemData)
+
             // Add API call to create new module item
             // await dispatch(createModuleItem(moduleItemData));
+            switch (moduleItemData.contentType) {
+                case 'Reading':
+                    //await dispatch(createSupplement(moduleItemData));
+                    console.log("module item data reading: ", moduleItemData)
+                    break;
+                case 'Video':
+                    //await dispatch(createLecture(moduleItemData));
+                    console.log("module item data video: ", moduleItemData)
+                    break;
+                case 'Practice Quiz':
+                    //await dispatch(createQuiz(moduleItemData));
+                    console.log("module item data quiz: ", moduleItemData)
+                    break;
+                case 'Programming Assignment':
+                    //await dispatch(createProgramming(moduleItemData));
+                    console.log("module item data programming: ", moduleItemData)
+                    break;
+                default:
+                    break;
+            }
             showNotice("success", 'Module item created successfully');
-            navigate(-1);
+            //navigate(-1);
         } catch (error) {
             showNotice("error", 'Error creating module item');
             console.error('Error creating module item:', error);

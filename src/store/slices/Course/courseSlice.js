@@ -32,6 +32,7 @@ const courseSlice = createSlice({
             })
             .addCase(getCourseByID.pending, (state) => {
                 state.loading = true;
+                state.error = null;
             })
             .addCase(getCourseByID.fulfilled, (state, action) => {
                 state.loading = false;

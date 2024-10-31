@@ -43,6 +43,7 @@ import NewModuleItem from './modules/Instructor/Modules/MainSection/NewModuleIte
 
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import MainSection from './modules/Instructor/Modules/MainSection/MainSection';
 
 function App() {
   const dispatch = useDispatch();
@@ -215,7 +216,7 @@ function App() {
             <ModuleSection />
           </ProtectedRoute>
         } >
-          <Route index element={<ModuleSection />} />
+          <Route index element={<MainSection />} />
           <Route path="new-module" element={<NewModule />} />
           <Route path=":moduleId" element={<EditModule />} />
           <Route path=":moduleId/new-module-item" element={<NewModuleItem />} />
