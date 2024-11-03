@@ -10,6 +10,7 @@ import { Navigate, useNavigate, useParams } from 'react-router-dom';
 import { useNotification } from '~/Hooks/useNotification';
 import { useDispatch } from 'react-redux';
 import { createModule } from '~/store/slices/Module/action';
+import { toggleRefresh } from '~/store/slices/Module/moduleSlice';
 
 const NewModule = () => {
     const { courseId } = useParams();
@@ -29,37 +30,44 @@ const NewModule = () => {
             [name]: value
         }));
     };
-    useEffect(() => { }, [dispatch])
+    useEffect(() => { }, [dispatch, navigate])
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        // if (!formData.index || isNaN(formData.index) || parseInt(formData.index) !== Number(formData.index)) {
-        //     showNotice("error", 'Please enter a valid index value');
-        //     return;
-        // }
 
         if (!formData.title) {
             showNotice("error", 'Please enter a title');
             return;
         }
-        // Handle form submission
+
         try {
+            // Tạo module
             await dispatch(createModule({ courseId, formData }));
-            // Xử lý sau khi tạo thành công
+
+            // Hiển thị thông báo thành công
             showNotice('success', 'Successfully created module');
+            dispatch(toggleRefresh());
+            // Đợi 1 chút để người dùng nhìn thấy thông báo
+            await new Promise(resolve => setTimeout(resolve, 1500));
+
+            // Chuyển hướng
+            navigate(`/course-management/${courseId}/module`);
+
+            // Hiện dialog xác nhận
+            // if (window.confirm("Reload the page to display the newly created module?")) {
+            //     window.location.reload();
+            // }
         } catch (error) {
-            // Xử lý lỗi
             showNotice('error', error);
         }
-        console.log(formData);
-        navigate(`/course-management/${courseId}/module`);
-        window.location.reload();
+
+
     };
     if (!courseId) {
         showNotice('error', 'Course not found');
     }
     return (
-        <div className="min-h-screen  bg-gray-50 py-8 px-4">
+        <div className=" bg-gray-50 py-8 px-4">
             <Paper className="max-w-2xl mx-auto p-6">
                 <Typography variant="h5" sx={{ marginBottom: '1rem' }}>
                     Create New Module

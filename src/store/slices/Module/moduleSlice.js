@@ -1,5 +1,5 @@
 import { createSlice, current } from "@reduxjs/toolkit";
-import { createModule } from "./action";
+import { createModule, deleteModule, getAllModules, updateModule } from "./action";
 
 const moduleSlice = createSlice({
     name: 'module-slice',
@@ -8,6 +8,7 @@ const moduleSlice = createSlice({
         currentModule: null,
         loading: false,
         error: null,
+        refresh: false
     },
     reducers: {
         clearCurrentModule: (state) => {
@@ -16,6 +17,9 @@ const moduleSlice = createSlice({
         },
         clearError: (state) => {
             state.error = null;
+        },
+        toggleRefresh: (state) => {
+            state.refresh = !state.refresh;
         }
     },
     extraReducers: (builder) => {
@@ -33,9 +37,48 @@ const moduleSlice = createSlice({
                 state.loading = false;
                 state.error = action.payload;
             })
+            .addCase(getAllModules.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(getAllModules.fulfilled, (state, action) => {
+                state.loading = false;
+                state.modules = action.payload;
+                state.error = null;
+            })
+            .addCase(getAllModules.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload
+            })
+            .addCase(updateModule.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(updateModule.fulfilled, (state, action) => {
+                state.loading = false;
+                state.currentModule = action.payload;
+                state.error = null;
+            })
+            .addCase(updateModule.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
+            .addCase(deleteModule.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(deleteModule.fulfilled, (state, action) => {
+                state.loading = false;
+                state.modules = state.modules.filter(module => module.index !== action.payload);
+                state.error = null;
+            })
+            .addCase(deleteModule.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
     }
 });
 
-export const { clearCurrentModule, clearError } = moduleSlice.actions;
+export const { clearCurrentModule, clearError, toggleRefresh } = moduleSlice.actions;
 
 export default moduleSlice.reducer;
