@@ -7,6 +7,7 @@ import {
     Paper
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
+import FileUpload from './FileUpload';
 
 const Lecture = ({ moduleItemData, onUpdateData, handleSubmit }) => {
     const navigate = useNavigate();
@@ -23,6 +24,22 @@ const Lecture = ({ moduleItemData, onUpdateData, handleSubmit }) => {
             }
         });
     };
+    const handleFileChange = (file) => {
+        if (file) {
+            const fileData = new FormData();
+            fileData.append('file', file);
+            console.log('file selected: ', file)
+            onUpdateData({
+                ...moduleItemData,
+                references: {
+                    ...moduleItemData.references,
+                    fileName: file.name,
+                    size: file.size,
+                    file: fileData
+                }
+            });
+        }
+    };
 
     return (
         <Paper elevation={0} className="space-y-4">
@@ -32,17 +49,18 @@ const Lecture = ({ moduleItemData, onUpdateData, handleSubmit }) => {
                 value={moduleItemData.title}
                 onChange={handleInputChange('title')}
             />
+
             <div>
                 <TextField
                     fullWidth
-                    label="Description"
                     multiline
                     rows={3}
+                    label="Description"
                     value={moduleItemData.description}
                     onChange={handleInputChange('description')}
                 />
             </div>
-            <div>
+            <div >
                 <TextField
                     fullWidth
                     label="Reference Title"
@@ -51,34 +69,29 @@ const Lecture = ({ moduleItemData, onUpdateData, handleSubmit }) => {
                 />
             </div>
 
-            <div>
-                <TextField
-                    fullWidth
-                    label="Reference Link"
-                    value={moduleItemData.references.link}
-                    onChange={handleReferenceChange('link')}
-                />
+            <div className="w-full">
+                <FileUpload onFileChange={handleFileChange} />
             </div>
 
 
 
-            <div className="flex gap-2">
-                <Button
-                    variant="contained"
-                    color="primary"
-                    onClick={handleSubmit}
-                >
-                    Save
-                </Button>
+            <div className="flex justify-end gap-2">
                 <Button
                     variant="outlined"
                     onClick={() => navigate(-1)}
                 >
                     Cancel
                 </Button>
+                <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={handleSubmit}
+                >
+                    Create Module Item
+                </Button>
+
             </div>
         </Paper>
     );
 };
-
 export default Lecture;

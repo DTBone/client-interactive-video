@@ -24,6 +24,7 @@ const Sidebar = () => {
     const navigate = useNavigate();
     const dispatch = useDispatch();
     const { courseId, moduleId } = useParams();
+    const { refresh } = useSelector((state) => state.module);
     const { currentCourse, loading, error } = useSelector((state) => state.course);
     const [courseData, setCourseData] = useState();
     const [modules, setModules] = useState()
@@ -42,7 +43,7 @@ const Sidebar = () => {
 
         };
         fetchData()
-    }, [dispatch, courseId])
+    }, [dispatch, courseId, refresh])
 
     useEffect(() => {
         if (currentCourse?.data) {
@@ -50,9 +51,9 @@ const Sidebar = () => {
             setModules(currentCourse?.data.modules)
             findModuleData(moduleId);
         }
-        console.log('first state: ', courseId, moduleId, modules, moduleData);
     }, [currentCourse, courseId, moduleId]);
     const { showNotice } = useNotification();
+
     useEffect(() => {
         if (error) {
             showNotice('error', error.message);
@@ -60,6 +61,9 @@ const Sidebar = () => {
             dispatch(clearError());
         }
     }, [error, showNotice]);
+
+    useEffect(() => { }, [])
+
     const findModuleData = (index) => {
         const findModuleData = courseData?.modules.find(module => module.index === String(index));
         setModuleData(findModuleData)
@@ -99,9 +103,6 @@ const Sidebar = () => {
 
         setExpanded(isExpanded ? panel : false);
     };
-    const testNotice = () => {
-        showNotice('error', 'Create a new module successfully')
-    }
 
     const CustomAccordion = styled(Accordion)(() => ({
         background: 'transparent',
@@ -231,10 +232,14 @@ const Sidebar = () => {
         gap: "8px",
 
     }));
+
+    const navigateModuleSession = () => {
+        navigate(`/course-management/${courseId}/module`)
+    }
     return (
         <div>
             <div className="w-full bg-transparent h-full flex justify-start items-center py-8 ">
-                <Typography variant='h4' fontSize="bold" sx={{ textTransform: "none" }}>{courseData?.title}</Typography>
+                <Typography onClick={() => navigateModuleSession()} variant='h4' fontSize="bold" sx={{ textTransform: "none" }}>{courseData?.title}</Typography>
             </div>
             {modules?.map((module, index) => (
                 <div key={index}>

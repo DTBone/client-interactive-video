@@ -2,7 +2,7 @@ import { Typography } from '@mui/material';
 import React, { useEffect, useState } from 'react';
 import { Select as MuiSelect, MenuItem, FormControl, InputLabel } from '@mui/material';
 
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import SelectContentType from '../Component/SelectContentType';
 import Supplement from '../Component/Supplement';
 import Lecture from '../Component/Lecture';
@@ -11,6 +11,7 @@ import Programming from '../Component/Programming';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useNotification } from '~/Hooks/useNotification';
 import { ShowChart } from '@mui/icons-material';
+import { getAllModules } from '~/store/slices/Module/action';
 
 const NewModuleItem = () => {
     const dispatch = useDispatch();
@@ -23,7 +24,18 @@ const NewModuleItem = () => {
     const handleChange = (event) => {
         setContentType(event.target.value);
     };
+    const { modules, loading, error } = useSelector((state) => state.module);
+    const [module, setModule] = useState(null);
+    useEffect(() => {
+        dispatch(getAllModules(courseId));
 
+    }, [courseId, moduleId])
+
+    useEffect(() => {
+        const foundModule = modules.find(module => module.index === moduleId);
+        setModule(foundModule);
+        console.log("Module ", foundModule);
+    }, [modules, moduleId])
 
     const [moduleItemData, setModuleItemData] = useState({
         moduleId: moduleId,
@@ -35,7 +47,9 @@ const NewModuleItem = () => {
         isGrade: false,
         references: {
             title: '',
-            link: ''
+            file: '',
+            size: '',
+            fileName: ''
         }
     });
 
@@ -80,11 +94,31 @@ const NewModuleItem = () => {
                 showNotice("error", 'Please select a content type');
                 return;
             }
-            console.log("module item data: ", moduleItemData)
+
             // Add API call to create new module item
             // await dispatch(createModuleItem(moduleItemData));
+            switch (moduleItemData.contentType) {
+                case 'Reading':
+                    //await dispatch(createSupplement(moduleItemData));
+                    console.log("module item data reading: ", moduleItemData)
+                    break;
+                case 'Video':
+                    //await dispatch(createLecture(moduleItemData));
+                    console.log("module item data video: ", moduleItemData)
+                    break;
+                case 'Practice Quiz':
+                    //await dispatch(createQuiz(moduleItemData));
+                    console.log("module item data quiz: ", moduleItemData)
+                    break;
+                case 'Programming Assignment':
+                    //await dispatch(createProgramming(moduleItemData));
+                    console.log("module item data programming: ", moduleItemData)
+                    break;
+                default:
+                    break;
+            }
             showNotice("success", 'Module item created successfully');
-            navigate(-1);
+            //navigate(-1);
         } catch (error) {
             showNotice("error", 'Error creating module item');
             console.error('Error creating module item:', error);
@@ -114,9 +148,21 @@ const NewModuleItem = () => {
 
     return (
         <div className="p-6">
-            <Typography variant="h5" sx={{ marginBottom: '1rem' }}>
-                Create New Module Item
-            </Typography>
+            {module ? (
+                <>
+                    {/* Display the module title with Tailwind CSS */}
+                    <div className="text-xl font-semibold text-gray-800">
+                        Module {module.index}: {module.title}
+                    </div>
+                    <div className="text-2xl font-bold text-blue-600 mb-4">
+                        Create New Module Item
+                    </div>
+                </>
+            ) : (
+                <div className="text-lg font-medium text-red-500">
+                    Module not found
+                </div>
+            )}
 
             <div className='flex flex-col gap-4'>
                 <FormControl sx={{ width: '30%' }}>

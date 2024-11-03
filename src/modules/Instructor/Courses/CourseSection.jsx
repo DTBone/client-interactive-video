@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import {
@@ -8,16 +8,14 @@ import {
 } from '@mui/material';
 import { Add as AddIcon, Edit as EditIcon, Delete as DeleteIcon } from '@mui/icons-material';
 import HeaderCourse from '~/Components/Common/Header/HeaderCourse';
-import ErrorModal from '~/Components/ErrorModal';
 import { createCourse, getCourseByID, updateCourse } from '~/store/slices/Course/action';
 import spinnerLoading from '~/assets/spinnerLoading.gif';
 import Breadcrumb from '~/Components/Common/Breadcrumbs/Breadcrumb';
-
-import ImageUpload from './UploadImage';
-import NoticeSnackbar from '~/Components/Common/NoticeSnackbar';
+import ImageUpload from './UploadImage'
 import ArrowRightAltIcon from '@mui/icons-material/ArrowRightAlt';
 import { clearError } from '~/store/slices/Course/courseSlice';
 import { useNotification } from '~/Hooks/useNotification';
+import { uploadToCloudnary } from '~/Utils/uploadToCloudnary';
 
 const CourseSection = ({ state }) => {
     const { courseId } = useParams();
@@ -25,69 +23,29 @@ const CourseSection = ({ state }) => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const { showNotice } = useNotification();
-
-    const [courseData, setCourseData] = useState({
-
-    });
-
+    const [courseData, setCourseData] = useState({});
     const [openModuleDialog, setOpenModuleDialog] = useState(false);
     const [currentModule, setCurrentModule] = useState({
         id: null,
         index: 1,
         title: '',
+        description: '',
     });
 
-    const [imageUrl, setImageUrl] = useState(currentCourse?.photo || '');
     const [isLoading, setIsLoading] = useState(false);
-
+    const [selectedImageFile, setSelectedImageFile] = useState(null);
 
 
     useEffect(() => {
         if (state === 'new') {
             setCourseData({});
-            setImageUrl('');
             setCurrentModule({ title: '', description: '' });
+            setSelectedImageFile(null);
             // Clear redux state nếu cần
             dispatch({ type: 'CLEAR_CURRENT_COURSE' }); // Thêm action này vào reducer
         }
     }, [state]);
-    useEffect(() => {
-        const fetchCourse = async () => {
-            if (state === 'edit' && courseId) {
-                setIsLoading(true);
-                try {
-                    await dispatch(getCourseByID(courseId));
-                } catch (error) {
-                    console.error('Error:', error);
-                } finally {
-                    setIsLoading(false);
-                }
-            }
-        };
 
-        fetchCourse();
-    }, [courseId, state]);
-
-    useEffect(() => {
-        if (state === 'edit' && currentCourse) {
-            setCourseData(currentCourse);
-            setImageUrl(currentCourse.photo || '');
-        }
-    }, [currentCourse, state]);
-
-    useEffect(() => {
-        if (currentCourse?.data) {
-            setCourseData(currentCourse.data);
-        }
-        console.log('course:', courseData, error)
-    }, [currentCourse]);
-    useEffect(() => {
-
-        setCourseData(prev => ({ ...prev, photo: imageUrl }));
-        // console.log('imageUrl:', imageUrl);
-        // console.log('currentcourse image:', currentCourse?.data?.photo);
-        // console.log('courseData image:', courseData.photo);
-    }, [imageUrl]);
 
     useEffect(() => {
         let mounted = true;
@@ -97,6 +55,7 @@ const CourseSection = ({ state }) => {
                 setIsLoading(true);
                 try {
                     await dispatch(getCourseByID(courseId));
+
                 } catch (error) {
                     console.error('Error:', error);
                 } finally {
@@ -117,41 +76,17 @@ const CourseSection = ({ state }) => {
     useEffect(() => {
         if (error) {
             showNotice('error', "Error fetching course");
-            // Có thể clear error sau khi đã hiển thị
             dispatch(clearError());
         }
     }, [error]);
+
     useEffect(() => {
-        console.log("courseData changed:", courseData);
-        console.log("modules:", courseData.modules);
-    }, [courseData]);
-    // useEffect(() => {
-    //     console.log('Component State:', state);
-    //     console.log('Course Data:', courseData);
-    //     console.log('Current Course from Redux:', currentCourse);
-    // }, [state, courseData, currentCourse]);
-    //snackbar
-
-    // const [snackbar, setSnackbar] = React.useState({
-    //     status: 'success',
-    //     content: ''
-    // });
-    // const [open, setOpen] = useState(false);
-    // const handleClose = (event, reason) => {
-    //     if (reason === 'clickaway') {
-    //         return;
-    //     }
-    //     setOpen(false);
-    // };
-
-    // const showSnackbar = (status, content) => {
-    //     setSnackbar({
-    //         status: status,
-    //         content: content
-    //     });
-    //     setOpen(true);  // Set open riêng
-    // };
-
+        if (currentCourse?.data) {
+            setCourseData(currentCourse.data);
+            setSelectedImageFile(currentCourse.photo);
+        }
+        console.log('course:', currentCourse, error, loading);
+    }, [currentCourse])
     const handleInputChange = (e) => {
         const { name, value } = e.target;
 
@@ -165,78 +100,9 @@ const CourseSection = ({ state }) => {
     };
 
 
+    const handleSubmit = async (actionType, e) => {
+        if (e) e.preventDefault();
 
-
-    // const handleSubmit = async (actionType) => {
-    //     try {
-    //         let updatedCourseData;
-
-    //         if (actionType === 'delete') {
-    //             updatedCourseData = { ...courseData, status: 'unpublished' };
-    //         } else if (actionType === 'published') {
-    //             updatedCourseData = { ...courseData, status: 'published' };
-    //         } else if (actionType === 'draft') {
-    //             updatedCourseData = { ...courseData, status: 'draft' };
-    //         } else {
-    //             updatedCourseData = { ...courseData };
-    //         }
-
-    //         setCourseData(updatedCourseData);
-    //         console.log('Updated course data:', updatedCourseData);
-
-    //         switch (actionType) {
-    //             case 'delete':
-    //             case 'published':
-    //                 if (courseId) {
-    //                     await dispatch(updateCourse({ courseId, courseData: updatedCourseData }));
-    //                     showSnackbar('success', 'Update status course successfully!');
-    //                     //console.log(`${actionType} course:`, updatedCourseData);
-    //                 }
-    //                 break;
-    //             case 'draft': // Lưu khóa học dưới dạng nháp
-    //                 if (!courseId) {
-    //                     // Nếu không có courseId, tạo khóa học mới dưới dạng nháp
-
-    //                     showSnackbar('success', 'Create course draft successfully!');
-
-    //                 } else {
-    //                     // Nếu đã có courseId, cập nhật khóa học với trạng thái nháp
-    //                     await dispatch(updateCourse({ courseId: courseId, ...courseData, status: 'draft' }));
-
-    //                     showSnackbar('success', 'Update course draft successfully!');
-
-    //                 }
-    //                 //console.log('draft', courseData)
-    //                 break;
-    //             default: // Tạo hoặc cập nhật khóa học với trạng thái 'published'
-    //                 if (courseId) {
-    //                     updatedCourseData = { ...courseData, status: 'published', photo: imageUrl };
-    //                     await dispatch(updateCourse({ courseId, courseData: updatedCourseData }));
-
-    //                     showSnackbar('success', 'Update course successfully!');
-
-    //                 } else {
-    //                     await dispatch(createCourse({ ...courseData, status: 'published' }));
-
-    //                     showSnackbar('success', 'Create course successfully!');
-
-    //                 }
-    //                 console.log('update', courseData)
-    //                 break;
-    //         }
-
-
-
-    //         // Sau khi update thành công, fetch lại dữ liệu mới
-    //         if (courseId) {
-    //             await dispatch(getCourseByID(courseId));
-    //         }
-    //     } catch (error) {
-    //         showSnackbar('error', `error: ${error.message}`);
-
-    //     }
-    // };
-    const handleSubmit = async (actionType) => {
         if (!courseData.courseId) {
             showNotice("error", 'Please enter a course ID');
             return;
@@ -251,62 +117,62 @@ const CourseSection = ({ state }) => {
         }
 
         try {
-            let updatedCourseData;
+            setIsLoading(true);
 
-
-            // Xác định courseData và message dựa trên actionType
-            switch (actionType) {
-                case 'delete':
-                    updatedCourseData = { ...courseData, status: 'unpublished' };
-
-                    break;
-                case 'published':
-                    updatedCourseData = { ...courseData, status: 'published' };
-
-                    break;
-                case 'draft':
-                    updatedCourseData = { ...courseData, status: 'draft' };
-
-                    break;
-
-                default:
-                    updatedCourseData = {
-                        ...courseData,
-                        status: 'published',
-                        photo: imageUrl
-                    };
-
+            let uploadedImageUrl = courseData.photo; // Giữ ảnh cũ nếu không có ảnh mới
+            // Upload ảnh lên Cloudinary nếu có file ảnh mới được chọn
+            if (selectedImageFile) {
+                try {
+                    uploadedImageUrl = await uploadToCloudnary(selectedImageFile);
+                } catch (error) {
+                    showNotice('error', "Error uploading image");
+                    console.error('Error uploading image:', error);
+                    return; // Exit if image upload fails
+                }
             }
 
+
+            const updatedCourseData = (() => {
+                const baseData = {
+                    ...courseData,
+                    photo: uploadedImageUrl
+                };
+
+                switch (actionType) {
+                    case 'delete':
+                        return { ...baseData, status: 'unpublished' };
+                    case 'published':
+                        return { ...baseData, status: 'published' };
+                    case 'draft':
+                        return { ...baseData, status: 'draft' };
+                    default:
+                        return { ...baseData, status: 'published' };
+                }
+            })();
+
             setCourseData(updatedCourseData);
-            console.log("submit", courseData);
+
 
             // Thực hiện action tương ứng
             if (courseId) {
-                // Update existing course
                 await dispatch(updateCourse({
                     courseId,
                     courseData: updatedCourseData
                 })).unwrap();
-
-
                 showNotice('success', 'Course updated successfully!');
-                // Fetch lại dữ liệu sau khi update thành công
                 await dispatch(getCourseByID(courseId));
-
             } else {
-                // Create new published course
                 await dispatch(createCourse(updatedCourseData)).unwrap();
-
-
                 showNotice('success', 'Course created successfully!');
-                //await dispatch(getCourseByID(courseId));
-                navigate(-1);
+                navigate('/course-management', { replace: true });
             }
 
+
         } catch (error) {
-            showNotice('error', "Error while performing ");
+            showNotice('error', "Error while performing action");
             console.error('Error details:', error);
+        } finally {
+            setIsLoading(false);
         }
     };
     // Xử lý module
@@ -318,7 +184,8 @@ const CourseSection = ({ state }) => {
             setCurrentModule({
                 id: module._id ? module._id : module.id,
                 index: module.index,
-                title: module.title
+                title: module.title,
+                description: module.description,
             });
         } else {
             // Add new module - calculate next index
@@ -326,7 +193,8 @@ const CourseSection = ({ state }) => {
             setCurrentModule({
                 id: null,
                 index: nextIndex,
-                title: ''
+                title: '',
+                description: '',
             });
         }
 
@@ -338,7 +206,8 @@ const CourseSection = ({ state }) => {
         setCurrentModule({
             id: null,
             index: 1,
-            title: ''
+            title: '',
+            description: '',
         });
         setOpenModuleDialog(false);
     };
@@ -356,6 +225,7 @@ const CourseSection = ({ state }) => {
                     id: Date.now(),
                     index: currentModule.index, // Tự động tạo index
                     title: currentModule.title.trim(),
+                    description: currentModule.description.trim(),  // Thêm description vào module
                     moduleItems: [] // Khởi tạo mảng rỗng cho moduleItems
                 };
             const updatedData = currentModule.id
@@ -381,22 +251,7 @@ const CourseSection = ({ state }) => {
         handleCloseModuleDialog();
     };
 
-    // const handleDeleteModule = (moduleId) => {
-    //     setCourseData(prev => {
-    //         // Remove module and reindex remaining modules
-    //         const filteredModules = prev.modules
-    //             .filter(m => m.id !== moduleId)
-    //             .map((module, idx) => ({
-    //                 ...module,
-    //                 index: idx + 1
-    //             }));
 
-    //         return {
-    //             ...prev,
-    //             modules: filteredModules
-    //         };
-    //     });
-    // };
     const handleOpenModuleSection = (courseId, moduleindex) => {
         if (!courseId || !moduleindex) return;
         const courseSlug = courseId.trim().toLowerCase().replace(/\s+/g, '-');
@@ -413,7 +268,7 @@ const CourseSection = ({ state }) => {
 
 
 
-    if (loading || isLoading) {
+    if (loading) {
         return (
             <div className="h-screen flex items-center justify-center">
                 <img alt="Loading" src={spinnerLoading} />
@@ -421,13 +276,6 @@ const CourseSection = ({ state }) => {
         );
     }
 
-    if (error) {
-        return (
-            <div className="h-screen flex items-center justify-center">
-                <ErrorModal errorMessage={error} />
-            </div>
-        );
-    }
 
     return (
         <div className="h-screen flex flex-col overflow-hidden">
@@ -435,15 +283,13 @@ const CourseSection = ({ state }) => {
                 <HeaderCourse />
                 <Breadcrumb />
             </header>
-            {/* {open ? <NoticeSnackbar
-                open={open}
-                handleClose={handleClose}
-                status={snackbar.status}
-                content={snackbar.content}
 
-            /> : null} */}
             <div className="flex h-full px-6 overflow-y-auto pt-5">
-                <form onSubmit={handleSubmit} className="w-full">
+                <form onSubmit={(e) => {
+                    e.preventDefault(); // Prevent form submission
+                    handleSubmit('published', e);
+                }}
+                    className="w-full">
                     <Grid container spacing={3}>
                         {/* Course ID */}
                         <Grid item xs={12}>
@@ -526,7 +372,11 @@ const CourseSection = ({ state }) => {
 
 
                         <Grid item xs={12}>
-                            <ImageUpload initialImage={currentCourse?.data?.photo} setCourseData={setCourseData} setImageUrl={setImageUrl} />
+                            <ImageUpload
+                                initialImage={currentCourse?.data?.photo}
+                                setCourseData={setCourseData}
+                                onFileSelect={setSelectedImageFile}
+                            />
                         </Grid>
 
                         {/* Modules */}
@@ -555,7 +405,7 @@ const CourseSection = ({ state }) => {
                                     <List>
                                         {courseData.modules?.map((module, index) => (
                                             <ListItem
-                                                key={module.id}
+                                                key={index}
                                                 divider
                                                 style={{ cursor: 'pointer' }}
                                                 onClick={() => handleOpenModuleSection(courseId, module.index)}
@@ -639,13 +489,16 @@ const CourseSection = ({ state }) => {
                                 type="submit"
                                 variant="contained"
                                 color="primary"
-                                disabled={loading}
+                                //disabled={loading}
                                 fullWidth
                                 style={{ marginBottom: '10px' }}
-                                onClick={() => handleSubmit('create')}
+                                onClick={(e) => handleSubmit('published', e)}
+                                disabled={isLoading}
                             >
-                                {loading ? <CircularProgress size={24} /> : (courseId ? 'Update Course' : 'Create Course')}
+                                {isLoading ? <CircularProgress size={24} /> : (courseId ? 'Update Course' : 'Create Course')}
                             </Button>
+
+
                         </Grid>
                     </Grid>
                 </form>
@@ -663,7 +516,18 @@ const CourseSection = ({ state }) => {
                         fullWidth
                         value={currentModule.title}
                         onChange={(e) => setCurrentModule(prev => ({ ...prev, title: e.target.value }))}
-                        sx={{ width: '300px' }}
+                    //sx={{ width: '300px' }}
+                    />
+                    <TextField
+                        margin="dense"
+                        label="Description"
+                        multiline
+                        rows={4}
+                        type="text"
+                        fullWidth
+                        value={currentModule.description}
+                        onChange={(e) => setCurrentModule(prev => ({ ...prev, description: e.target.value }))}
+                    //sx={{ width: '300px' }}
                     />
 
                 </DialogContent>
