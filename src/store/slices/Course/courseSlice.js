@@ -1,6 +1,4 @@
-
-import { approveCourse, getAllCourse, getCourseByID} from "./action";
-import { createCourse, getAllCourse, getCourseByID, getCourseByInstructor, updateCourse } from "./action";
+import { approveCourse, createCourse, getAllCourse, getCourseByID, getCourseByInstructor, updateCourse } from "./action";
 import { createSlice } from '@reduxjs/toolkit';
 const courseSlice = createSlice({
     name: 'course',
@@ -89,9 +87,7 @@ const courseSlice = createSlice({
                 state.loading = false;
                 state.error = action.payload;
             })
-        ;
 
-            //get course by instructor
             .addCase(getCourseByInstructor.pending, (state) => {
                 state.loading = true;
             })

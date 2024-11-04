@@ -105,6 +105,7 @@ function Login() {
                     }
                     if (user.role === 'admin') {
                         navigate('/admin');
+                    }
                     if (user.role === 'instructor') {
                         navigate(`/course-management`, { state: { user: user } });
                     }
