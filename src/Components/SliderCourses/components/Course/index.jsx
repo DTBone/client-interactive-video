@@ -10,14 +10,13 @@ import CardActions from '@mui/material/CardActions';
 import { useNavigate } from 'react-router-dom';
 function Course( { course } ) {
   const navigate = useNavigate();
-  course.id = '6713c853d9d1a4a5c2764fca'
   return ( 
-    <Card sx={{ width: '100%', height: '100%', minHeight: '420px', border: '1px #2ECAFF solid', transition: 'all 0.3s', borderRadius: 4, padding: 2, display:'flex', flexDirection:'column', justifyContent:'start', ":hover": {
+    <Card sx={{ width: '100%', height: '100%', minHeight: '370px', border: '1px #2ECAFF solid', transition: 'all 0.3s', borderRadius: 4, padding: 2, display:'flex', flexDirection:'column', justifyContent:'start', ":hover": {
       scale: 1.05,
       transition: 'all 0.3s',
     } }}
     onClick={() => {
-      navigate(`/course/${course.id}`);
+      navigate(`/course/${course._id}`);
     }
     }
     >
@@ -27,8 +26,7 @@ function Course( { course } ) {
             flexDirection: 'column',
             justifyContent: 'space-between',
             height: '85%',
-            minHeight: '340px',
-            marginBottom: '5px',
+            marginBottom: '20px',
         }}
       >
         <CardMedia
@@ -37,16 +35,16 @@ function Course( { course } ) {
           alt="codechef"
           sx={{
             borderRadius: 2,
-            height: 0.8,
+            minHeight: 0.6,
             padding: '5px',
           }}
         />
         <CardContent>
           <Typography gutterBottom variant="h5" component="div">
-            {course.title}
+            {course?.title}
           </Typography>
           <Typography variant="body2" sx={{ color: 'text.secondary', display:'-webkit-box', WebkitBoxOrient:'vertical', WebkitLineClamp: 2, width : '100%', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-            {course.description}
+            {course?.description}
           </Typography>
         </CardContent>
       </CardActionArea>

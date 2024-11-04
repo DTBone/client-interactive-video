@@ -1,3 +1,5 @@
+
+import { approveCourse, getAllCourse, getCourseByID} from "./action";
 import { createCourse, getAllCourse, getCourseByID, getCourseByInstructor, updateCourse } from "./action";
 import { createSlice } from '@reduxjs/toolkit';
 const courseSlice = createSlice({
@@ -72,6 +74,22 @@ const courseSlice = createSlice({
                 state.loading = false;
                 state.error = action.payload;
             })
+            .addCase(approveCourse.fulfilled, (state, action) => {
+                state.loading = false;
+                const index = state.courses.findIndex(course => course.id === action.payload.id);
+                if (index !== -1) {
+                    console.log('course', action.payload);
+                    state.courses[index] = action.payload;
+                }
+            })
+            .addCase(approveCourse.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(approveCourse.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
+        ;
 
             //get course by instructor
             .addCase(getCourseByInstructor.pending, (state) => {

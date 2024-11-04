@@ -4,10 +4,15 @@ import axiosInstance from '~/Config/axiosInstance';
 // Tạo async thunks
 export const getAllCourse = createAsyncThunk(
     'course/getAllCourse',
-    async (_, { rejectWithValue }) => {
+    async (filter, { rejectWithValue }) => {
         try {
-            const { data } = await api.get("/learns");
-            return data;
+            const { data } = await api.get("/learns", {
+                params: {
+                    page: filter?.page,
+                    limit: filter?.limit,
+                }
+            });
+            return data.data;
         } catch (error) {
             return rejectWithValue(error.message);
         }
@@ -74,3 +79,19 @@ export const updateCourse = createAsyncThunk(
         }
     }
 );
+export const approveCourse = createAsyncThunk(
+    'course/approveCourse',
+    async ({ courseId, courseData }, { rejectWithValue }) => {
+        try {
+            const { data } = await api.put(`/learns/${courseId}/approve`, courseData, {
+                user: {
+                    id: localStorage.getItem('user')._id,
+                }
+            });
+            console.log(data);
+            return data.data;
+        } catch (error) {
+            return rejectWithValue(error.message);
+        }
+    }
+)

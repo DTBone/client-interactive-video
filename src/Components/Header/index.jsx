@@ -57,7 +57,7 @@ function Header({isLogin, user }) {
                   }
                     {!isLogin && <div className={styles.groupButton}>
                     
-                        <Link to='/login' className={styles.logIn} >Log In</Link>
+                        <Link to='/signin' className={styles.logIn} >Log In</Link>
                         <Link to='/signup' className={styles.signUp}>Sign Up</Link>
                     </div>}
                     {isLogin && <div className={styles.groupButton}>
