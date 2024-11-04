@@ -1,61 +1,69 @@
+/* eslint-disable no-unused-vars */
 import ListItem from '@mui/material/ListItem';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import RouteIcon from '@mui/icons-material/Route';
 import MailIcon from '@mui/icons-material/Mail';
-import RateReviewIcon from '@mui/icons-material/RateReview';
 import List from '@mui/material/List';
 import { useState } from 'react';
 import HomeIcon from '@mui/icons-material/Home';
 import { useNavigate } from 'react-router-dom';
-function ListButton() {
+import { AccountCircle, Book, School } from '@mui/icons-material';
+
+function ListButtonAdmin() {
     const navigate = useNavigate();
     const user = localStorage.getItem('user');
-    const userId = JSON.parse(user)?.userId;
+    const userId = JSON.parse(user).userId;
     const url = window.location.pathname;
 
-//     const list = ['Home', 'Road Map', 'Message', 'Blogs'];
-//     const icons = [
-//     <HomeIcon key={0} fontSize='large' color='primary'/>, 
-//     <RouteIcon key={0} fontSize='large' color='primary'/>, 
-//     <MailIcon key={0} fontSize='large' color='primary'/>, 
-//     <RateReviewIcon key={0} fontSize='large' color='primary'/>
-// ];
-    const list =[
+    // const list = ['Home', 'Account Manager', 'Available Course', 'Intructor Manager', 'Message'];
+    const list = [
       {
         text: 'Home',
         icon: <HomeIcon key={0} fontSize='large' color='primary'/>,
-        url: '/homeuser'
+        url: '/admin'
       },
       {
-        text: 'Road Map',
-        icon: <RouteIcon key={0} fontSize='large' color='primary'/>,
-        url: '/roadmap'
+        text: 'Account Manager',
+        icon: <AccountCircle key={0} fontSize='large' color='primary'/>,
+        url: '/account-manager'
+      },
+      {
+        text: 'Available Course',
+        icon: <Book key={0} fontSize='large' color='primary'/>,
+        url: '/course-manager'
+      },
+      {
+        text: 'Intructor Manager',
+        icon: <School key={0} fontSize='large' color='primary'/>,
+        url: '/instructor-manager'
       },
       {
         text: 'Message',
         icon: <MailIcon key={0} fontSize='large' color='primary'/>,
         url: '/chat'
-      },
-      {
-        text: 'Blogs',
-        icon: <RateReviewIcon key={0} fontSize='large' color='primary'/>,
-        url: '/blogs'
       }
     ]
-    const [opened, setOpened] = useState(list.find(e => e.url == url) ? list.findIndex(e => e.url == url) : 0);
+    const [opened, setOpened] = useState(list.find(e => e.url === url) ? list.findIndex(e => e.url === url) : 0);
     const handleClick = (index) => {
         setOpened(index);
         if(index === 0){
-            navigate('/homeuser?userid=' + userId);
+            navigate('/admin');
         }
         if(index === 1){
-            navigate('/roadmap');
+            navigate('/account-manager');
         }
         if(index === 2){
-            navigate('/chat');
-        }
+          navigate('/course-manager');
+      }
+      if(index === 3){
+        navigate('/instructor-manager');
+
+    }
+    if(index === 4){
+      navigate('/chat');
+    }
+
     }
     return ( 
         <List>
@@ -91,4 +99,4 @@ function ListButton() {
      );
 }
 
-export default ListButton;
+export default ListButtonAdmin;

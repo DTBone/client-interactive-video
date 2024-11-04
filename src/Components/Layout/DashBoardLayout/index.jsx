@@ -17,6 +17,7 @@ import Header from '~/components/Header';
 import ListButton from './ListButton';
 import userService from '~/services/api/userService';
 import ErrorModal from '~/pages/ErrorModal';
+import ListButtonAdmin from './ListButtonAdmin';
 
 const drawerWidth = 260;
 
@@ -142,12 +143,13 @@ export default function MiniDrawer({ children }) {
         <DrawerHeader>
         </DrawerHeader>
         <Divider />
-        <ListButton />
+        {user.role !== 'admin' ? <ListButton /> : <ListButtonAdmin />}
       </Drawer>
       <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
         <DrawerHeader />
-        <div className='h-screen'
+        <div className=''
         style={{
+          height: 'calc(100vh - 130px)',
           width: '100%',
           transform: open == true ? 'translateX(0)' : 'translateX(0)',
           transition: 'all 0.5s',

@@ -66,18 +66,20 @@ const FreeTrial = ({ onClose, onSubmit, course }) => {
                 <Button variant="contained" color="primary" fullWidth onClick={onSubmit}>
                     Start Free Trial
                 </Button>
-                <Button variant="standard" color="primary" fullWidth onClick={onPayment}
-                sx={{ mt: 1,
-                    transition: '0.3s',
-                    ":hover": {
-                        scale: '1.05',
+                {course.price > 0 && (
+                    <Button variant="standard" color="primary" fullWidth onClick={onPayment}
+                    sx={{ mt: 1,
                         transition: '0.3s',
-                        color: '#313EAC',
-                    }
-                 }}
-                >
-                    Enroll with payment
-                </Button>
+                        ":hover": {
+                            scale: '1.05',
+                            transition: '0.3s',
+                            color: '#313EAC',
+                        }
+                     }}
+                    >
+                        Enroll with payment
+                    </Button>
+                )}
 
             </Box>
         </Paper>

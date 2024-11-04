@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
@@ -82,6 +83,7 @@ function Login() {
                     password: formData.password
                 };
                 const resultAction = await dispatch(login(credentials));
+                console.log('resultAction', resultAction);
 
                 if (login.fulfilled.match(resultAction)) {
                     setOpen(true);
@@ -98,7 +100,12 @@ function Login() {
                     //console.log('Token saved:', localStorage.getItem('token'));
 
                     // Navigate to home page after successful login
-                    navigate(`/homeuser?userid=${user.userId}`, {state: {user: user}});
+                    if (user.role === 'student') {
+                        navigate(`/homeuser?userid=${user.userId}`, { state: { user } });
+                    }
+                    if (user.role === 'admin') {
+                        navigate('/admin');
+                    }
                 }
             } catch (err) {
                 setMessage('Login failed. Please check your credentials.');
