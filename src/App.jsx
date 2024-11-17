@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import { useEffect } from 'react';
 import { Route, Routes, useNavigate, Navigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
@@ -32,6 +33,12 @@ import Payment from './modules/EnrollToCourse/Payment';
 import PaymentStatus from './modules/EnrollToCourse/Payment/PaymentStatus';
 import DefaultLayoutV2 from '~/components/Layout/DefaultLayoutV2';
 import ProtectedRoute from '~/components/ProtectedRoute';
+import HomeAdmin from '~/modules/Admin/Home';
+import AccountManager from './modules/Admin/AccountMg';
+import CourseManager from './modules/Admin/CourseMg';
+import InstructorManager from './modules/Admin/IntructorMg';
+import Chat from './modules/Admin/Chat';
+import VideoCall from './modules/Chat/VideoCall';
 import { clearState } from './store/slices/Auth/authSlice';
 import ListStudent from './modules/Instructor/Statistical/ListStudent';
 import ModuleSection from './modules/Instructor/Modules/ModuleSection';
@@ -74,10 +81,6 @@ function App() {
 
     checkAuth();
   }, [dispatch]);
-
-  useEffect(() => {
-    console.log('Updated auth status: ', auth.user, auth.isAuthenticated);
-  }, [auth.user]);
 
   // useEffect(() => {
   //   if (isAuthenticated) {
@@ -222,7 +225,48 @@ function App() {
           <Route path=":moduleId/new-module-item" element={<NewModuleItem />} />
           <Route path=":moduleId/moduleitem/:moduleItemId" element={<EditModuleItem />} />
         </Route>
-
+        
+        {/* Admin */}
+      <Route path="/admin" element={
+        <ProtectedRoute allowedRoles={['admin']}>
+          <DashboardLayout>
+            <HomeAdmin/>
+          </DashboardLayout>
+        </ProtectedRoute>
+      } />
+      <Route path="/account-manager" element={
+        <ProtectedRoute allowedRoles={['admin']}>
+          <DashboardLayout>
+            <AccountManager/>
+          </DashboardLayout>
+        </ProtectedRoute>
+      } />
+      <Route path="/course-manager" element={
+        <ProtectedRoute allowedRoles={['admin']}>
+          <DashboardLayout>
+            <CourseManager/>
+          </DashboardLayout>
+        </ProtectedRoute>
+      } />
+      <Route path="/instructor-manager" element={
+        <ProtectedRoute allowedRoles={['admin']}>
+          <DashboardLayout>
+            <InstructorManager/>
+          </DashboardLayout>
+        </ProtectedRoute>
+      } />
+      <Route path="/chat" element={
+        <ProtectedRoute allowedRoles={['student', 'instructor', 'admin']}>
+          <DashboardLayout>
+            <Chat/>
+          </DashboardLayout>
+        </ProtectedRoute>
+      } />
+        <Route path="/video-call" element={
+            <ProtectedRoute allowedRoles={['student', 'instructor', 'admin']}>
+                    <VideoCall/>
+            </ProtectedRoute>
+        } />
 
         {/* Catch all route */}
         <Route path="*" element={<Navigate to="/error" replace />} />
