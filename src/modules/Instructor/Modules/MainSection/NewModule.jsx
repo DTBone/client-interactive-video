@@ -47,7 +47,7 @@ const NewModule = () => {
             // Hiển thị thông báo thành công
             showNotice('success', 'Successfully created module');
             dispatch(toggleRefresh());
-            // Đợi 1 chút để người dùng nhìn thấy thông báo
+
             await new Promise(resolve => setTimeout(resolve, 1500));
 
             // Chuyển hướng

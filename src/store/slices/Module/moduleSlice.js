@@ -1,4 +1,4 @@
-import { createSlice, current } from "@reduxjs/toolkit";
+import { createSlice } from "@reduxjs/toolkit";
 import { createModule, deleteModule, getAllModules, updateModule } from "./action";
 
 const moduleSlice = createSlice({
@@ -19,6 +19,7 @@ const moduleSlice = createSlice({
             state.error = null;
         },
         toggleRefresh: (state) => {
+            console.log('toggle refresh')
             state.refresh = !state.refresh;
         }
     },
@@ -76,6 +77,8 @@ const moduleSlice = createSlice({
                 state.loading = false;
                 state.error = action.payload;
             })
+
+
     }
 });
 
