@@ -11,6 +11,10 @@ axiosInstance.interceptors.request.use(
         if (token) {
             config.headers.Authorization = `Bearer ${token}`;
         }
+        if (config.data instanceof FormData) {
+            //console.log('Form data request:', config.data);
+            delete config.headers['Content-Type'];
+        }
         //console.log('Full request config:', JSON.stringify(config, null, 2));
         return config;
     },

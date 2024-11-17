@@ -1,84 +1,207 @@
-import React from 'react';
+import React, { useState, useRef } from 'react';
 import {
     TextField,
-    FormControlLabel,
-    Checkbox,
     Button,
-    Paper
+    Paper,
+    Box
 } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import FileUpload from './FileUpload';
+import { useNotification } from '~/Hooks/useNotification';
+import QuizQuestionForm from './QuizQuestionForm';
+import { createModuleItemLecture } from '~/store/slices/ModuleItem/action';
+import { useDispatch } from 'react-redux';
+import { toggleRefresh } from '~/store/slices/Module/moduleSlice';
 
-const Lecture = ({ moduleItemData, onUpdateData, handleSubmit }) => {
+const Lecture = () => {
     const navigate = useNavigate();
+    const dispatch = useDispatch();
+    const videoRef = useRef(null);
+    const { showNotice } = useNotification();
+    const { courseId, moduleId } = useParams();
+
+    // State để lưu trữ form data
+    const [formData, setFormData] = useState({
+        title: '',
+        description: '',
+        type: 'lecture',
+        contentType: 'Video',
+        icon: 'video',
+        file: null,
+        duration: 0,
+        questions: {
+            index: null,
+            questionType: null,
+            question: null,
+            startTime: null,
+            answers: [
+                { content: null, isCorrect: null },
+                { content: null, isCorrect: null },
+            ],
+        }
+    });
+
+    // State để lưu URL preview video
+    const [videoPreview, setVideoPreview] = useState('');
+
     const handleInputChange = (field) => (event) => {
-        const value = event.target.type === 'checkbox' ? event.target.checked : event.target.value;
-        onUpdateData({ [field]: value });
+        setFormData(prev => ({
+            ...prev,
+            [field]: event.target.value
+        }));
     };
 
-    const handleReferenceChange = (field) => (event) => {
-        onUpdateData({
-            references: {
-                ...moduleItemData.references,
-                [field]: event.target.value
-            }
-        });
-    };
     const handleFileChange = (file) => {
         if (file) {
+            // Kiểm tra xem file có phải là video không
+            if (!file.type.startsWith('video/')) {
+                alert('Please select a video file');
+                return;
+            }
+
             const fileData = new FormData();
             fileData.append('file', file);
-            console.log('file selected: ', file)
-            onUpdateData({
-                ...moduleItemData,
-                references: {
-                    ...moduleItemData.references,
-                    fileName: file.name,
-                    size: file.size,
-                    file: fileData
-                }
-            });
+
+            // Tạo URL để preview video
+            const videoURL = URL.createObjectURL(file);
+            setVideoPreview(videoURL);
+
+            setFormData(prev => ({
+                ...prev,
+                file: file
+            }));
+        }
+    };
+
+    // Hàm xử lý khi video được load
+    const handleVideoLoad = () => {
+        if (videoRef.current) {
+            const duration = videoRef.current.duration;
+            setFormData(prev => ({
+                ...prev,
+                duration: duration
+            }));
+        }
+    };
+
+    const onUpdate = (updatedQuestions) => {
+        setFormData((prevFormData) => ({
+            ...prevFormData,
+            questions: updatedQuestions,
+        }));
+    };
+
+    const handleSubmit = async () => {
+        if (!formData.title) {
+            showNotice('error', 'Please enter title');
+            return;
+        }
+        if (!formData.description) {
+            showNotice('error', 'Please enter description');
+            return;
+        }
+        if (!formData.duration || !formData.file) {
+            showNotice('error', 'Please select a video');
+            return;
+        }
+        try {
+            const submitFormData = new FormData();
+            if (formData.file instanceof File) {
+                submitFormData.append('file', formData.file);
+            }
+            else {
+                showNotice('error', 'Please select a video');
+            }
+            submitFormData.append('title', formData.title);
+            submitFormData.append('type', formData.type);
+            submitFormData.append('description', formData.description);
+            submitFormData.append('contentType', formData.contentType);
+            submitFormData.append('icon', formData.icon);
+            submitFormData.append('duration', formData.duration);
+            submitFormData.append('questions', JSON.stringify(formData.questions));
+
+
+            // Debug log
+            for (let [key, value] of submitFormData.entries()) {
+                console.log(`${key}:`, value instanceof File ? value.name : value);
+            }
+
+            const res = await dispatch(createModuleItemLecture({
+                courseId,
+                moduleId,
+                formData: submitFormData
+            }));
+            if (res.error) {
+                showNotice('error', res.error.message);
+            } else {
+                showNotice('success', 'Lecture created successfully');
+                dispatch(toggleRefresh())
+                //navigate(-1);
+            }
+        } catch (error) {
+            showNotice('error', error.message || 'Failed to create lecture');
+            console.error('Error submitting form:', error);
         }
     };
 
     return (
-        <Paper elevation={0} className="space-y-4">
+        <Paper elevation={0} className=" space-y-6">
             <TextField
                 fullWidth
                 label="Title"
-                value={moduleItemData.title}
+                value={formData.title}
                 onChange={handleInputChange('title')}
+                variant="outlined"
+            />
+            <TextField
+                fullWidth
+                multiline
+                rows={3}
+                label="Description"
+                value={formData.description}
+                onChange={handleInputChange('description')}
+                variant="outlined"
             />
 
-            <div>
-                <TextField
-                    fullWidth
-                    multiline
-                    rows={3}
-                    label="Description"
-                    value={moduleItemData.description}
-                    onChange={handleInputChange('description')}
-                />
-            </div>
-            <div >
-                <TextField
-                    fullWidth
-                    label="Reference Title"
-                    value={moduleItemData.references.title}
-                    onChange={handleReferenceChange('title')}
-                />
-            </div>
 
             <div className="w-full">
-                <FileUpload onFileChange={handleFileChange} />
+                <FileUpload
+                    onFileChange={handleFileChange}
+                    accept=".mp4,.webm"
+
+                />
             </div>
 
+            {/* Video Preview */}
+            {videoPreview && (
+                <div>
+                    <Box className="mt-4">
+                        <video
+                            ref={videoRef}
+                            className="w-full max-h-[400px]"
+                            controls
+                            onLoadedMetadata={handleVideoLoad}
+                        >
+                            <source src={videoPreview} type="video/mp4" />
+                            Your browser does not support the video tag.
+                        </video>
+                        {formData?.video?.duration > 0 && (
+                            <div className="mt-2 text-gray-600">
+                                Video Duration: {Math.floor(formData?.video?.duration)} seconds
+                            </div>
+                        )}
+                    </Box>
+                    <Box className="mt-4">
+                        <QuizQuestionForm onUpdate={onUpdate} />
+                    </Box>
+                </div>
+            )}
 
-
-            <div className="flex justify-end gap-2">
+            <div className="flex justify-end gap-4 mt-6">
                 <Button
                     variant="outlined"
                     onClick={() => navigate(-1)}
+                    className="px-6"
                 >
                     Cancel
                 </Button>
@@ -86,12 +209,13 @@ const Lecture = ({ moduleItemData, onUpdateData, handleSubmit }) => {
                     variant="contained"
                     color="primary"
                     onClick={handleSubmit}
+                    className="px-6"
                 >
                     Create Module Item
                 </Button>
-
             </div>
         </Paper>
     );
 };
+
 export default Lecture;

@@ -11,18 +11,92 @@ import {
     MenuItem,
     Chip,
     IconButton,
-    Box,
+
     Switch,
     FormControlLabel,
-    Divider
+
 } from '@mui/material';
 import { Add as AddIcon, Delete as DeleteIcon } from '@mui/icons-material';
+import { useNavigate, useParams } from 'react-router-dom';
+import { useNotification } from '~/Hooks/useNotification';
+import * as Yup from 'yup';
+import { useDispatch } from 'react-redux';
+import { createModuleItemProgramming } from '~/store/slices/ModuleItem/action';
+import { toggleRefresh } from '~/store/slices/Module/moduleSlice';
 
-const Programming = ({ moduleItemData, onUpdateData, handleSubmit }) => {
+const programProblemSchema = Yup.object().shape({
+    problemName: Yup.string()
+        .required('Problem name is required')
+        .max(100, 'Problem name cannot be more than 100 characters')
+        .trim(),
+    content: Yup.string()
+        .required('Problem content is required')
+        .max(5000, 'Problem content cannot be more than 5000 characters'),
+    difficulty: Yup.string()
+        .required('Difficulty is required')
+        .oneOf(['Easy', 'Medium', 'Hard'], 'Difficulty must be one of: Easy, Medium, Hard'),
+    tags: Yup.array()
+        .of(Yup.string().trim())
+        .max(10, 'Maximum of 10 tags allowed'),
+    constraints: Yup.string()
+        .required('Constraints are required'),
+    inputFormat: Yup.string()
+        .required('Input format is required'),
+    outputFormat: Yup.string()
+        .required('Output format is required'),
+    sampleInput: Yup.string()
+        .required('Sample input is required'),
+    sampleOutput: Yup.string()
+        .required('Sample output is required'),
+    explanation: Yup.string(),
+
+    editorial: Yup.string(),
+    baseScore: Yup.number()
+
+        .min(0, 'Base score must be at least 0'),
+    timeBonus: Yup.number()
+        .min(0, 'Time bonus must be at least 0'),
+    memoryBonus: Yup.number()
+        .min(0, 'Memory bonus must be at least 0'),
+    testcases: Yup.array().of(
+        Yup.object().shape({
+            input: Yup.string()
+                .required('Input is required'),
+            expectedOutput: Yup.string()
+                .required('Expected output is required'),
+            executeTimeLimit: Yup.number()
+                .required('Time limit is required')
+                .min(100, 'Time limit must be at least 100ms')
+                .max(15000, 'Time limit cannot exceed 15000ms'),
+            weight: Yup.number()
+                .required('Weight is required')
+                .min(0, 'Weight must be at least 0')
+                .max(100, 'Weight cannot exceed 100'),
+            isHidden: Yup.boolean()
+        })
+    )
+        .min(1, 'At least one testcase is required')
+    // .test('total-weight', 'Total weight of all testcases must equal 100', function (testcases) {
+    //     if (!testcases) return false;
+    //     const totalWeight = testcases.reduce((sum, testcase) => sum + Number(testcase.weight), 0);
+    //     return totalWeight === 100;
+    // }),
+});
+
+const Programming = () => {
+    const navigate = useNavigate();
+    const dispatch = useDispatch();
+    const { showNotice } = useNotification();
+    const { courseId, moduleId } = useParams();
     const [problemData, setProblemData] = useState({
-        problemId: '',
         title: '',
         description: '',
+        type: 'programming',
+        contentType: 'Programming Assignment',
+        icon: 'code',
+        isGrade: false,
+        problemName: '',
+        content: '',
         difficulty: 'Easy',
         tags: [],
         constraints: '',
@@ -53,7 +127,7 @@ const Programming = ({ moduleItemData, onUpdateData, handleSubmit }) => {
             [field]: event.target.value
         };
         setProblemData(updatedProblemData);
-        onUpdateData({ programming: updatedProblemData });
+
     };
 
     // Handle tags
@@ -116,29 +190,45 @@ const Programming = ({ moduleItemData, onUpdateData, handleSubmit }) => {
         });
     };
 
+    const handleGradeChange = (event) => {
+        setProblemData({ ...problemData, isGrade: event.target.checked });
+    };
+    const handleSubmit = async () => {
+
+        try {
+            // Validate the problemData object
+            await programProblemSchema.validate(problemData, { abortEarly: false });
+            dispatch(createModuleItemProgramming({ courseId, moduleId, formData: problemData }));
+            // Submit programming problem
+            dispatch(toggleRefresh());
+            showNotice('success', 'Successfully created programming problem');
+            navigate(`/course-management/${courseId}/module/${moduleId}`);
+        } catch (error) {
+            if (error instanceof Yup.ValidationError) {
+                // Display validation errors
+                error.inner.forEach((validationError) => {
+                    showNotice('error', validationError.message);
+                });
+                console.error('Validation errors:', error.errors);
+            } else {
+                console.error('Error submitting programming problem:', error);
+            }
+        }
+    }
     return (
         <div className="space-y-6">
             {/* Basic Problem Information */}
-            <Card className="p-4">
+            <Card className="p-4" >
                 <CardContent>
-                    <Typography variant="h6" className="mb-4">Problem Information</Typography>
-                    <div className="space-y-4">
-                        <div className="grid grid-cols-2 gap-4">
-                            <TextField
-                                fullWidth
-                                label="Problem ID"
-                                value={problemData.problemId}
-                                onChange={handleProblemChange('problemId')}
-                                helperText="Unique identifier for the problem"
-                            />
-                            <TextField
-                                fullWidth
-                                label="Title"
-                                value={problemData.title}
-                                onChange={handleProblemChange('title')}
-                            />
-                        </div>
+                    <Typography variant="h6" sx={{ marginBottom: '2rem' }}>Module Item</Typography>
 
+                    <div className="space-y-4">
+                        <TextField
+                            fullWidth
+                            label="Title"
+                            value={problemData.title}
+                            onChange={handleProblemChange('title')}
+                        />
                         <TextField
                             fullWidth
                             multiline
@@ -146,6 +236,41 @@ const Programming = ({ moduleItemData, onUpdateData, handleSubmit }) => {
                             label="Description"
                             value={problemData.description}
                             onChange={handleProblemChange('description')}
+                        />
+                    </div>
+                </CardContent>
+            </Card>
+            <Card className="p-4">
+                <CardContent>
+                    <div className='flex justify-between'>
+                        <Typography variant="h6" sx={{ marginBottom: '2rem' }}>Problem Information</Typography>
+                        <FormControlLabel
+                            control={
+                                <Switch
+                                    checked={problemData.isGrade}
+                                    onChange={handleGradeChange}
+                                />
+                            }
+                            label="Grade"
+                        />
+                    </div>
+
+                    <div className="space-y-4">
+
+                        <TextField
+                            fullWidth
+                            label="Problem Name"
+                            value={problemData.problemName}
+                            onChange={handleProblemChange('problemName')}
+                            helperText="Unique identifier for the problem"
+                        />
+                        <TextField
+                            fullWidth
+                            multiline
+                            rows={4}
+                            label="Content"
+                            value={problemData.content}
+                            onChange={handleProblemChange('content')}
                         />
 
                         <FormControl fullWidth>
@@ -195,8 +320,9 @@ const Programming = ({ moduleItemData, onUpdateData, handleSubmit }) => {
             {/* Problem Details */}
             <Card className="p-4">
                 <CardContent>
-                    <Typography variant="h6" className="mb-4">Problem Details</Typography>
+                    <Typography variant="h6" sx={{ marginBottom: '2rem' }}>Problem Details</Typography>
                     <div className="space-y-4">
+
                         <TextField
                             fullWidth
                             multiline
@@ -262,8 +388,9 @@ const Programming = ({ moduleItemData, onUpdateData, handleSubmit }) => {
             {/* Scoring */}
             <Card className="p-4">
                 <CardContent>
-                    <Typography variant="h6" className="mb-4">Scoring Configuration</Typography>
+                    <Typography variant="h6" sx={{ marginBottom: '2rem' }} >Scoring Configuration</Typography>
                     <div className="grid grid-cols-3 gap-4">
+
                         <TextField
                             type="number"
                             label="Base Score"
@@ -368,7 +495,7 @@ const Programming = ({ moduleItemData, onUpdateData, handleSubmit }) => {
                     color="primary"
                     onClick={handleSubmit}
                 >
-                    Save Programming Problem
+                    Create Programming Problem
                 </Button>
             </div>
         </div>

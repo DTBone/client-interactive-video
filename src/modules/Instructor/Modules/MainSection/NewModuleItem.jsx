@@ -15,9 +15,9 @@ import { getAllModules } from '~/store/slices/Module/action';
 
 const NewModuleItem = () => {
     const dispatch = useDispatch();
-    const navigate = useNavigate();
+
     const [contentType, setContentType] = useState('');
-    const { showNotice } = useNotification();
+
     useEffect(() => { }, [contentType])
     const { courseId, moduleId } = useParams();
 
@@ -37,110 +37,18 @@ const NewModuleItem = () => {
         console.log("Module ", foundModule);
     }, [modules, moduleId])
 
-    const [moduleItemData, setModuleItemData] = useState({
-        moduleId: moduleId,
-        title: '',
-        description: '',
-        type: '',
-        contentType: '',
-        icon: '',
-        isGrade: false,
-        references: {
-            title: '',
-            file: '',
-            size: '',
-            fileName: ''
-        }
-    });
 
-    const contentTypeMapping = {
-        'Reading': {
-            type: 'supplement',
-            icon: 'read'
-        },
-        'Video': {
-            type: 'lecture',
-            icon: 'video'
-        },
-        'Practice Quiz': {
-            type: 'quiz',
-            icon: 'quiz'
-        },
-        'Programming Assignment': {
-            type: 'programming',
-            icon: 'code'
-        }
-    };
-
-    const handleContentTypeChange = (event) => {
-        const selectedContentType = event.target.value;
-        const mappedType = contentTypeMapping[selectedContentType];
-
-        setModuleItemData(prev => ({
-            ...prev,
-            contentType: selectedContentType,
-            type: mappedType.type,
-            icon: mappedType.icon
-        }));
-    };
-    const handleSubmit = async () => {
-        try {
-            // Validation
-            if (!moduleItemData.title) {
-                showNotice("error", 'Please enter a title');
-                return;
-            }
-            if (!moduleItemData.contentType) {
-                showNotice("error", 'Please select a content type');
-                return;
-            }
-
-            // Add API call to create new module item
-            // await dispatch(createModuleItem(moduleItemData));
-            switch (moduleItemData.contentType) {
-                case 'Reading':
-                    //await dispatch(createSupplement(moduleItemData));
-                    console.log("module item data reading: ", moduleItemData)
-                    break;
-                case 'Video':
-                    //await dispatch(createLecture(moduleItemData));
-                    console.log("module item data video: ", moduleItemData)
-                    break;
-                case 'Practice Quiz':
-                    //await dispatch(createQuiz(moduleItemData));
-                    console.log("module item data quiz: ", moduleItemData)
-                    break;
-                case 'Programming Assignment':
-                    //await dispatch(createProgramming(moduleItemData));
-                    console.log("module item data programming: ", moduleItemData)
-                    break;
-                default:
-                    break;
-            }
-            showNotice("success", 'Module item created successfully');
-            //navigate(-1);
-        } catch (error) {
-            showNotice("error", 'Error creating module item');
-            console.error('Error creating module item:', error);
-        }
-    };
 
     const renderContentComponent = () => {
-        const commonProps = {
-            moduleItemData: moduleItemData,
-            onUpdateData: (data) => setModuleItemData(prev => ({ ...prev, ...data })),
-            handleSubmit: handleSubmit
-        };
-
-        switch (moduleItemData.contentType) {
+        switch (contentType) {
             case 'Reading':
-                return <Supplement {...commonProps} />;
+                return <Supplement />;
             case 'Video':
-                return <Lecture {...commonProps} />;
+                return <Lecture />;
             case 'Practice Quiz':
-                return <Quiz {...commonProps} />;
+                return <Quiz />;
             case 'Programming Assignment':
-                return <Programming {...commonProps} />;
+                return <Programming />;
             default:
                 return <Typography>Please choose content type</Typography>;
         }
@@ -172,9 +80,9 @@ const NewModuleItem = () => {
                     <MuiSelect
                         labelId="content-type-select-label"
                         id="content-type-select"
-                        value={moduleItemData.contentType}
+                        value={contentType}
                         label="Content Type"
-                        onChange={handleContentTypeChange}
+                        onChange={handleChange}
                     >
                         <MenuItem value="Reading">Reading</MenuItem>
                         <MenuItem value="Video">Video</MenuItem>
