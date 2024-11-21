@@ -1,48 +1,40 @@
-import React, { useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { useDispatch } from 'react-redux';
+/* eslint-disable react/prop-types */
+import { useEffect, useState } from 'react';
 import {
     TextField,
     Button,
-    Paper,
-    Typography,
-    Box,
-    CircularProgress,
-    Alert,
-    Stack,
-    IconButton
+    Paper
 } from '@mui/material';
-import CloseIcon from '@mui/icons-material/Close';
-import UploadFileIcon from '@mui/icons-material/UploadFile';
 import { createModuleItemSupplement } from '~/store/slices/ModuleItem/action';
+import { useDispatch } from 'react-redux';
 import { toggleRefresh } from '~/store/slices/Module/moduleSlice';
 import { useNotification } from '~/hooks/useNotification';
+import { useNavigate, useParams } from 'react-router-dom';
+import FileUpload from './FileUpload';
 
 const EditSupplement = ({ moduleItem }) => {
+    //console.log('module item compoennt:', moduleItem)
     const navigate = useNavigate();
-    const { courseId, moduleId } = useParams();
+    const { courseId, moduleId, moduleItemId } = useParams();
     const dispatch = useDispatch();
     const { showNotice } = useNotification();
-
+    // Khởi tạo state cho form data
     const [formData, setFormData] = useState({
-        title: moduleItem?.title || '',
-        description: moduleItem?.description || '',
-        file: moduleItem?.reading || null
+        title: moduleItem.title,
+        description: moduleItem.description,
+        file: '',
     });
 
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState('');
-
-    const handleInputChange = (e) => {
-        const { name, value } = e.target;
+    // Xử lý thay đổi input cơ bản
+    const handleInputChange = (field) => (event) => {
         setFormData(prev => ({
             ...prev,
-            [name]: value
+            [field]: event.target.value
         }));
     };
 
-    const handleFileChange = (e) => {
-        const file = e.target.files[0];
+    // Xử lý thay đổi file
+    const handleFileChange = (file) => {
         if (file) {
             setFormData(prev => ({
                 ...prev,
@@ -51,154 +43,153 @@ const EditSupplement = ({ moduleItem }) => {
         }
     };
 
-    const handleRemoveFile = () => {
-        setFormData(prev => ({
-            ...prev,
-            file: null
-        }));
-    };
+    const fetchFileFromMinio = async (url) => {
+        try {
+            const response = await fetch(url);
+            const blob = await response.blob();
+            const urlParts = url.split('/');
+            const fileName1 = urlParts[urlParts.length - 1];
+            const fileName = fileName1.substring(14);
+            return new File([blob], fileName, { type: blob.type || 'application/octet-stream' });
+        } catch (e) {
+            console.error('Error fetching file:', e);
+            showNotice('error', 'Failed to fetch file');
+            return null;
+        }
+    }
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        setLoading(true);
-        setError('');
+    useEffect(() => {
+        const loadInitialData = async () => {
+            if (moduleItem.reading && typeof moduleItem.reading === 'string') {
+                const file = await fetchFileFromMinio(moduleItem.reading);
+                setFormData(prev => ({
+                    ...prev,
+                    file: file,
+                    title: moduleItem.title,
+                    description: moduleItem.description
+                }));
+            }
+            //console.log('file loaded', formData)
+        }
+        loadInitialData();
+    }, [moduleItem.reading]);
+
+    const handleSubmit = async () => {
+        // Validation
+        if (!formData.file) {
+            showNotice('error', 'Please select a file');
+            return;
+        }
+        if (!formData.title) {
+            showNotice('error', 'Please enter title');
+            return;
+        }
+        if (!formData.description) {
+            showNotice('error', 'Please enter description');
+            return;
+        }
 
         try {
-            if (!formData.title.trim()) {
-                throw new Error('Title is required');
+            // Tạo FormData mới khi submit
+            const submitFormData = new FormData();
+            if (formData.file instanceof File) {
+                submitFormData.append('file', formData.file, formData.file.name);
+            } else {
+                throw new Error('Invalid file');
+            }
+            submitFormData.append('title', formData.title);
+            submitFormData.append('description', formData.description);
+
+            // Debug log
+            for (let [key, value] of submitFormData.entries()) {
+                console.log(`${key}:`, value instanceof File ? value.name : value);
             }
 
-            const submitData = new FormData();
-            submitData.append('title', formData.title);
-            submitData.append('description', formData.description);
-            if (formData.file) {
-                submitData.append('file', formData.file);
-            }
-
-            await dispatch(createModuleItemSupplement({
+            const resultAction = await dispatch(createModuleItemSupplement({
                 courseId,
                 moduleId,
-                data: submitData
+                formData: submitFormData
             }));
 
-            dispatch(toggleRefresh());
-            showNotice('Success', 'Supplement updated successfully');
-            navigate(-1);
-        } catch (err) {
-            setError(err.message || 'Failed to update supplement');
-        } finally {
-            setLoading(false);
+            if (createModuleItemSupplement.fulfilled.match(resultAction)) {
+                showNotice('success', 'Successfully created module item');
+                dispatch(toggleRefresh());
+                navigate(`/course-management/${courseId}/module/${moduleId}`);;
+            } else if (createModuleItemSupplement.rejected.match(resultAction)) {
+                showNotice('error', resultAction.payload);
+            }
+        } catch (error) {
+            console.error('Error submitting form:', error);
+            showNotice('error', error.message || 'Failed to create module item');
         }
     };
 
+
+    const handleDeleteItem = async () => {
+        try {
+            console.log('Delete item', moduleItemId);
+        } catch (error) {
+            console.error('Error deleting item:', error);
+            showNotice('error', error.message || 'Failed to delete module item');
+        }
+    }
     return (
-        <Paper className="w-full max-w-2xl mx-auto p-6 mt-8">
-            <Typography variant="h5" className="mb-6 font-bold">
-                Edit Supplement
-            </Typography>
+        <Paper elevation={0} className="space-y-6">
+            <div className="space-y-4">
+                <TextField
+                    fullWidth
+                    label="Title"
+                    value={formData.title}
+                    onChange={handleInputChange('title')}
+                    variant="outlined"
+                />
 
-            <form onSubmit={handleSubmit} className="space-y-6">
-                {error && (
-                    <Alert
-                        severity="error"
-                        className="mb-4"
-                        action={
-                            <IconButton
-                                aria-label="close"
-                                color="inherit"
-                                size="small"
-                                onClick={() => setError('')}
-                            >
-                                <CloseIcon fontSize="inherit" />
-                            </IconButton>
-                        }
-                    >
-                        {error}
-                    </Alert>
-                )}
+                <TextField
+                    fullWidth
+                    multiline
+                    rows={3}
+                    label="Description"
+                    value={formData.description}
+                    onChange={handleInputChange('description')}
+                    variant="outlined"
+                />
 
-                <Stack spacing={3}>
-                    <TextField
-                        fullWidth
-                        label="Title"
-                        name="title"
-                        value={formData.title}
-                        onChange={handleInputChange}
-                        required
-                        variant="outlined"
-                        error={!formData.title.trim()}
-                        helperText={!formData.title.trim() ? 'Title is required' : ''}
+                <div className="w-full">
+                    <FileUpload
+                        onFileChange={handleFileChange}
+                        accept=".pdf"
+                        fileSelected={formData.file}
+
+
                     />
+                </div>
+            </div>
 
-                    <TextField
-                        fullWidth
-                        label="Description"
-                        name="description"
-                        value={formData.description}
-                        onChange={handleInputChange}
-                        multiline
-                        rows={4}
-                        variant="outlined"
-                    />
-
-                    <Box className="border-2 border-dashed border-gray-300 rounded-md p-4">
-                        <input
-                            type="file"
-                            id="file-upload"
-                            onChange={handleFileChange}
-                            className="hidden"
-                        />
-
-                        {formData.file ? (
-                            <div className="flex items-center justify-between">
-                                <Typography className="text-sm">
-                                    {formData.file.name}
-                                </Typography>
-                                <IconButton
-                                    size="small"
-                                    onClick={handleRemoveFile}
-                                    className="text-gray-500 hover:text-red-500"
-                                >
-                                    <CloseIcon />
-                                </IconButton>
-                            </div>
-                        ) : (
-                            <label
-                                htmlFor="file-upload"
-                                className="flex flex-col items-center cursor-pointer"
-                            >
-                                <UploadFileIcon className="text-gray-400 mb-2" />
-                                <Typography className="text-sm text-gray-600">
-                                    Click to upload file
-                                </Typography>
-                            </label>
-                        )}
-                    </Box>
-                </Stack>
-
-                <Box className="flex justify-end space-x-4 mt-8">
-                    <Button
-                        variant="outlined"
-                        onClick={() => navigate(-1)}
-                        className="px-6"
-                        disabled={loading}
-                    >
-                        Cancel
-                    </Button>
-                    <Button
-                        type="submit"
-                        variant="contained"
-                        className="px-6"
-                        disabled={loading}
-                    >
-                        {loading ? (
-                            <CircularProgress size={24} className="text-white" />
-                        ) : (
-                            'Save Changes'
-                        )}
-                    </Button>
-                </Box>
-            </form>
+            <div className="flex justify-end gap-4 mt-6">
+                <Button
+                    variant="outlined"
+                    onClick={() => navigate(-1)}
+                    className="px-6"
+                >
+                    Cancel
+                </Button>
+                <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={handleSubmit}
+                    className="px-6"
+                >
+                    Save
+                </Button>
+                <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={() => handleDeleteItem}
+                    className="px-6"
+                >
+                    Delete
+                </Button>
+            </div>
         </Paper>
     );
 };
