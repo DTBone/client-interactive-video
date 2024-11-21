@@ -29,6 +29,18 @@ export const getAllModules = createAsyncThunk(
     }
 )
 
+export const getModuleById = createAsyncThunk(
+    'module/getModuleById',
+    async ({ moduleId }, { rejectWithValue }) => {
+        try {
+            const { data } = await axiosInstance.get(`/learns/modules/${moduleId}`);
+            return data;
+        } catch (error) {
+            return rejectWithValue(error.message);
+        }
+    }
+)
+
 export const updateModule = createAsyncThunk(
     'module/updateModule',
     async ({ courseId, moduleId, formData }, { rejectWithValue }) => {

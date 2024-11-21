@@ -6,6 +6,9 @@ import '~/index.css';
 import success from '../../../../assets/success.gif';
 import failed from '../../../../assets/failed.gif';
 import { useNavigate } from 'react-router-dom';
+import {useSelector, useDispatch} from "react-redux";
+import {getAllCourse} from "~/store/slices/Course/action.js";
+
 function PaymentStatus() {
 
     const location = useLocation();
@@ -14,6 +17,7 @@ function PaymentStatus() {
     const [courseId, setCourseId] = useState('')
     const [amount, setAmount] = useState('');
     const [transactionNo, setTransactionNo] = useState('');
+    const dispatch = useDispatch();
     function addThousandSeparator(number) {
         // Chuyển đổi số thành chuỗi và tách phần nguyên và phần thập phân (nếu có)
         let [integer, decimal] = number.toString().split('.');
@@ -25,8 +29,20 @@ function PaymentStatus() {
         return decimal ? `${integer}.${decimal}` : integer;
       }
       const navigate = useNavigate();
-      const handleClick = () =>{
-            navigate(`/course/${courseId}`)
+      const handleClick =async () =>{
+          try{
+              const result = await dispatch(getAllCourse({limit:100}));
+              if(getAllCourse.fulfilled.match(result)){
+                  const courses = result.payload;
+                  const course = courses.find(course => course._id === courseId);
+                  navigate(`/course/${course.courseId}`)
+              }
+              
+          }
+          catch(e){
+              console.log(e);
+              return;
+          }
       }
   useEffect(() => {
     const queryParams = new URLSearchParams(location.search);

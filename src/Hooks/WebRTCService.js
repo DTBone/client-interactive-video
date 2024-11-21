@@ -1,5 +1,4 @@
-﻿// services/WebRTCService.js
-class WebRTCService {
+﻿class WebRTCService {
     constructor() {
         this.peerConnection = null;
         this.localStream = null;
@@ -21,25 +20,26 @@ class WebRTCService {
 
     setupSocketListeners() {
         // Lắng nghe offer từ người gọi
-        this.socketService.on('webrtc:offer', async (data) => {
-            const { from, offer } = data;
-            await this.handleOffer(from, offer);
+        this.socketService.on('video-call:offer', async (data) => {
+            const { conversationId, offer } = data;
+            console.log('video-call:offer', data);
+            await this.handleOffer({conversationId, offer});
         });
 
         // Lắng nghe answer từ người nhận
-        this.socketService.on('webrtc:answer', async (data) => {
-            const { from, answer } = data;
+        this.socketService.on('video-call:answer', async (data) => {
+            const { answer } = data;
             await this.handleAnswer(answer);
         });
 
         // Lắng nghe ICE candidate
-        this.socketService.on('webrtc:ice-candidate', async (data) => {
-            const { from, candidate } = data;
+        this.socketService.on('video-call:ice-candidate', async (data) => {
+            const { candidate } = data;
             await this.handleIceCandidate(candidate);
         });
 
         // Lắng nghe sự kiện kết thúc cuộc gọi
-        this.socketService.on('webrtc:hangup', () => {
+        this.socketService.on('video-call:hangup', () => {
             this.handleHangup();
         });
     }
@@ -51,7 +51,7 @@ class WebRTCService {
             // Xử lý ICE candidate
             this.peerConnection.onicecandidate = (event) => {
                 if (event.candidate) {
-                    this.socketService.emit('webrtc:ice-candidate', {
+                    this.socketService.emit('video-call:ice-candidate', {
                         candidate: event.candidate
                     });
                 }
@@ -110,15 +110,15 @@ class WebRTCService {
         }
     }
 
-    async makeCall(targetUserId) {
+    async makeCall(conversationId) {
         try {
             await this.createPeerConnection();
 
             const offer = await this.peerConnection.createOffer();
             await this.peerConnection.setLocalDescription(offer);
 
-            this.socketService.emit('webrtc:offer', {
-                target: targetUserId,
+            this.socketService.emit('video-call:offer', {
+                conversationId: conversationId,
                 offer: offer
             });
         } catch (error) {
@@ -127,7 +127,7 @@ class WebRTCService {
         }
     }
 
-    async handleOffer(from, offer) {
+    async handleOffer({conversationId, offer}) {
         try {
             await this.createPeerConnection();
 
@@ -136,8 +136,8 @@ class WebRTCService {
             const answer = await this.peerConnection.createAnswer();
             await this.peerConnection.setLocalDescription(answer);
 
-            this.socketService.emit('webrtc:answer', {
-                target: from,
+            this.socketService.emit('video-call:answer', {
+                conversationId: conversationId,
                 answer: answer
             });
         } catch (error) {

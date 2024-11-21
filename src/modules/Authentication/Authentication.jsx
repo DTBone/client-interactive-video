@@ -91,13 +91,12 @@ function Login() {
                         submitBtn.current.disabled = true;
                     }
                     const { user, token } = resultAction.payload.data;
-                    //console.log('user', user);
-                    //console.log('token login', token);
+                    console.log('user', user);
 
-                    //localStorage.setItem('token', token);
-                    //localStorage.setItem('user', JSON.stringify(user));
+                    localStorage.setItem('token', token);
+                    localStorage.setItem('user', JSON.stringify(user));
                     //dispatch(setUser(user));
-                    //console.log('Token saved:', localStorage.getItem('token'));
+                    console.log('Token saved:', localStorage.getItem('token'));
 
                     // Navigate to home page after successful login
                     if (user.role === 'student') {
@@ -108,9 +107,6 @@ function Login() {
                     }
                     if (user.role === 'instructor') {
                         navigate(`/course-management`, { state: { user: user } });
-                    }
-                    else {
-                        navigate(`/homeuser?userid=${user.userId}`, { state: { user: user } });
                     }
                 }
             } catch (err) {

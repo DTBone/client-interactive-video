@@ -92,6 +92,7 @@ const FileUpload = ({ onFileChange }) => {
             'image/jpeg',
             'image/png',
             'application/msword',
+            'video/mp4',
             'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
         ];
         const maxSize = 10 * 1024 * 1024; // 10MB
@@ -136,7 +137,7 @@ const FileUpload = ({ onFileChange }) => {
                             type="file"
                             hidden
                             onChange={onFileSelect}
-                            accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                            accept=".mp4 , .pdf, .doc, .docx, .jpg, .jpeg, .png"
                         />
                         <Button
                             variant="contained"

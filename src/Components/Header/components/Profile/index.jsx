@@ -12,10 +12,48 @@ import Settings from '@mui/icons-material/Settings';
 import Logout from '@mui/icons-material/Logout';
 import { useNavigate } from 'react-router-dom';
 import authService from '~/services/auth/authService';
+import MailIcon from "@mui/icons-material/Mail";
+import Badge from '@mui/material/Badge';
+import {Notifications} from "@mui/icons-material";
+import {api} from "~/Config/api.js";
+import socketService from "~/hooks/SocketService.js";
+import NotificationMenu from "~/components/Header/components/Notification/index.jsx";
 
 export default function AccountMenu({user}) {
   const [anchorEl, setAnchorEl] = React.useState(null);
+  const [notifications, setNotifications] = React.useState([]);
+  const [unreadNotifications, setUnreadNotifications] = React.useState(0);
   const open = Boolean(anchorEl);
+  const socket = socketService.connect('http://localhost:3000')
+  const [notificationAnchorEl, setNotificationAnchorEl] = React.useState(null);
+  const notificationOpen = Boolean(notificationAnchorEl);
+
+  const handleNotificationClick = (event) => {
+    setNotificationAnchorEl(event.currentTarget);
+  };
+
+  const handleNotificationClose = () => {
+    setNotificationAnchorEl(null);
+  };
+  const fetchNotifications = async () => {
+    const result = await api.get('/notifications', {
+      params: {
+        user: user._id
+      }
+    });
+      console.log(result);
+    if(result.data.success){
+      setNotifications(result.data.data);
+      setUnreadNotifications(result.data.filter(notification => notification.read === false).length);
+    }
+  }
+    React.useEffect(() => {
+        fetchNotifications();
+        socket.on('notification:new', (data) => {
+          setNotifications([data, ...notifications]);
+          setUnreadNotifications(prevState => prevState + 1);
+        })
+    }, []);
   const handleClick = (event) => {
     setAnchorEl(event.currentTarget);
   };
@@ -44,6 +82,23 @@ export default function AccountMenu({user}) {
   };
   return (
     <React.Fragment>
+      <IconButton onClick={handleNotificationClick}>
+        {unreadNotifications > 0 ? (
+            <Badge color="secondary" variant="dot">
+              <Notifications fontSize='large'/>
+            </Badge>
+        ) : (
+            <Notifications fontSize='large'/>
+        )}
+      </IconButton>
+
+      <NotificationMenu
+          anchorEl={notificationAnchorEl}
+          open={notificationOpen}
+          onClose={handleNotificationClose}
+          notifications={notifications}
+          setNotifications={setNotifications}
+      />
       <Box sx={{ display: 'flex', alignItems: 'center', textAlign: 'center' }}>
         <Tooltip title="Account settings">
           <IconButton

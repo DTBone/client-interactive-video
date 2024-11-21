@@ -28,7 +28,7 @@ const Lecture = ({ moduleItemData, onUpdateData, handleSubmit }) => {
         if (file) {
             const fileData = new FormData();
             fileData.append('file', file);
-            console.log('file selected: ', file)
+            console.log('file selectedA: ', fileData.get('file'))
             onUpdateData({
                 ...moduleItemData,
                 references: {

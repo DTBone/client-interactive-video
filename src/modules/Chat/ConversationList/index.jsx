@@ -10,17 +10,22 @@ import {
   Badge,
   Box,
   TextField,
-  InputAdornment, Dialog, Popover,
+  InputAdornment,
 } from '@mui/material';
 import { Group as GroupIcon, Person as PersonIcon } from '@mui/icons-material';
 import { SearchIcon } from 'lucide-react';
+import useDebounce from "~/hooks/useDebounce.js";
+import {api} from "~/Config/api.js";
+import SearchUsersPopper from "~/modules/Chat/SearchUser/index.jsx";
 
 const ConversationList = ({ onSelectConversation, activeConversation, socket }) => {
   const [conversations, setConversations] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchResults, setSearchResults] = useState([]);
   const userId = JSON.parse(localStorage.getItem('user'))?._id;
+  const searchDebounce = useDebounce(searchQuery, 500);
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [isSearching, setIsSearching] = useState(false);
   useEffect(() => {
     if (!socket) return;
 
@@ -74,29 +79,31 @@ const ConversationList = ({ onSelectConversation, activeConversation, socket }) 
   };
 }, [socket]);
   // Hàm tìm kiếm
-  const handleSearch = (query) => {
-    setSearchQuery(query);
-    if (query) {
-      setIsSearchOpen(true);
-      const results = conversations.filter(conversation => {
-        const title = conversation.type === 'group'
-            ? conversation.metadata.name
-            : getConversationTitleAndImage(conversation).profile.full_name;
-        return title.toLowerCase().includes(query.toLowerCase());
-      });
-      setSearchResults(results);
-    } else {
+  useEffect(() => {
+    if (!searchDebounce) {
       setSearchResults([]);
-      setIsSearchOpen(false);
+      return;
     }
-  };
+
+    setIsSearching(true);
+    api.get(`/users?limit=9&&fullname=${searchDebounce}`)
+        .then((res) => {
+          setSearchResults(res.data.data.users);
+        })
+        .catch((err) => {
+          console.error(err);
+        })
+        .finally(() => {
+          setIsSearching(false);
+        });
+  }, [searchDebounce]);
   const getConversationTitleAndImage = (conversation) => {
     if (conversation.type === 'group') {
       return conversation.metadata.name;
     }
     // For direct messages, show the other participant's name
     const otherParticipant = conversation.participants.find(p => p._id !== userId);
-    otherParticipant.profile.full_name ? otherParticipant.profile.full_name : 'Unknown';
+    otherParticipant?.profile?.full_name ? otherParticipant.profile.full_name : 'Unknown';
     return otherParticipant
   };
 
@@ -104,84 +111,31 @@ const ConversationList = ({ onSelectConversation, activeConversation, socket }) 
     <Box className="h-full overflow-y-auto" >
       <Box className="p-4 border-b">
         <TextField
-          fullWidth
-          size="small"
-          placeholder="Search conversation..."
-          value={searchQuery}
-          onChange={(e) => handleSearch(e.target.value)}
-          slotProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <SearchIcon className="text-gray-400" />
-              </InputAdornment>
-            ),
-          }}
+            fullWidth
+            size="small"
+            placeholder="Search users..."
+            value={searchQuery}
+            onChange={(e) => {
+              setSearchQuery(e.target.value);
+              setAnchorEl(e.currentTarget);
+            }}
+            InputProps={{
+              startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon className="text-gray-400" />
+                  </InputAdornment>
+              ),
+            }}
         />
-      
-      {/* Popup tìm kiếm */}
-      <Popover
-          anchorOrigin={{
-            vertical: 'bottom',
-            horizontal: 'center',
-          }}
-          transformOrigin={{
-            vertical: 'bottom',
-            horizontal: 'left',
-          }}
-          open={isSearchOpen} onClose={() => setIsSearchOpen(false)} maxWidth="sm" fullWidth>
-        <List>
-          {searchResults.length > 0 ? (
-              searchResults.map((conversation, index) => (
-                  <ListItem
-                      key={index}
-                      button
-                      onClick={() => {
-                        onSelectConversation(conversation);
-                        setIsSearchOpen(false);
-                      }}
-                  >
-                    <ListItemAvatar>
-                      {conversation.type === 'group' ? (
-                          <Avatar className="bg-purple-500">
-                            <GroupIcon />
-                          </Avatar>
-                      ) : (
-                          <Badge
-                              overlap="circular"
-                              anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-                              variant="dot"
-                              color={conversation.isOnline ? 'success' : 'default'}
-                          >
-                            {getConversationTitleAndImage(conversation).profile.picture ? (
-                                <Avatar src={getConversationTitleAndImage(conversation).profile.picture} />
-                            ) : (
-                                <Avatar>
-                                  <PersonIcon />
-                                </Avatar>
-                            )}
-                          </Badge>
-                      )}
-                    </ListItemAvatar>
 
-                    <ListItemText
-                        primary={
-                          <Typography noWrap className="font-medium">
-                            {getConversationTitleAndImage(conversation).profile.full_name || 'Unknown'}
-                          </Typography>
-                        }
-                        secondary={
-                          <Typography noWrap variant="body2" color="textSecondary">
-                            {conversation.lastMessage ? conversation.lastMessage.content : 'No messages'}
-                          </Typography>
-                        }
-                    />
-                  </ListItem>
-              ))
-          ) : (
-              <Typography className="p-4 text-gray-500">No results found</Typography>
-          )}
-        </List>
-      </Popover>
+        <SearchUsersPopper
+            anchorEl={anchorEl}
+            searchResults={searchResults}
+            onSelectUser={onSelectConversation}
+            loading={isSearching}
+            open={Boolean(anchorEl) && searchQuery.length > 0}
+            onClose={() => setAnchorEl(null)}
+        />
       </Box>
     <List className="h-full overflow-y-auto">
       {conversations.map((conversation, index) => (
@@ -208,8 +162,8 @@ const ConversationList = ({ onSelectConversation, activeConversation, socket }) 
                 variant="dot"
                 color={conversation.isOnline ? 'success' : 'default'}
               >
-                {getConversationTitleAndImage(conversation).profile.picture ? (
-                  <Avatar src={getConversationTitleAndImage(conversation).profile.picture} />
+                {getConversationTitleAndImage(conversation)?.profile?.picture ? (
+                  <Avatar src={getConversationTitleAndImage(conversation)?.profile?.picture} />
                 ) : (
                   <Avatar>
                     <PersonIcon />
@@ -222,7 +176,7 @@ const ConversationList = ({ onSelectConversation, activeConversation, socket }) 
           <ListItemText
             primary={
               <Typography noWrap className="font-medium">
-                {getConversationTitleAndImage(conversation).profile.full_name || getConversationTitleAndImage(conversation).profile.fullname}
+                {getConversationTitleAndImage(conversation)?.profile?.full_name || getConversationTitleAndImage(conversation)?.profile?.fullname}
               </Typography>
             }
             secondary={

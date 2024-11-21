@@ -51,6 +51,7 @@ import NewModuleItem from './modules/Instructor/Modules/MainSection/NewModuleIte
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import MainSection from './modules/Instructor/Modules/MainSection/MainSection';
+import Blogs from "~/modules/User/Blogs/index.jsx";
 
 function App() {
   const dispatch = useDispatch();
@@ -141,6 +142,13 @@ function App() {
             </DashboardLayout>
           </ProtectedRoute>
         } />
+        <Route path="/blogs" element={
+          <ProtectedRoute allowedRoles={['student', 'instructor', 'admin']}>
+            <DashboardLayout>
+              <Blogs />
+            </DashboardLayout>
+          </ProtectedRoute>
+        } />
 
         {/* Course routes */}
         <Route path="/course/:id" element={
@@ -177,7 +185,7 @@ function App() {
           <Route index element={<Supplement />} />
           <Route path="supplement/:supplementId" element={<Supplement />} />
           <Route path="lecture/:lectureId" element={<Lecture />} />
-          <Route path="quiz/:quizId" element={<Quiz />} />
+          <Route path=":moduleId/quiz/:quizId" element={<Quiz />} />
           <Route path="programming/:programmingId" element={<Programming />} />
         </Route>
 

@@ -1,7 +1,7 @@
-const About = () => {
+const About = ({course}) => {
     return (
         <div>
-            About
+            {course?.description}
         </div>
     )
 }

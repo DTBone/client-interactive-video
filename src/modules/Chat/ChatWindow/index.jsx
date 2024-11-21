@@ -78,7 +78,7 @@ const ChatWindow = ({ conversation, socket, userId }) => {
 
   const handleVideoCall = () => {
     const videoCallWindow = window.open(
-        `/video-call?conversationId=${conversation._id}`,
+        `/video-call?conversationId=${conversation._id}&userId=${userId}`,
         '_blank',
         'width=1200,height=800'
     );
@@ -94,6 +94,7 @@ const ChatWindow = ({ conversation, socket, userId }) => {
 
 
   const getConversationTitleAndImage = (conversation) => {
+    console.log('conversations', conversation);
     if (conversation.type === 'group') {
       return conversation.metadata.name;
     }

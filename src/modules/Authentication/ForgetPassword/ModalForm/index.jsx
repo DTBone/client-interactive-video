@@ -71,7 +71,7 @@ export default function ModalForm() {
   const handleClose = () => {
     setOpen(false);
     if(error === 'Success Please login with your new password')
-      navigate('/login');
+      navigate('/signin');
   };
 
   return (

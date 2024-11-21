@@ -33,7 +33,7 @@ const EnrollCourseBtn = ({ course, submitCourse }) => {
                 variant='contained'
                 onClick={handleOpen}
                 sx={{ width: "18rem", height: "4rem", background: "#0048b0" }}>
-                Enroll For Free
+                {course.price > 0 ? `Enroll with ${course.price} VND` : 'Enroll For Free Trial '}
             </Button>
 
             <Modal

@@ -1,5 +1,5 @@
 import { createSlice, current } from "@reduxjs/toolkit";
-import { createModule, deleteModule, getAllModules, updateModule } from "./action";
+import {createModule, deleteModule, getAllModules, getModuleById, updateModule} from "./action";
 
 const moduleSlice = createSlice({
     name: 'module-slice',
@@ -73,6 +73,19 @@ const moduleSlice = createSlice({
                 state.error = null;
             })
             .addCase(deleteModule.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
+            .addCase(getModuleById.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(getModuleById.fulfilled, (state, action) => {
+                state.loading = false;
+                state.currentModule = action.payload;
+                state.error = null;
+            })
+            .addCase(getModuleById.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload;
             })
