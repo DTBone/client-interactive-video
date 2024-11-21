@@ -7,7 +7,7 @@ import {
     Box,
 } from '@mui/material';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
-import { useNotification } from '~/Hooks/useNotification';
+import { useNotification } from '~/hooks/useNotification';
 import { useDispatch, useSelector } from 'react-redux';
 import { deleteModule, getAllModules, updateModule } from '~/store/slices/Module/action';
 import { clearError, toggleRefresh } from '~/store/slices/Module/moduleSlice';

@@ -16,7 +16,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import UploadFileIcon from '@mui/icons-material/UploadFile';
 import { createModuleItemSupplement } from '~/store/slices/ModuleItem/action';
 import { toggleRefresh } from '~/store/slices/Module/moduleSlice';
-import { useNotification } from '~/Hooks/useNotification';
+import { useNotification } from '~/hooks/useNotification';
 
 const EditSupplement = ({ moduleItem }) => {
     const navigate = useNavigate();

@@ -7,7 +7,7 @@ import {
     Box,
 } from '@mui/material';
 import { Navigate, useNavigate, useParams } from 'react-router-dom';
-import { useNotification } from '~/Hooks/useNotification';
+import { useNotification } from '~/hooks/useNotification';
 import { useDispatch } from 'react-redux';
 import { createModule } from '~/store/slices/Module/action';
 import { toggleRefresh } from '~/store/slices/Module/moduleSlice';

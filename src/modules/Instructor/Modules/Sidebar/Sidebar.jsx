@@ -16,7 +16,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { getCourseByID } from '~/store/slices/Course/action';
 
 import { clearError } from '~/store/slices/Course/courseSlice';
-import { useNotification } from '~/Hooks/useNotification';
+import { useNotification } from '~/hooks/useNotification';
 import AddIcon from '@mui/icons-material/Add';
 import IconComponent from './../../../../Components/Common/Button/IconComponent';
 import { getAllModules } from '~/store/slices/Module/action';

@@ -1,4 +1,4 @@
-import {LinearProgress, Typography} from '@mui/material';
+import { Typography } from '@mui/material';
 import React, { useEffect, useState } from 'react';
 import { Select as MuiSelect, MenuItem, FormControl, InputLabel } from '@mui/material';
 
@@ -9,11 +9,9 @@ import Lecture from '../Component/Lecture';
 import Quiz from '../Component/Quiz';
 import Programming from '../Component/Programming';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useNotification } from '~/Hooks/useNotification';
+import { useNotification } from '~/hooks/useNotification';
 import { ShowChart } from '@mui/icons-material';
 import { getAllModules } from '~/store/slices/Module/action';
-import {createLecture} from "~/store/slices/ModuleItem/action.js";
-import {ChunkUploader} from "~/services/fileUpload/chunkUploadToMiniO.js";
 
 const NewModuleItem = () => {
     const dispatch = useDispatch();
@@ -22,8 +20,6 @@ const NewModuleItem = () => {
 
     useEffect(() => { }, [contentType])
     const { courseId, moduleId } = useParams();
-    const [uploadProgress, setUploadProgress] = useState(0);
-    const [uploading, setUploading] = useState(false);
 
     const handleChange = (event) => {
         setContentType(event.target.value);
@@ -42,59 +38,6 @@ const NewModuleItem = () => {
     }, [modules, moduleId])
 
 
-            // Add API call to create new module item
-            // await dispatch(createModuleItem(moduleItemData));
-            switch (moduleItemData.contentType) {
-                case 'Reading':
-                    //await dispatch(createSupplement(moduleItemData));
-                    console.log("module item data reading: ", moduleItemData)
-                    break;
-                case 'Video':
-                    { console.log("module item data video: ", moduleItemData.references.file.get('file'))
-                        setUploading(true);
-                        const uploader = new ChunkUploader(
-                            {
-                                moduleId: '67387230192f25da8f49c968',
-                                title: moduleItemData.title,
-                                description: moduleItemData.description,
-                            },
-                            moduleItemData.references.file.get('file'),
-                            {
-                                onProgress: (progress) => {
-                                    setUploadProgress(progress);
-                                },
-                                onComplete: () => {
-                                    setUploading(false);
-                                    setUploadProgress(0);
-                                },
-                                onError: (error) => {
-                                    setUploading(false);
-                                    setUploadProgress(0);
-                                    showNotice("error", 'Error uploading video');
-                                    console.error('Error uploading video:', error);
-                                }
-                            }
-                        );
-                        await uploader.start();
-                    break; }
-                case 'Practice Quiz':
-                    //await dispatch(createQuiz(moduleItemData));
-                    console.log("module item data quiz: ", moduleItemData)
-                    break;
-                case 'Programming Assignment':
-                    //await dispatch(createProgramming(moduleItemData));
-                    console.log("module item data programming: ", moduleItemData)
-                    break;
-                default:
-                    break;
-            }
-            showNotice("success", 'Module item created successfully');
-            //navigate(-1);
-        } catch (error) {
-            showNotice("error", 'Error creating module item');
-            console.error('Error creating module item:', error);
-        }
-    };
 
     const renderContentComponent = () => {
         switch (contentType) {
@@ -149,13 +92,6 @@ const NewModuleItem = () => {
                 </FormControl>
 
                 {renderContentComponent()}
-                {uploading && (
-                    <LinearProgress
-                        variant="determinate"
-                        value={uploadProgress}
-                        sx={{ height: '0.5rem' }}
-                    />
-                )}
             </div>
         </div>
     )

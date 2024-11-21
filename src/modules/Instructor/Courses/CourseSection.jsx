@@ -14,7 +14,7 @@ import Breadcrumb from '~/Components/Common/Breadcrumbs/Breadcrumb';
 import ImageUpload from './UploadImage'
 import ArrowRightAltIcon from '@mui/icons-material/ArrowRightAlt';
 import { clearError } from '~/store/slices/Course/courseSlice';
-import { useNotification } from '~/Hooks/useNotification';
+import { useNotification } from '~/hooks/useNotification';
 import { uploadToCloudnary } from '~/Utils/uploadToCloudnary';
 
 const CourseSection = ({ state }) => {

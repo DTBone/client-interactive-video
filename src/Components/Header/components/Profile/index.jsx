@@ -12,7 +12,6 @@ import Settings from '@mui/icons-material/Settings';
 import Logout from '@mui/icons-material/Logout';
 import { useNavigate } from 'react-router-dom';
 import authService from '~/services/auth/authService';
-import MailIcon from "@mui/icons-material/Mail";
 import Badge from '@mui/material/Badge';
 import {Notifications} from "@mui/icons-material";
 import {api} from "~/Config/api.js";

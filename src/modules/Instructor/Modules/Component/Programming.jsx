@@ -18,7 +18,7 @@ import {
 } from '@mui/material';
 import { Add as AddIcon, Delete as DeleteIcon } from '@mui/icons-material';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useNotification } from '~/Hooks/useNotification';
+import { useNotification } from '~/hooks/useNotification';
 import * as Yup from 'yup';
 import { useDispatch } from 'react-redux';
 import { createModuleItemProgramming } from '~/store/slices/ModuleItem/action';
