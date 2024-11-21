@@ -19,12 +19,15 @@ import { clearError } from '~/store/slices/Course/courseSlice';
 import { useNotification } from '~/Hooks/useNotification';
 import AddIcon from '@mui/icons-material/Add';
 import IconComponent from './../../../../Components/Common/Button/IconComponent';
+import { getAllModules } from '~/store/slices/Module/action';
+import CustomMenuItemButton from '~/modules/Lesson/Button/CustomMenuItemButton';
 
 const Sidebar = () => {
     const navigate = useNavigate();
     const dispatch = useDispatch();
     const { courseId, moduleId } = useParams();
     const { refresh } = useSelector((state) => state.module);
+    const allModules = useSelector((state) => state.module.modules);
     const { currentCourse, loading, error } = useSelector((state) => state.course);
     const [courseData, setCourseData] = useState();
     const [modules, setModules] = useState()
@@ -43,13 +46,14 @@ const Sidebar = () => {
 
         };
         fetchData()
-    }, [dispatch, courseId, refresh])
+    }, [dispatch, courseId])
 
     useEffect(() => {
         if (currentCourse?.data) {
             setCourseData(currentCourse.data);
             setModules(currentCourse?.data.modules)
             findModuleData(moduleId);
+
         }
     }, [currentCourse, courseId, moduleId]);
     const { showNotice } = useNotification();
@@ -62,39 +66,52 @@ const Sidebar = () => {
         }
     }, [error, showNotice]);
 
-    useEffect(() => { }, [])
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                await dispatch(getAllModules(courseId));
+                console.log('fetch data')
+            }
+            catch (error) {
+                showNotice('error', error.message);
+            }
+        }
+        fetchData();
+        //console.log('modules', allModules)
+    }, [courseId, moduleId, refresh])
 
+    useEffect(() => {
+        findModuleData(moduleId);
+    }, [allModules, courseId, moduleId])
     const findModuleData = (index) => {
-        const findModuleData = courseData?.modules.find(module => module.index === String(index));
-        setModuleData(findModuleData)
+        const findModuleData1 = allModules.find(module => module.index === String(index));
+        setModuleData(findModuleData1)
+        //console.log("findModuleData", findModuleData1);
     }
 
 
-    const handleButtonClick = (buttonId) => {
-        setActiveButton(`${buttonId.toLowerCase()}`);
-        navigate(`${buttonId.toLowerCase().replace(/\s+/g, '/')}`);
 
-
-    };
-    const handleModuleItemClick = (itemId, module) => {
-        setActiveButton(`${itemId.toLowerCase()}`);
-        navigate(`${itemId.toLowerCase().replace(/\s+/g, '-')}`, { state: { module } });
-
-    };
     const handleNewModuleClick = () => {
+        setActiveButton(null);
         navigate(`/course-management/${courseId}/module/new-module`);
     }
     const handleNewModuleItemClick = (moduleIndex) => {
-
+        setActiveButton(null);
         navigate(`/course-management/${courseId}/module/${moduleIndex}/new-module-item`);
     }
 
-    const handleEditModuleClick = (curretnModule, moduleIndex) => {
-        navigate(`/course-management/${courseId}/module/${moduleIndex}`, { state: { curretnModule } });
+    const handleEditModuleClick = (currentModule, moduleIndex) => {
+        setActiveButton(null);
+        navigate(`/course-management/${courseId}/module/${moduleIndex}`, {
+            state: {
+                currentModule: currentModule,
+            }
+        });
     }
     const handleEditModuleItemClick = (curretnModuleItem, moduleIndex, moduleItemId) => {
-        console.log("handle ", curretnModuleItem, moduleIndex, moduleItemId);
-        navigate(`/course-management/${courseId}/module/${moduleIndex}/moduleitem/${moduleItemId}`, { state: { curretnModuleItem } });
+        setActiveButton(`${moduleItemId}`);
+        //console.log("handle ", curretnModuleItem, moduleIndex, moduleItemId);
+        navigate(`/course-management/${courseId}/module/${moduleIndex}/moduleitem/${moduleItemId}`, { state: { curretnModuleItem: curretnModuleItem } });
 
     }
 
@@ -158,42 +175,7 @@ const Sidebar = () => {
 
     }));
 
-    const CustomButton = styled(Button)(({ theme, isActive }) => ({
-        justifyContent: 'flex-start',
-        paddingLeft: theme.spacing(4),
-        width: '100%',
-        height: '64px',
-        //fontWeight: 'bold',
-        textTransform: "capitalize",
-        color: "#000000",
-        fontSize: "16px",
-        background: isActive ? "#f2f5fa" : "transparent",
-        borderLeftColor: isActive ? "#0056d2" : "transparent",
-        borderLeftWidth: isActive ? "4px" : "0",
-        borderRadius: isActive ? "4px" : "0 4px 4px 0",
-        borderLeftStyle: isActive ? 'solid' : 'none',
-        textDecoration: isActive ? 'underline' : 'none',
 
-        '&::before': {
-            content: '""',
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            width: '4px',
-            height: '100%',
-            backgroundColor: 'transparent',
-            transition: 'background-color 0.3s',
-        },
-        '&:hover': {
-            background: "#f0f6ff",
-            //textDecoration: 'underline',
-        },
-
-        display: 'flex',
-        alignItems: 'center',
-        gap: "8px",
-
-    }));
     const AddButton = styled(Button)(({ theme, isActive }) => ({
 
         paddingLeft: theme.spacing(6),
@@ -241,7 +223,7 @@ const Sidebar = () => {
             <div className="w-full bg-transparent h-full flex justify-start items-center py-8 ">
                 <Typography onClick={() => navigateModuleSession()} variant='h4' fontSize="bold" sx={{ textTransform: "none" }}>{courseData?.title}</Typography>
             </div>
-            {modules?.map((module, index) => (
+            {allModules && allModules?.map((module, index) => (
                 <div key={index}>
                     <CustomAccordion expanded={expanded === `panel${index}`} onChange={handleChange(`panel${index}`)}>
                         <CustomAccordionSummary
@@ -254,17 +236,21 @@ const Sidebar = () => {
                             Module {module.index}
                         </CustomAccordionSummary>
                         <CustomAccordionDetails>
-                            {module.moduleItems.map((item, idx) => (
-                                <CustomButton
+                            {module.moduleItems && module.moduleItems.map((item, idx) => (
+                                <CustomMenuItemButton
                                     key={idx}
                                     fullWidth
                                     onClick={() => handleEditModuleItemClick(item, module.index, item._id)}
-                                    isActive={activeButton === item._id} >
-                                    icon={<IconComponent icon={item.contentType} />}
-                                    <Circle sx={{ color: '#c1cad9' }} />
-                                    {item.title}
+                                    isActive={activeButton === item._id}
+                                    icon={<IconComponent icon={item.icon} />}
+                                >
 
-                                </CustomButton>
+                                    <Typography fontWeight="bold" fontSize='12px' sx={{ display: 'inline', textTransform: 'capitalize' }}> {item.contentType}</Typography>
+                                    <Typography fontSize='12px' sx={{ display: 'inline', textTransform: 'capitalize', marginLeft: '8px' }}>{item.title}</Typography>
+                                    <Typography fontSize='10px' sx={{ textTransform: 'lowercase', }} color='#5b6790'> {item.note}</Typography>
+
+
+                                </CustomMenuItemButton>
                             ))}
                             <AddButton onClick={() => handleNewModuleItemClick(module.index)}>New Module Item <AddIcon /></AddButton>
                         </CustomAccordionDetails>

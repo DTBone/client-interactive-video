@@ -1,5 +1,4 @@
-import { createAsyncThunk } from '@reduxjs/toolkit';
-import { api } from '~/Config/api';
+import { asyncThunkCreator, createAsyncThunk } from '@reduxjs/toolkit';
 import axiosInstance from '~/Config/axiosInstance';
 
 export const createModule = createAsyncThunk(
@@ -83,3 +82,4 @@ export const deleteModule = createAsyncThunk(
         }
     }
 )
+

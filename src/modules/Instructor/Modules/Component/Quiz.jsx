@@ -10,26 +10,37 @@ import {
     Card,
     CardContent,
     Typography,
-    Box,
     Switch,
     FormControlLabel,
-    Divider
+
 } from '@mui/material';
 import { Add as AddIcon, Delete as DeleteIcon } from '@mui/icons-material';
-
-const Quiz = ({ moduleItemData, onUpdateData, handleSubmit }) => {
+import { useNotification } from '~/Hooks/useNotification';
+import { useNavigate, useParams } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
+import { toggleRefresh } from '~/store/slices/Module/moduleSlice';
+import { createModuleItemQuiz } from '~/store/slices/ModuleItem/action';
+const Quiz = () => {
+    const navigate = useNavigate();
+    const dispatch = useDispatch();
+    const { showNotice } = useNotification();
+    const { courseId, moduleId } = useParams();
     const [quizData, setQuizData] = useState({
         title: '',
+        type: 'quiz',
+        contentType: 'Practice Quiz',
+        icon: 'quiz',
         description: '',
         duration: 1200, // 20 minutes in seconds
         passingScore: 70,
+        isGrade: false,
         questions: [{
             orderNumber: 1,
             content: '',
             type: 'only-choice',
             points: 1,
             answers: [
-                { content: '', isCorrect: false },
+                { content: '', isCorrect: true },
                 { content: '', isCorrect: false }
             ],
             explanation: ''
@@ -43,7 +54,7 @@ const Quiz = ({ moduleItemData, onUpdateData, handleSubmit }) => {
             [field]: event.target.value
         };
         setQuizData(updatedQuizData);
-        onUpdateData({ quiz: updatedQuizData });
+
     };
 
     // Add new question
@@ -54,7 +65,7 @@ const Quiz = ({ moduleItemData, onUpdateData, handleSubmit }) => {
             type: 'only-choice',
             points: 1,
             answers: [
-                { content: '', isCorrect: false },
+                { content: '', isCorrect: true },
                 { content: '', isCorrect: false }
             ],
             explanation: ''
@@ -147,13 +158,50 @@ const Quiz = ({ moduleItemData, onUpdateData, handleSubmit }) => {
             questions: updatedQuestions
         });
     };
+    const handleGradeChange = (event) => {
+        setQuizData({ ...quizData, isGrade: event.target.checked });
+    };
+    const handleSubmit = async () => {
+        try {
+            if (!quizData.title) {
+                showNotice('error', 'Please enter title');
+                return;
+            }
+            if (!quizData.duration) {
+                showNotice('error', 'Please enter duration');
+                return;
+            }
+            if (!quizData.passingScore) {
+                showNotice('error', 'Please enter passing score');
+                return;
+            }
+            await dispatch(createModuleItemQuiz({ courseId, moduleId, quizData }));
+            dispatch(toggleRefresh());
+            showNotice('success', 'Successfully created quiz');
+            navigate(`/course-management/${courseId}/module/${moduleId}`)
+        }
+        catch {
+            showNotice('error', 'Error submitting form');
+        }
+    }
 
     return (
         <div className="space-y-6">
             {/* Quiz Basic Information */}
             <Card className="p-4">
                 <CardContent>
-                    <Typography variant="h6" className="mb-4">Quiz Information</Typography>
+                    <div className='flex justify-between'>
+                        <Typography variant="h6" className="mb-4">Quiz Information</Typography>
+                        <FormControlLabel
+                            control={
+                                <Switch
+                                    checked={quizData.isGrade}
+                                    onChange={handleGradeChange}
+                                />
+                            }
+                            label="Grade"
+                        />
+                    </div>
                     <div className="space-y-4">
                         <TextField
                             fullWidth
@@ -193,6 +241,7 @@ const Quiz = ({ moduleItemData, onUpdateData, handleSubmit }) => {
                     <CardContent>
                         <div className="flex justify-between items-center mb-4">
                             <Typography variant="h6">Question {question.orderNumber}</Typography>
+
                             <IconButton
                                 onClick={() => removeQuestion(questionIndex)}
                                 disabled={quizData.questions.length === 1}
@@ -298,7 +347,7 @@ const Quiz = ({ moduleItemData, onUpdateData, handleSubmit }) => {
                     color="primary"
                     onClick={handleSubmit}
                 >
-                    Save Quiz
+                    Create Quiz
                 </Button>
             </div>
         </div>

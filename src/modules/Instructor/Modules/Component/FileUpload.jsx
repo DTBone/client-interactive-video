@@ -12,22 +12,62 @@ import {
     LinearProgress,
     Box
 } from '@mui/material';
+import { useNotification } from '~/Hooks/useNotification';
 
-const FileUpload = ({ onFileChange }) => {
+const FileUpload = ({ onFileChange, accept = '.pdf,.doc,.docx,.jpg,.jpeg,.png, .mp4, .webm' }) => {
     const [isDragging, setIsDragging] = useState(false);
     const [file, setFile] = useState(null);
     const [uploading, setUploading] = useState(false);
+    const [error, setError] = useState(null);
+    const { showNotice } = useNotification();
+
+    // Chuyển đổi MIME types thành extensions và ngược lại
+    const mimeToExt = {
+        'video/mp4': '.mp4',
+        'video/quicktime': '.mov',
+        'video/x-msvideo': '.avi',
+        'video/webm': '.webm',
+        'application/pdf': '.pdf',
+        'image/jpeg': '.jpg,.jpeg',
+        'image/png': '.png',
+        'application/msword': '.doc',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document': '.docx'
+    };
+
+    const extToMime = {
+        '.mp4': 'video/mp4',
+        '.mov': 'video/quicktime',
+        '.avi': 'video/x-msvideo',
+        '.webm': 'video/webm',
+        '.pdf': 'application/pdf',
+        '.jpg': 'image/jpeg',
+        '.jpeg': 'image/jpeg',
+        '.png': 'image/png',
+        '.doc': 'application/msword',
+        '.docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+    };
+
+    // Chuyển đổi accept string thành array của allowed MIME types
+    const getAllowedTypes = useCallback(() => {
+        const extensions = accept.split(',');
+        return extensions.map(ext => extToMime[ext.trim()]).filter(Boolean);
+    }, [accept]);
 
     const handleFile = useCallback((newFile) => {
+        setError(null);
         setUploading(true);
 
         // Validate file
-        const error = validateFile(newFile);
-        if (!error) {
-            setFile(newFile);
-            if (onFileChange) {
-                onFileChange(newFile);
-            }
+        const validationError = validateFile(newFile);
+        if (validationError) {
+            setError(validationError);
+            setUploading(false);
+            return;
+        }
+
+        setFile(newFile);
+        if (onFileChange) {
+            onFileChange(newFile);
         }
 
         setTimeout(() => {
@@ -35,6 +75,23 @@ const FileUpload = ({ onFileChange }) => {
         }, 1500);
     }, [onFileChange]);
 
+    const validateFile = (file) => {
+        const allowedTypes = getAllowedTypes();
+        const maxSize = 100 * 1024 * 1024; // 100MB
+
+        if (!allowedTypes.includes(file.type)) {
+            showNotice('error', `File type not supported. Allowed types: ${accept}`);
+            return `File type not supported. Allowed types: ${accept}`;
+        }
+        if (file.size > maxSize) {
+            showNotice('error', 'File size exceeds 100MB');
+            return 'File size exceeds 100MB';
+        }
+        return null;
+    };
+
+
+    // Drag and drop handlers
     const onDragEnter = useCallback((e) => {
         e.preventDefault();
         e.stopPropagation();
@@ -57,22 +114,23 @@ const FileUpload = ({ onFileChange }) => {
         e.stopPropagation();
         setIsDragging(false);
 
-        const droppedFile = e.dataTransfer.files[0]; // Chỉ lấy file đầu tiên
+        const droppedFile = e.dataTransfer.files[0];
         if (droppedFile) {
             handleFile(droppedFile);
         }
     }, [handleFile]);
 
     const onFileSelect = useCallback((e) => {
-        const selectedFile = e.target.files[0]; // Chỉ lấy file đầu tiên
+        const selectedFile = e.target.files[0];
         if (selectedFile) {
             handleFile(selectedFile);
         }
-        e.target.value = ''; // Reset input
+        e.target.value = '';
     }, [handleFile]);
 
     const removeFile = useCallback(() => {
         setFile(null);
+        setError(null);
         if (onFileChange) {
             onFileChange(null);
         }
@@ -137,7 +195,7 @@ const FileUpload = ({ onFileChange }) => {
                             type="file"
                             hidden
                             onChange={onFileSelect}
-                            accept=".mp4 , .pdf, .doc, .docx, .jpg, .jpeg, .png"
+                            accept={accept}
                         />
                         <Button
                             variant="contained"
@@ -154,8 +212,21 @@ const FileUpload = ({ onFileChange }) => {
                             Choose File
                         </Button>
                     </label>
+
+                    {/* Show accepted file types */}
+                    <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                        Accepted file types: {accept}
+                    </Typography>
                 </Box>
             ) : null}
+
+            {error && (
+                <Box sx={{ px: 2, pb: 2 }}>
+                    <Typography variant="body2" sx={{ color: 'error.main' }}>
+                        {error}
+                    </Typography>
+                </Box>
+            )}
 
             {uploading && (
                 <Box sx={{ px: 2, pb: 2 }}>
@@ -215,7 +286,6 @@ const FileUpload = ({ onFileChange }) => {
                         </ListItemSecondaryAction>
                     </ListItem>
 
-                    {/* Button to choose another file */}
                     <Box sx={{ mt: 2, textAlign: 'center' }}>
                         <label htmlFor="file-input">
                             <input
@@ -223,7 +293,7 @@ const FileUpload = ({ onFileChange }) => {
                                 type="file"
                                 hidden
                                 onChange={onFileSelect}
-                                accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                                accept={accept}
                             />
                             <Button
                                 variant="outlined"

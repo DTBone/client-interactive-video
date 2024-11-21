@@ -19,6 +19,7 @@ const moduleSlice = createSlice({
             state.error = null;
         },
         toggleRefresh: (state) => {
+            console.log('toggle refresh')
             state.refresh = !state.refresh;
         }
     },

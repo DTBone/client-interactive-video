@@ -6,11 +6,7 @@ import Sidebar from './Sidebar/Sidebar';
 import { Outlet } from 'react-router-dom';
 
 const ModuleSection = () => {
-    const [isExpanded, setIsExpanded] = useState(true);
-    const handleSidebarButtonClick = () => {
-        setIsExpanded(!isExpanded);
-        //setSidebarWidth(isExpanded ? 55 : 255);
-    };
+
     return (
         <div className="h-screen flex flex-col overflow-hidden">
             <header className=' '>

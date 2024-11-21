@@ -17,9 +17,9 @@ import {ChunkUploader} from "~/services/fileUpload/chunkUploadToMiniO.js";
 
 const NewModuleItem = () => {
     const dispatch = useDispatch();
-    const navigate = useNavigate();
+
     const [contentType, setContentType] = useState('');
-    const { showNotice } = useNotification();
+
     useEffect(() => { }, [contentType])
     const { courseId, moduleId } = useParams();
     const [uploadProgress, setUploadProgress] = useState(0);
@@ -41,63 +41,6 @@ const NewModuleItem = () => {
         console.log("Module ", foundModule);
     }, [modules, moduleId])
 
-    const [moduleItemData, setModuleItemData] = useState({
-        moduleId: moduleId,
-        title: '',
-        description: '',
-        type: '',
-        contentType: '',
-        icon: '',
-        isGrade: false,
-        references: {
-            title: '',
-            file: '',
-            size: '',
-            fileName: ''
-        }
-    });
-
-    const contentTypeMapping = {
-        'Reading': {
-            type: 'supplement',
-            icon: 'read'
-        },
-        'Video': {
-            type: 'lecture',
-            icon: 'video'
-        },
-        'Practice Quiz': {
-            type: 'quiz',
-            icon: 'quiz'
-        },
-        'Programming Assignment': {
-            type: 'programming',
-            icon: 'code'
-        }
-    };
-
-    const handleContentTypeChange = (event) => {
-        const selectedContentType = event.target.value;
-        const mappedType = contentTypeMapping[selectedContentType];
-
-        setModuleItemData(prev => ({
-            ...prev,
-            contentType: selectedContentType,
-            type: mappedType.type,
-            icon: mappedType.icon
-        }));
-    };
-    const handleSubmit = async () => {
-        try {
-            // Validation
-            if (!moduleItemData.title) {
-                showNotice("error", 'Please enter a title');
-                return;
-            }
-            if (!moduleItemData.contentType) {
-                showNotice("error", 'Please select a content type');
-                return;
-            }
 
             // Add API call to create new module item
             // await dispatch(createModuleItem(moduleItemData));
@@ -154,21 +97,15 @@ const NewModuleItem = () => {
     };
 
     const renderContentComponent = () => {
-        const commonProps = {
-            moduleItemData: moduleItemData,
-            onUpdateData: (data) => setModuleItemData(prev => ({ ...prev, ...data })),
-            handleSubmit: handleSubmit
-        };
-
-        switch (moduleItemData.contentType) {
+        switch (contentType) {
             case 'Reading':
-                return <Supplement {...commonProps} />;
+                return <Supplement />;
             case 'Video':
-                return <Lecture {...commonProps} />;
+                return <Lecture />;
             case 'Practice Quiz':
-                return <Quiz {...commonProps} />;
+                return <Quiz />;
             case 'Programming Assignment':
-                return <Programming {...commonProps} />;
+                return <Programming />;
             default:
                 return <Typography>Please choose content type</Typography>;
         }
@@ -200,9 +137,9 @@ const NewModuleItem = () => {
                     <MuiSelect
                         labelId="content-type-select-label"
                         id="content-type-select"
-                        value={moduleItemData.contentType}
+                        value={contentType}
                         label="Content Type"
-                        onChange={handleContentTypeChange}
+                        onChange={handleChange}
                     >
                         <MenuItem value="Reading">Reading</MenuItem>
                         <MenuItem value="Video">Video</MenuItem>
