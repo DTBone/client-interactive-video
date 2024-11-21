@@ -71,7 +71,7 @@ function Payment() {
     const handlePayment = async () => {
         // Gọi API để thanh toán
         try {
-            const response = await paymentService.createPayment(course?.price, course?._id);
+            const response = await paymentService.createPayment(course?.price, course?.courseId);
             window.open(response.data, '_blank');
         }
         catch (error) {

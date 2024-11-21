@@ -4,11 +4,31 @@ import ConversationList from '../ConversationList';
 import ChatWindow from '../ChatWindow';
 import UserList from '../UserList';
 import SocketService from '~/hooks/SocketService';
+import {api} from "~/Config/api.js";
 
 const ChatContainer = () => {
   const [activeConversation, setActiveConversation] = useState(null);
   const userId = JSON.parse(localStorage.getItem('user'))?._id;
   let socket = SocketService.connect('http://localhost:3000');
+
+  const handleSelecConversation = async (conversation) => {
+    const _id = conversation.username ? conversation._id : conversation.participants.find(p => p !== userId)._id;
+    console.log('Selected conversation:', conversation);
+    const getConversation = await api.get(`/conversations`, {
+        params: {
+            participants: `${_id},${userId}`
+        }
+    });
+    if (getConversation.data.data.length === 0) {
+        const newConversation = await api.post(`/conversations`, {
+            participants: [_id, userId]
+        });
+        setActiveConversation(newConversation.data.data);
+        socket.emit('conversation:recall', {userId});
+    } else {
+        setActiveConversation(conversation);
+    }
+  }
 
   useEffect(() => {
     console.log('User ID:', userId, socket.socket?.id);
@@ -36,7 +56,7 @@ const ChatContainer = () => {
         <Grid item size={2} className="pr-2">
           <Paper className="h-full">
             <ConversationList 
-              onSelectConversation={setActiveConversation}
+              onSelectConversation={handleSelecConversation}
               activeConversation={activeConversation}
               socket={socket.socket}
             />

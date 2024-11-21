@@ -64,7 +64,7 @@ const FreeTrial = ({ onClose, onSubmit, course }) => {
             </List>
             <Box sx={{ mt: 2 }}>
                 <Button variant="contained" color="primary" fullWidth onClick={onSubmit}>
-                    Start Free Trial
+                    Start Free
                 </Button>
                 {course.price > 0 && (
                     <Button variant="standard" color="primary" fullWidth onClick={onPayment}

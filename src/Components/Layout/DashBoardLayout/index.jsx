@@ -18,6 +18,7 @@ import ListButton from './ListButton';
 import userService from '~/services/api/userService';
 import ErrorModal from '~/pages/ErrorModal';
 import ListButtonAdmin from './ListButtonAdmin';
+import backgroundGif from '~/assets/backgroundBlind.jpg';
 
 const drawerWidth = 260;
 
@@ -145,11 +146,18 @@ export default function MiniDrawer({ children }) {
         <Divider />
         {user.role !== 'admin' ? <ListButton /> : <ListButtonAdmin />}
       </Drawer>
-      <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
+      <Box component="main" sx={{
+        flexGrow: 1, p: 3,
+        backgroundImage: `url(${backgroundGif})`,
+        backgroundSize: 'cover',
+        backgroundRepeat: 'no-repeat',
+        backgroundPosition: 'center',
+      }}>
         <DrawerHeader />
-        <div className=''
+        <div
         style={{
-          height: 'calc(100vh - 130px)',
+          // height: 'calc(100vh - 130px)',
+          height: 'auto',
           width: '100%',
           transform: open == true ? 'translateX(0)' : 'translateX(0)',
           transition: 'all 0.5s',

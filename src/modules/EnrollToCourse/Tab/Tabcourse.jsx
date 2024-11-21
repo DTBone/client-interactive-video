@@ -8,7 +8,7 @@ import Reviews from './reviews';
 import { TabContext, TabList, TabPanel } from "@mui/lab";
 
 
-const Tabcourse = () => {
+const Tabcourse = ({course}) => {
     const [value, setValue] = useState('about');
 
     const handleChange = (event, newValue) => {
@@ -26,10 +26,10 @@ const Tabcourse = () => {
                         <Tab label="Reviews" value="reviews" />
                     </TabList>
                 </Box>
-                <TabPanel value="about"><About /></TabPanel>
-                <TabPanel value="modules"><Modules /></TabPanel>
-                <TabPanel value="testimonials"><Testimonials /></TabPanel>
-                <TabPanel value="reviews"><Reviews /></TabPanel>
+                <TabPanel value="about"><About course={course}/></TabPanel>
+                <TabPanel value="modules"><Modules course={course}/></TabPanel>
+                <TabPanel value="testimonials"><Testimonials course={course}/></TabPanel>
+                <TabPanel value="reviews"><Reviews course={course}/></TabPanel>
             </TabContext>
         </Box>
     );

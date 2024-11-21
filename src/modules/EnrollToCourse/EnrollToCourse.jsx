@@ -7,6 +7,7 @@ import CourseRegisFailed from './Notification/CourseRegisFailed';
 import SuccessfulCourseRegis from './Notification/SuccessfulCourseRegis';
 import Tabcourse from './Tab/tabcourse'
 import courseService from '../../services/api/courseService'
+import {useNavigate} from 'react-router-dom';
 
 const EnrollToCourse = () => {
 
@@ -31,18 +32,22 @@ const EnrollToCourse = () => {
     const courseId = window.location.pathname.split('/').at(-1);
     const [isSubmit, setSubmit] = useState(false);
     const user = JSON.parse(localStorage.getItem('user'));
-
+    const navigate = useNavigate();
     const handleDataFromButotnSubmit = (data) => {
         setState(data);
         setSubmit(data);
         openSnackbar();
     };
+    const handleLearn = () => {
+        navigate(`/learns/${courseId}/`)
+    }
     useEffect(() => {
         const fetchCourse = async () => {
             try {
                 const data = await courseService.getCourseById(courseId, user._id);
                 setCourse(data.data);
                 setIntructor(data.data.instructor);
+                console.log(data);
                 setState(data.isEnrolled);
             } catch (err) {
                 console.error(err);
@@ -93,11 +98,12 @@ const EnrollToCourse = () => {
                             sx={{ width: 56, height: 56 }}
                             />
                         </Typography>
+                        <Typography>{intructor?.email}</Typography>
 
                         <div className='mt-auto mb-6'>
                             {enrollCourse ? (
                                 <div>
-                                    <Button variant='contained' sx={{ width: "18rem", height: "4rem", background: "#0048b0" }}>
+                                    <Button onClick={handleLearn} variant='contained' sx={{ width: "18rem", height: "4rem", background: "#0048b0" }}>
                                         Go To Course
                                     </Button>
                                     <span className="ml-4 text-sm text-gray-500">Already go to course</span>
@@ -139,7 +145,7 @@ const EnrollToCourse = () => {
                 </div>
             </section>
             <section className='ml-5 space-y-2 mr-6'>
-                <Tabcourse />
+                <Tabcourse course={course} />
             </section>
         </div>
     )

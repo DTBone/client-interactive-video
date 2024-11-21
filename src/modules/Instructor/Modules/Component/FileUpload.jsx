@@ -144,6 +144,26 @@ const FileUpload = ({ onFileChange, accept = '.pdf,.doc,.docx,.jpg,.jpeg,.png, .
         return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
     };
 
+    const validateFile = (file) => {
+        const allowedTypes = [
+            'application/pdf',
+            'image/jpeg',
+            'image/png',
+            'application/msword',
+            'video/mp4',
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+        ];
+        const maxSize = 10 * 1024 * 1024; // 10MB
+
+        if (!allowedTypes.includes(file.type)) {
+            return 'File type not supported';
+        }
+        if (file.size > maxSize) {
+            return 'File size exceeds 10MB';
+        }
+        return null;
+    };
+
     return (
         <Paper
             elevation={0}

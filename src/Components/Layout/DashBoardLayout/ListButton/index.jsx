@@ -56,6 +56,10 @@ function ListButton() {
         if(index === 2){
             navigate('/chat');
         }
+        if(index === 3){
+            navigate('/blogs');
+        }
+
     }
     return ( 
         <List>
