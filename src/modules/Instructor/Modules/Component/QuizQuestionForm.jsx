@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
     TextField,
     Button,
@@ -15,7 +15,7 @@ import {
 } from '@mui/material';
 import { Add as AddIcon, Delete as DeleteIcon } from '@mui/icons-material';
 
-const QuizQuestionForm = ({ onUpdate }) => {
+const QuizQuestionForm = ({ questions, onUpdate }) => {
     const [quizData, setQuizData] = useState([
         {
             index: 1,
@@ -43,6 +43,11 @@ const QuizQuestionForm = ({ onUpdate }) => {
         setQuizData([...quizData, newQuestion]);
     };
 
+    useEffect(() => {
+        if (questions) {
+            setQuizData(questions);
+        }
+    }, [questions])
     const removeQuestion = (index) => {
         const updatedQuestions = quizData.filter((_, i) => i !== index);
         setQuizData(updatedQuestions);

@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { Upload, X, FileText } from 'lucide-react';
 import {
     Paper,
@@ -14,12 +14,18 @@ import {
 } from '@mui/material';
 import { useNotification } from '~/Hooks/useNotification';
 
-const FileUpload = ({ onFileChange, accept = '.pdf,.doc,.docx,.jpg,.jpeg,.png, .mp4, .webm' }) => {
+const FileUpload = ({ onFileChange, accept = '.pdf,.doc,.docx,.jpg,.jpeg,.png, .mp4, .webm', fileSelected }) => {
     const [isDragging, setIsDragging] = useState(false);
-    const [file, setFile] = useState(null);
+    const [file, setFile] = useState(fileSelected);
     const [uploading, setUploading] = useState(false);
     const [error, setError] = useState(null);
     const { showNotice } = useNotification();
+    useEffect(() => {
+        if (fileSelected) {
+            setFile(fileSelected);
+            //console.log('file selected: ', file)
+        }
+    }, [fileSelected]);
 
     // Chuyển đổi MIME types thành extensions và ngược lại
     const mimeToExt = {

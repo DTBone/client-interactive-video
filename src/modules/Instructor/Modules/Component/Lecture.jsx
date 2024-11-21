@@ -55,7 +55,7 @@ const Lecture = () => {
         if (file) {
             // Kiểm tra xem file có phải là video không
             if (!file.type.startsWith('video/')) {
-                alert('Please select a video file');
+                showNotice('error', 'Please select a video file');
                 return;
             }
 
@@ -64,6 +64,7 @@ const Lecture = () => {
 
             // Tạo URL để preview video
             const videoURL = URL.createObjectURL(file);
+            console.log('video URL: ', videoURL)
             setVideoPreview(videoURL);
 
             setFormData(prev => ({

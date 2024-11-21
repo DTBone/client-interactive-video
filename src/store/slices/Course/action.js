@@ -7,8 +7,7 @@ export const getAllCourse = createAsyncThunk(
     async (filter, { rejectWithValue }) => {
         try {
 
-            // const { data } = await axiosInstance.get("/learns");
-            // return data;
+            //  
 
             const { data } = await api.get("/learns", {
                 params: {
