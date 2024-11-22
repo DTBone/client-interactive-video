@@ -6,9 +6,6 @@ export const getAllAccount = createAsyncThunk(
     async (userId, { rejectWithValue }) => {
         try {
             const data = await api.get("/users",{
-                params : {
-                    userId: userId,
-                },
                 headers:{
                     'Authorization': `Bearer ${localStorage.getItem('token')}`,
                 }

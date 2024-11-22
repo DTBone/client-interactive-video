@@ -33,6 +33,7 @@ import { useNavigate } from 'react-router-dom';
 function ApproveCourseModal({ open, setOpen, courseData }) {
     const dispatch = useDispatch();
     const navigate = useNavigate();
+    console.log(courseData);
     const [feedback, setFeedback] = useState('');
     const [messageBox, setMessageBox] = useState('');
 

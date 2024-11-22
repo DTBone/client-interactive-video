@@ -39,14 +39,15 @@ const CourseManager = () => {
 
   useEffect(() => {
     const getCourse = async () => {
-      const result = await dispatch(getAllCourse());
-      if (getAllCourse.fulfilled.match(result)) {
-        setCourses(result.payload.data);
-        console.log('Courses:', result?.payload?.data)
-      }
-      else {
-        console.log("error")
-      }
+
+        const result = await dispatch(getAllCourse());
+        if(getAllCourse.fulfilled.match(result)) {
+            setCourses(result.payload.data);
+        }
+        else
+        {
+            console.log("error")
+
     }
     if (courses.length === 0) {
       getCourse();
@@ -56,7 +57,9 @@ const CourseManager = () => {
 
 
   // Filter and search logic
-  const filteredCourses = Array.isArray(courses) ? courses.filter(course => {
+
+  const filteredCourses = courses.length > 0 ? courses.filter(course => {
+
     const matchesSearch = course.title.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesLevel = filterLevel === 'all' || course.level === filterLevel;
     const matchesStatus = filterStatus === 'all' || course.status === filterStatus;
@@ -163,6 +166,7 @@ const CourseManager = () => {
             </TableRow>
           </TableHead>
           <TableBody>
+
             {filteredCourses && filteredCourses.length > 0 ? (
               filteredCourses
                 .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
@@ -210,6 +214,7 @@ const CourseManager = () => {
                     </TableCell>
                   </TableRow>
                 ))) : ('')}
+
           </TableBody>
         </Table>
       </TableContainer>

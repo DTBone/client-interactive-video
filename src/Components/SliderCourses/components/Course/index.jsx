@@ -32,7 +32,7 @@ function Course({ course }) {
             }
           }}
           onClick={() => {
-            navigate(`/course/${course.courseId}`);
+            navigate(`/course/${course.id}`);
           }}
       >
         <CardActionArea

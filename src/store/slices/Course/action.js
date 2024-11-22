@@ -6,9 +6,6 @@ export const getAllCourse = createAsyncThunk(
     'course/getAllCourse',
     async (filter, { rejectWithValue }) => {
         try {
-
-            //  
-
             const { data } = await api.get("/learns", {
                 params: {
                     page: filter?.page,
@@ -96,6 +93,19 @@ export const approveCourse = createAsyncThunk(
             return data;
         } catch (error) {
             console.log('get module item failed', error.message);
+            return rejectWithValue(error.message);
+        }
+    }
+)
+
+export const enrollCourse = createAsyncThunk(
+    'course/enrollCourse',
+    async ({ courseId }, { rejectWithValue }) => {
+        try {
+            const { data } = await api.post(`/learns/enroll/${courseId}`);
+            console.log(data);
+            return data;
+        } catch (error) {
             return rejectWithValue(error.message);
         }
     }

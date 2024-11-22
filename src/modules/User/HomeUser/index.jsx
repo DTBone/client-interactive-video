@@ -6,7 +6,6 @@ import '~/index.css';
 import CourseList from './components/CourseList';
 import { getAllCourse } from "~/store/slices/Course/action.js";
 import { useDispatch, useSelector } from 'react-redux';
-import SocketService from "~/hooks/SocketService.js";
 
 function HomeUser({ user }) {
     const dispatch = useDispatch();

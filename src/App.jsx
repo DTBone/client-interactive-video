@@ -183,10 +183,12 @@ function App() {
           </ProtectedRoute>
         }>
           <Route index element={<Supplement />} />
+
           <Route path="supplement/:itemId" element={<Supplement />} />
           <Route path="lecture/:itemId" element={<Lecture />} />
           <Route path="quiz/:itemId" element={<Quiz />} />
           <Route path="programming/:itemId" element={<Programming />} />
+
         </Route>
 
         <Route path="problems/" element={

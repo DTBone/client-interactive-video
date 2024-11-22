@@ -4,7 +4,8 @@ import { useDispatch, useSelector } from 'react-redux';
 import {
     Grid, TextField, MenuItem, Button, CircularProgress,
     List, ListItem, ListItemText, ListItemSecondaryAction, IconButton, Dialog, DialogTitle,
-    DialogContent, DialogActions,
+    DialogContent, DialogActions, Chip, Paper,
+    Autocomplete,
 } from '@mui/material';
 import { Add as AddIcon, Edit as EditIcon, Delete as DeleteIcon } from '@mui/icons-material';
 import HeaderCourse from '~/Components/Common/Header/HeaderCourse';
@@ -17,6 +18,33 @@ import { clearError } from '~/store/slices/Course/courseSlice';
 import { useNotification } from '~/hooks/useNotification';
 import { uploadToCloudnary } from '~/Utils/uploadToCloudnary';
 
+const suggestedTags = [
+    // Ngôn ngữ lập trình
+    'JavaScript', 'Python', 'Java', 'C++', 'C#', 'PHP', 'Ruby', 'Swift', 'Kotlin', 'Go', 'Rust',
+    // Framework & Libraries
+    'React', 'Angular', 'Vue.js', 'Node.js', 'Django', 'Flask', 'Spring Boot', 'Laravel', 'Express.js',
+    // Database
+    'MySQL', 'PostgreSQL', 'MongoDB', 'Redis', 'SQLite', 'Oracle', 'SQL Server',
+    // Development Tools
+    'Git', 'Docker', 'Kubernetes', 'Jenkins', 'AWS', 'Azure', 'Google Cloud',
+    // Mobile Development
+    'Android', 'iOS', 'React Native', 'Flutter', 'Xamarin',
+    // Web Development
+    'HTML', 'CSS', 'SASS', 'Bootstrap', 'Tailwind CSS', 'TypeScript', 'WebPack', 'REST API', 'GraphQL',
+    // Testing
+    'Unit Testing', 'Integration Testing', 'Jest', 'Selenium', 'Cypress',
+    // Development Concepts
+    'OOP', 'Design Patterns', 'Data Structures', 'Algorithms', 'Clean Code', 'Microservices',
+    'DevOps', 'Agile', 'TDD', 'CI/CD',
+    // Security
+    'Cybersecurity', 'Authentication', 'Authorization', 'OAuth', 'JWT',
+    // Level
+    'Beginner', 'Intermediate', 'Advanced',
+    // Course Type
+    'Frontend', 'Backend', 'Full Stack', 'Data Science', 'Machine Learning', 'AI',
+    'Game Development', 'Mobile Development', 'Desktop Development'
+];
+
 const CourseSection = ({ state }) => {
     const { courseId } = useParams();
     const { currentCourse, loading, error } = useSelector((state) => state.course);
@@ -24,6 +52,7 @@ const CourseSection = ({ state }) => {
     const navigate = useNavigate();
     const { showNotice } = useNotification();
     const [courseData, setCourseData] = useState({});
+    const [currentTag, setCurrentTag] = useState(null);
     const [openModuleDialog, setOpenModuleDialog] = useState(false);
     const [currentModule, setCurrentModule] = useState({
         id: null,
@@ -34,7 +63,26 @@ const CourseSection = ({ state }) => {
 
     const [isLoading, setIsLoading] = useState(false);
     const [selectedImageFile, setSelectedImageFile] = useState(null);
+    const [inputValue, setInputValue] = useState('');
+    const [filteredSuggestions, setFilteredSuggestions] = useState(suggestedTags);
 
+    const handleTagChange = (event, newValue) => {
+        if (newValue && !courseData.tags?.includes(newValue)) {
+            setCourseData(prev => ({
+                ...prev,
+                tags: [...(prev.tags || []), newValue]
+            }));
+            setCurrentTag(null);
+            setInputValue('');
+        }
+    };
+
+    const handleDeleteTag = (tagToDelete) => {
+        setCourseData(prev => ({
+            ...prev,
+            tags: prev.tags.filter(tag => tag !== tagToDelete)
+        }));
+    };
 
     useEffect(() => {
         if (state === 'new') {
@@ -384,6 +432,65 @@ const CourseSection = ({ state }) => {
                                 setCourseData={setCourseData}
                                 onFileSelect={setSelectedImageFile}
                             />
+                        </Grid>
+
+                        <Grid item xs={12}>
+                            <Paper elevation={0} className="p-3 border rounded">
+                                <div className="flex flex-col gap-3">
+                                    <div className="flex gap-2">
+                                        <Autocomplete
+                                            value={currentTag}
+                                            onChange={handleTagChange}
+                                            inputValue={inputValue}
+                                            onInputChange={(event, newInputValue) => {
+                                                setInputValue(newInputValue);
+                                            }}
+                                            options={suggestedTags.filter(tag => 
+                                                !courseData.tags?.includes(tag)
+                                            )}
+                                            renderInput={(params) => (
+                                                <TextField
+                                                    {...params}
+                                                    size="small"
+                                                    label="Add Tag"
+                                                    placeholder="Type or select a tag"
+                                                    fullWidth
+                                                />
+                                            )}
+                                            freeSolo
+                                            style={{ minWidth: 250 }}
+                                        />
+                                    </div>
+                                    <div className="flex flex-wrap gap-2">
+                                        {courseData.tags?.map((tag, index) => (
+                                            <Chip
+                                                key={index}
+                                                label={tag}
+                                                onDelete={() => handleDeleteTag(tag)}
+                                                color="primary"
+                                                variant="outlined"
+                                            />
+                                        ))}
+                                    </div>
+                                    {/* Tag Suggestions Section */}
+                                    {!courseData.tags?.length && (
+                                        <div className="mt-2">
+                                            <div className="text-sm text-gray-600 mb-2">Suggested tags:</div>
+                                            <div className="flex flex-wrap gap-1">
+                                                {suggestedTags.slice(0, 10).map((tag, index) => (
+                                                    <Chip
+                                                        key={index}
+                                                        label={tag}
+                                                        size="small"
+                                                        onClick={() => handleTagChange(null, tag)}
+                                                        style={{ cursor: 'pointer' }}
+                                                    />
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            </Paper>
                         </Grid>
 
                         {/* Modules */}

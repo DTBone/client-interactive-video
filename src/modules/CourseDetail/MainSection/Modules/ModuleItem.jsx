@@ -1,3 +1,4 @@
+/* eslint-disable react/prop-types */
 import { Typography } from "@mui/material"
 import IconComponent from "../../../../Components/Common/Button/IconComponent"
 import { useLocation, useNavigate } from "react-router-dom";
@@ -9,8 +10,10 @@ const ModuleItem = ({ item }) => {
     const courseId = module.courseId
 
     const handleClick = () => {
+
         console.log('item', item)
         navigate(`/learns/lessons/${item.type}/${item._id}`, { state: { module, item } });
+
     }
     return (
         <div onClick={handleClick} className="w-full flex flex-row justify-start items-center space-x-3 hover:bg-[#f2f5fa] p-1 ">
