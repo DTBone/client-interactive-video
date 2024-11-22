@@ -2,88 +2,46 @@ import ExpandBtn from "../Button/ExpandBtn"
 import HideBtn from "../Button/HideBtn"
 import { Button, Typography } from "@mui/material";
 import MenuItem from "./MenuList";
-import {useEffect, useState} from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import MenuList from "./MenuList";
-import {useDispatch} from "react-redux";
-import {getModuleById} from "~/store/slices/Module/action.js";
+import { useDispatch, useSelector } from "react-redux";
+import { getAllModulesByModuleItemId, getModuleById, getModuleByItemId } from "~/store/slices/Module/action.js";
 
-const moduleSample = {
-    title: "Merge Sort Algorithm",
-    moduleItems: [
-        {
-            id: "1",
-            title: "Overview",
-            type: "supplement",
-            contentType: "Reading",
-            icon: "read",
-            status: "completed",
-            note: "",
-            difficulty: "medium",
-            references: [
-                {
-                    title: "Tài liệu tham khảo 1",
-                    link: "https://example.com"
-                }]
-        },
-        {
-            id: "2",
-            title: "Mergesort",
-            type: "lecture",
-            contentType: "Video",
-            icon: "video",
-            status: "",
-            note: "",
-            difficulty: "medium",
-            references: [
-                {
-                    title: "Link video",
-                    link: "https://example.com"
-                }
-            ]
-        },
-        {
-            id: "3",
-            title: "Mergesort algorithm ",
-            type: "quiz",
-            contentType: "Practice Quiz",
-            icon: "quiz",
-            status: "",
-            note: "3 min",
-            difficulty: "medium",
-            references: [
-                {
-                    title: "Tài liệu tham khảo 1",
-                    link: "https://example.com"
-                }
-            ]
-        },
-        {
-            id: "4",
-            title: "Merge Sort Code",
-            type: "programming",
-            contentType: "Programming Assignment",
-            icon: "code",
-            status: "",
-            note: "",
-            difficulty: "medium",
-            references: [
-                {
-                    title: "Tài liệu tham khảo 1",
-                    link: "https://example.com"
-                }
-            ]
-        }
-    ]
-}
+
 
 const Sidebar = ({ handleSidebarButtonClick, isExpanded }) => {
+    //const { itemId } = useParams();
+    const pathSegments = window.location.pathname.split('/');
+    const itemId = pathSegments[pathSegments.length - 1];
+    console.log("Extracted ItemId:", itemId);
+
+    //console.log("Sidebar itemId", itemId)
     const moduleId = window.location.pathname.split("/")[4]
-    const [module, setModule] = useState(moduleSample)
     const dispatch = useDispatch()
-    const getModuleByModuleId = async () =>{
-        const result = await dispatch(getModuleById({moduleId}))
-        if(result.payload.success){
+    const { currentModule, loading } = useSelector((state) => state.module)
+    const [module, setModule] = useState(currentModule);
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                await dispatch(getModuleByItemId({ itemId }));
+                console.log("itemId", itemId)
+            }
+            catch (err) {
+                console.error('Error:', err);
+            }
+
+        };
+        fetchData()
+    }, [dispatch, itemId])
+
+    useEffect(() => {
+        console.log("modules", currentModule)
+        setModule(currentModule)
+    }, [currentModule])
+    const getModuleByModuleId = async () => {
+        const result = await dispatch(getModuleById({ moduleId }))
+        if (result.payload.success) {
             setModule(result.payload.data.module);
             console.log(module)
         }
@@ -92,7 +50,9 @@ const Sidebar = ({ handleSidebarButtonClick, isExpanded }) => {
         getModuleByModuleId()
     }, [moduleId]);
 
-
+    if (loading || !currentModule) {
+        return <div>Loading...</div>
+    }
 
     return (
         <div style={{
@@ -105,7 +65,7 @@ const Sidebar = ({ handleSidebarButtonClick, isExpanded }) => {
                     (<ExpandBtn />) : (<HideBtn />) // change the button based on the state
                 }
             </div>
-            {isExpanded ? (<MenuList module={module}  />) : null}
+            {isExpanded ? (<MenuList moduleList={currentModule} />) : null}
 
 
         </div>

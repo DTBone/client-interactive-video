@@ -1,21 +1,29 @@
-import {Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Typography} from "@mui/material"
-import {useEffect, useState} from "react";
-import {useNavigate, useParams} from "react-router-dom";
+import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Typography } from "@mui/material"
+import { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import CustomMenuItemButton from "../Button/CustomMenuItemButton";
 import IconComponent from "~/Components/Common/Button/IconComponent";
+import { useSelector } from "react-redux";
 
-const MenuList = ({ module , onQuizComplete  }) => {
+const MenuList = ({ moduleList, onQuizComplete }) => {
     const { quizId } = useParams();
     const navigate = useNavigate();
+    const [module, setModuleList] = useState(moduleList || null);
     const [activeButton, setActiveButton] = useState(quizId);
     const [showDialog, setShowDialog] = useState(false);
-    const [currentItem, setCurrentItem] = useState(module.moduleItems.find(item => item.quiz === quizId));
+    const [currentItem, setCurrentItem] = useState(module?.moduleItems?.find(item => item.quiz === quizId) || null);
     const [itemSelected, setItemSelected] = useState(null);
+
+    const { currentModule } = useSelector((state) => state.module);
+    useEffect(() => {
+        setModuleList(currentModule)
+        console.log('modules lessons', currentModule)
+    }, [currentModule])
 
     useEffect(() => {
         if (currentItem?.type === "quiz" && currentItem?.status === "completed") {
             // Update the completion status in the menu
-            const updatedModuleItems = module.moduleItems.map(item => {
+            const updatedModuleItems = module?.moduleItems?.map(item => {
                 if (item.quiz === currentItem.quiz) {
                     return { ...item, status: "completed" };
                 }
@@ -27,12 +35,14 @@ const MenuList = ({ module , onQuizComplete  }) => {
                 onQuizComplete(updatedModuleItems);
             }
         }
-    }, [currentItem, module.moduleItems, onQuizComplete]);
+    }, [currentItem, module?.moduleItems, onQuizComplete]);
 
     const navigateToItem = (item) => {
-        if(item && item.type === "quiz") {
-            navigate(`/learns/${module.courseId}/lessons/${item.module}/${item.type}/${item.quiz}`);
+        if (item) {
+            let navigationpath = `/learns/lessons/${item.type}/${item._id}`;
+            navigate(navigationpath, { state: { module, item } });
         }
+
     }
 
     const handleConfirmNavigation = () => {
@@ -43,15 +53,20 @@ const MenuList = ({ module , onQuizComplete  }) => {
     }
 
     const handleModuleItemClick = (item) => {
-        if(currentItem?.status !== "completed") {
-            setShowDialog(true);
-        } else {
-            setActiveButton(item.quiz || item.programming || item.reading || item.video);
-            setCurrentItem(item);
-            setTimeout(() => {
-                navigateToItem(item);
-            }, 50);
+        console.log('Click module item')
+        if (item) {
+            let navigationpath = `/learns/lessons/${item.type}/${item._id}`;
+            navigate(navigationpath, { state: { module, item } });
         }
+        // if (currentItem?.status !== "completed") {
+        //     setShowDialog(true);
+        // } else {
+        //     setActiveButton(item.quiz || item.programming || item.reading || item.video);
+        //     setCurrentItem(item);
+        //     setTimeout(() => {
+        //         navigateToItem(item);
+        //     }, 50);
+        // }
     };
 
     return (
@@ -59,7 +74,7 @@ const MenuList = ({ module , onQuizComplete  }) => {
             <Typography sx={{ fontWeight: "bold", fontSize: "medium", paddingLeft: "32px" }}>
                 {`${module.title} (${module.completionPercentage}%)`}
             </Typography>
-            {module?.moduleItems.map((item, index) => (
+            {module?.moduleItems?.map((item, index) => (
                 <CustomMenuItemButton
                     key={index}
                     fullWidth

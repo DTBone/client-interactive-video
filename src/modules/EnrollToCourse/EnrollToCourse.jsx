@@ -7,9 +7,11 @@ import CourseRegisFailed from './Notification/CourseRegisFailed';
 import SuccessfulCourseRegis from './Notification/SuccessfulCourseRegis';
 import Tabcourse from './Tab/tabcourse'
 import courseService from '../../services/api/courseService'
-import {useNavigate} from 'react-router-dom';
+
+import {useNavigate, useParams} from 'react-router-dom';
 import { enrollCourse as enroll } from '~/store/slices/Course/action'
 import { useDispatch } from 'react-redux'
+
 
 
 const EnrollToCourse = () => {
@@ -33,6 +35,7 @@ const EnrollToCourse = () => {
     const [course, setCourse] = useState({});
     const [intructor, setIntructor] = useState({});
     const courseId = window.location.pathname.split('/').at(-1);
+    const { id } = useParams();
     const [isSubmit, setSubmit] = useState(false);
     const user = JSON.parse(localStorage.getItem('user'));
     const navigate = useNavigate();
@@ -48,7 +51,7 @@ const EnrollToCourse = () => {
         else setSubmit(false)
     };
     const handleLearn = () => {
-        navigate(`/learns/${courseId}/`)
+        navigate(`/learns/${courseId}/`, { state: { course } });
     }
     useEffect(() => {
         const fetchCourse = async () => {
@@ -63,7 +66,7 @@ const EnrollToCourse = () => {
             }
         };
         fetchCourse();
-     }, [courseId]);
+    }, [courseId]);
 
 
     const [snackbarState, setSnackbarState] = useState({
@@ -88,7 +91,11 @@ const EnrollToCourse = () => {
             </section>
             <section className='ml-5'>
 
-                <Breadcrumb />
+                <Breadcrumb
+                    courseId={id}
+                //moduleIndex={ }
+                //itemTitle={ }
+                />
             </section>
 
             <section className="bg-[#f2f6fd] w-full h-3/4 mt-2 flex flex-row justify-center items-center ">
@@ -101,10 +108,10 @@ const EnrollToCourse = () => {
                             noWrap={false}>{course?.title}</Typography>
                         <Typography noWrap={false} >{course?.description}</Typography>
                         <Typography>Intrucstors: {intructor?.profile?.fullname}
-                        <Avatar
-                            alt={intructor?.profile?.fullname}
-                            src={intructor?.profile?.picture}
-                            sx={{ width: 56, height: 56 }}
+                            <Avatar
+                                alt={intructor?.profile?.fullname}
+                                src={intructor?.profile?.picture}
+                                sx={{ width: 56, height: 56 }}
                             />
                         </Typography>
                         <Typography>{intructor?.email}</Typography>
@@ -139,17 +146,17 @@ const EnrollToCourse = () => {
                     </div>
                 </div>
                 <div className="flex-grow-[4] ml-10">
-                <Card sx={{ maxWidth: 600, minHeight: 350 }}>
-                    <CardMedia
-                        sx={{ height: 300 }}
-                        image={course?.photo}
-                        title="green iguana"
-                    />
-                    <CardContent>
-                        <Typography gutterBottom variant="h5" component="div">
-                        {course?.title}
-                        </Typography>
-                    </CardContent>
+                    <Card sx={{ maxWidth: 600, minHeight: 350 }}>
+                        <CardMedia
+                            sx={{ height: 300 }}
+                            image={course?.photo}
+                            title="green iguana"
+                        />
+                        <CardContent>
+                            <Typography gutterBottom variant="h5" component="div">
+                                {course?.title}
+                            </Typography>
+                        </CardContent>
                     </Card>
                 </div>
             </section>

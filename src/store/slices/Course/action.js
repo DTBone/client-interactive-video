@@ -90,8 +90,9 @@ export const approveCourse = createAsyncThunk(
                 }
             });
             console.log(data);
-            return data.data;
+            return data;
         } catch (error) {
+            console.log('get module item failed', error.message);
             return rejectWithValue(error.message);
         }
     }

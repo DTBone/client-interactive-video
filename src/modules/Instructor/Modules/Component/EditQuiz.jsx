@@ -15,7 +15,7 @@ import {
 
 } from '@mui/material';
 import { Add as AddIcon, Delete as DeleteIcon } from '@mui/icons-material';
-import { useNotification } from '~/Hooks/useNotification';
+import { useNotification } from '~/hooks/useNotification';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { toggleRefresh } from '~/store/slices/Module/moduleSlice';

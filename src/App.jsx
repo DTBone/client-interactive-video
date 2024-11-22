@@ -174,19 +174,21 @@ function App() {
           <Route path="assignments" element={<Grades />} />
           <Route path="course-inbox" element={<Messages />} />
           <Route path="info" element={<CourseInfo />} />
-          <Route path="module/:moduleID" element={<Module />}></Route>
+          <Route path="module/:moduleId" element={<Module />}></Route>
         </Route>
 
-        <Route path="learns/:courseId/lessons" element={
+        <Route path="learns/lessons" element={
           <ProtectedRoute allowedRoles={['student', 'instructor', 'admin']}>
             <GeneralLessons />
           </ProtectedRoute>
         }>
           <Route index element={<Supplement />} />
-          <Route path=":moduleId/supplement/:supplementId" element={<Supplement />} />
-          <Route path=":moduleId/lecture/:lectureId" element={<Lecture />} />
-          <Route path=":moduleId/quiz/:quizId" element={<Quiz />} />
-          <Route path=":moduleId/programming/:programmingId" element={<Programming />} />
+
+          <Route path="supplement/:itemId" element={<Supplement />} />
+          <Route path="lecture/:itemId" element={<Lecture />} />
+          <Route path="quiz/:itemId" element={<Quiz />} />
+          <Route path="programming/:itemId" element={<Programming />} />
+
         </Route>
 
         <Route path="problems/" element={
@@ -233,47 +235,47 @@ function App() {
           <Route path=":moduleId/new-module-item" element={<NewModuleItem />} />
           <Route path=":moduleId/moduleitem/:moduleItemId" element={<EditModuleItem />} />
         </Route>
-        
+
         {/* Admin */}
-      <Route path="/admin" element={
-        <ProtectedRoute allowedRoles={['admin']}>
-          <DashboardLayout>
-            <HomeAdmin/>
-          </DashboardLayout>
-        </ProtectedRoute>
-      } />
-      <Route path="/account-manager" element={
-        <ProtectedRoute allowedRoles={['admin']}>
-          <DashboardLayout>
-            <AccountManager/>
-          </DashboardLayout>
-        </ProtectedRoute>
-      } />
-      <Route path="/course-manager" element={
-        <ProtectedRoute allowedRoles={['admin']}>
-          <DashboardLayout>
-            <CourseManager/>
-          </DashboardLayout>
-        </ProtectedRoute>
-      } />
-      <Route path="/instructor-manager" element={
-        <ProtectedRoute allowedRoles={['admin']}>
-          <DashboardLayout>
-            <InstructorManager/>
-          </DashboardLayout>
-        </ProtectedRoute>
-      } />
-      <Route path="/chat" element={
-        <ProtectedRoute allowedRoles={['student', 'instructor', 'admin']}>
-          <DashboardLayout>
-            <Chat/>
-          </DashboardLayout>
-        </ProtectedRoute>
-      } />
+        <Route path="/admin" element={
+          <ProtectedRoute allowedRoles={['admin']}>
+            <DashboardLayout>
+              <HomeAdmin />
+            </DashboardLayout>
+          </ProtectedRoute>
+        } />
+        <Route path="/account-manager" element={
+          <ProtectedRoute allowedRoles={['admin']}>
+            <DashboardLayout>
+              <AccountManager />
+            </DashboardLayout>
+          </ProtectedRoute>
+        } />
+        <Route path="/course-manager" element={
+          <ProtectedRoute allowedRoles={['admin']}>
+            <DashboardLayout>
+              <CourseManager />
+            </DashboardLayout>
+          </ProtectedRoute>
+        } />
+        <Route path="/instructor-manager" element={
+          <ProtectedRoute allowedRoles={['admin']}>
+            <DashboardLayout>
+              <InstructorManager />
+            </DashboardLayout>
+          </ProtectedRoute>
+        } />
+        <Route path="/chat" element={
+          <ProtectedRoute allowedRoles={['student', 'instructor', 'admin']}>
+            <DashboardLayout>
+              <Chat />
+            </DashboardLayout>
+          </ProtectedRoute>
+        } />
         <Route path="/video-call" element={
-            <ProtectedRoute allowedRoles={['student', 'instructor', 'admin']}>
-                    <VideoCall/>
-            </ProtectedRoute>
+          <ProtectedRoute allowedRoles={['student', 'instructor', 'admin']}>
+            <VideoCall />
+          </ProtectedRoute>
         } />
 
         {/* Catch all route */}

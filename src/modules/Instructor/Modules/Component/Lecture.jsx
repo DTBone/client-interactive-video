@@ -51,6 +51,39 @@ const Lecture = () => {
         }));
     };
 
+    // const handleFileChange = (file) => {
+    //     if (file) {
+    //         // Kiểm tra xem file có phải là video không
+    //         if (!file.type.startsWith('video/')) {
+    //             showNotice('error', 'Please select a video file');
+    //             return;
+    //         }
+
+    //         const fileData = new FormData();
+    //         fileData.append('file', file);
+    //         console.log('file selectedA: ', fileData.get('file'))
+    //         onUpdateData({
+    //             ...moduleItemData,
+    //             references: {
+    //                 ...moduleItemData.references,
+    //                 fileName: file.name,
+    //                 size: file.size,
+    //                 file: fileData
+    //             }
+    //         });
+
+    //         // Tạo URL để preview video
+    //         const videoURL = URL.createObjectURL(file);
+    //         console.log('video URL: ', videoURL)
+    //         setVideoPreview(videoURL);
+
+    //         setFormData(prev => ({
+    //             ...prev,
+    //             file: file
+    //         }));
+    //     }
+    // };
+
     const handleFileChange = (file) => {
         if (file) {
             // Kiểm tra xem file có phải là video không
@@ -61,16 +94,6 @@ const Lecture = () => {
 
             const fileData = new FormData();
             fileData.append('file', file);
-            console.log('file selectedA: ', fileData.get('file'))
-            onUpdateData({
-                ...moduleItemData,
-                references: {
-                    ...moduleItemData.references,
-                    fileName: file.name,
-                    size: file.size,
-                    file: fileData
-                }
-            });
 
             // Tạo URL để preview video
             const videoURL = URL.createObjectURL(file);
