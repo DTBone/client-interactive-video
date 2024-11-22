@@ -9,7 +9,8 @@ export const login = createAsyncThunk(
             //console.log('API Response:', response);
             return response.data;
         } catch (error) {
-            return rejectWithValue(error.response?.data || 'Login failed');
+            console.error('Login error:', error);
+            return rejectWithValue(error.response?.data.error || 'Login failed');
         }
     }
 );
@@ -21,7 +22,7 @@ export const logout = createAsyncThunk(
             const response = await axiosInstance.post('users/logout');
             return response.data;
         } catch (error) {
-            return rejectWithValue(error.response?.data || 'Logout failed');
+            return rejectWithValue(error.response?.data.error || 'Logout failed');
         }
     }
 );
@@ -33,7 +34,7 @@ export const register = createAsyncThunk(
             const response = await axiosInstance.post('users/register', credentials);
             return response.data;
         } catch (error) {
-            return rejectWithValue(error.response?.data || 'Registration failed');
+            return rejectWithValue(error.response?.data.error || 'Registration failed');
         }
     }
 );
@@ -45,7 +46,7 @@ export const loginWithGoogle = createAsyncThunk(
             const response = await axiosInstance.post('users/auth-google', credential);
             return response.data;
         } catch (error) {
-            return rejectWithValue(error.response?.data || 'Google login failed');
+            return rejectWithValue(error.response?.data.error || 'Google login failed');
         }
     }
 );
@@ -58,7 +59,7 @@ export const getResetAccessToken = createAsyncThunk(
             return response.data;
         } catch (error) {
             //console.error(error.status);
-            return rejectWithValue(error.response?.data || 'Failed to reset access token');
+            return rejectWithValue(error.response?.data.error || 'Failed to reset access token');
         }
     }
 );
@@ -75,7 +76,7 @@ export const verifyCaptcha = createAsyncThunk(
             return response.status;
         } catch (error) {
             console.error(error.status);
-            return rejectWithValue(error.response?.data || 'Failed to verify CAPTCHA');
+            return rejectWithValue(error.response?.data.error || 'Failed to verify CAPTCHA');
         }
     }
 );
@@ -94,7 +95,7 @@ export const checkAuthStatus = createAsyncThunk(
             localStorage.removeItem('token');
             localStorage.removeItem('user');
             localStorage.removeItem('isAuthenticated');
-            return rejectWithValue(error.response?.data || 'Authentication check failed');
+            return rejectWithValue(error.response?.data.error || 'Authentication check failed');
         }
     }
 );

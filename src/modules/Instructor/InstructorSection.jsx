@@ -1,5 +1,5 @@
-import { Breadcrumbs, Button, Grid, Typography } from '@mui/material'
-import { useEffect, useState } from 'react';
+import { Button, Grid, Typography } from '@mui/material'
+import { useEffect } from 'react';
 import HeaderCourse from '~/Components/Common/Header/HeaderCourse'
 import CourseItem from './Courses/CourseItem';
 import { useNavigate } from 'react-router-dom';
@@ -44,7 +44,7 @@ const InstructorSection = () => {
                 <Grid container className=" justify-start gap-5 mx-5 py-4">
                     {courses.map((course, index) => (
                         <CourseItem key={index} isFree={checkFreeCourse(course.price)} courseImg={course.photo} courseName={course.title}
-                            courseId={course.courseId}
+                            courseId={course._id}
                             status={course.status} approveBy={course.isApproved} />
 
                     ))}

@@ -41,7 +41,7 @@ const CourseManager = () => {
     const getCourse = async () => {
         const result = await dispatch(getAllCourse());
         if(getAllCourse.fulfilled.match(result)) {
-            setCourses(result.payload);
+            setCourses(result.payload.data);
         }
         else
         {
@@ -54,7 +54,7 @@ const CourseManager = () => {
   }, [dispatch, courses, openApprove])
 
   // Filter and search logic
-  const filteredCourses = courses ? courses.filter(course => {
+  const filteredCourses = courses.length > 0 ? courses.filter(course => {
     const matchesSearch = course.title.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesLevel = filterLevel === 'all' || course.level === filterLevel;
     const matchesStatus = filterStatus === 'all' || course.status === filterStatus;
@@ -196,7 +196,7 @@ const CourseManager = () => {
                         <Tooltip title="Approve"><FactCheck size={20} /></Tooltip>
                       </IconButton>
                       ) : ''}
-                      {openApprove ? (<ApproveCourseModal courseData={courseData} setOpen={setOpenApprove} open={openApprove} />) : ''}
+                      {openApprove ? (<ApproveCourseModal courseData={course} setOpen={setOpenApprove} open={openApprove} />) : ''}
                       <IconButton size="small" className="text-blue-600">
                       <Tooltip title="Edit"><Edit size={20} /></Tooltip>
                       </IconButton>

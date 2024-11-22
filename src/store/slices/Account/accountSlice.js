@@ -18,7 +18,7 @@ const paymentSlice = createSlice({
             })
             .addCase(getAllAccount.fulfilled, (state, action) => {
                 state.loading = false;
-                state.accounts = action.payload.data;
+                state.accounts = action.payload.data.users;
                 state.count = action.payload.count;
             })
             .addCase(getAllAccount.rejected, (state, action) => {

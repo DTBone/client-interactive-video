@@ -16,7 +16,7 @@ const InstructorManager = () => {
   const [openAdd, setOpenAdd] = useState(false);
   
   // Filter instructors based on search query
-  const filteredInstructors = instructors.filter(instructor => {
+  const filteredInstructors = instructors && instructors.filter(instructor => {
     if(instructor.role !== 'instructor') return false;
     return instructor.profile.fullname.toLowerCase().includes(searchQuery.toLowerCase() 
   );
@@ -36,15 +36,13 @@ const InstructorManager = () => {
             const result = await dispatch(getAllAccount(userId));
             if (getAllAccount.fulfilled.match(result)) {
                 
-                setInstructors(result.payload.data);
+                setInstructors(result.payload.data.users);
             }
             else
                 console.log(result.payload.message)
         }
-        if(!instructors || instructors.length === 0) {
-            getUsers();
-        }
-        }, [userId, dispatch, instructors]);
+        getUsers();
+        }, []);
 
   return (
     <div className="flex flex-col w-full min-h-screen bg-gray-50 p-6 space-y-6">

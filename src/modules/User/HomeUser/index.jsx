@@ -6,7 +6,6 @@ import '~/index.css';
 import CourseList from './components/CourseList';
 import { getAllCourse } from "~/store/slices/Course/action.js";
 import { useDispatch, useSelector } from 'react-redux';
-import SocketService from "~/hooks/SocketService.js";
 
 function HomeUser({user}) {
     const dispatch = useDispatch();
@@ -28,7 +27,7 @@ function HomeUser({user}) {
             const result = await dispatch(getAllCourse({ limit, page }));
 
             if (getAllCourse.fulfilled.match(result)) {
-                const newCourses = result.payload;
+                const newCourses = result.payload.data;
                 return newCourses;
             }
             return [];

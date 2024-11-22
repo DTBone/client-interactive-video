@@ -8,6 +8,9 @@ import SuccessfulCourseRegis from './Notification/SuccessfulCourseRegis';
 import Tabcourse from './Tab/tabcourse'
 import courseService from '../../services/api/courseService'
 import {useNavigate} from 'react-router-dom';
+import { enrollCourse as enroll } from '~/store/slices/Course/action'
+import { useDispatch } from 'react-redux'
+
 
 const EnrollToCourse = () => {
 
@@ -25,7 +28,7 @@ const EnrollToCourse = () => {
     //     }
 
 
-
+    const dispatch = useDispatch();
     const [enrollCourse, setState] = useState(false);
     const [course, setCourse] = useState({});
     const [intructor, setIntructor] = useState({});
@@ -33,10 +36,16 @@ const EnrollToCourse = () => {
     const [isSubmit, setSubmit] = useState(false);
     const user = JSON.parse(localStorage.getItem('user'));
     const navigate = useNavigate();
-    const handleDataFromButotnSubmit = (data) => {
-        setState(data);
-        setSubmit(data);
-        openSnackbar();
+    const handleDataFromButotnSubmit = async (data) => {
+        const result = await dispatch(enroll({ courseId: courseId}));
+        console.log(result);
+        if (result.payload.success) {
+            setSubmit(true);
+            setState(data);
+            setSubmit(data);
+            openSnackbar();
+        }
+        else setSubmit(false)
     };
     const handleLearn = () => {
         navigate(`/learns/${courseId}/`)
