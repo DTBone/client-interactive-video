@@ -150,7 +150,7 @@ function AccountManager() {
     const getUsers = async () =>{
         const result = await dispatch(getAllAccount(userId));
         if (getAllAccount.fulfilled.match(result)) {
-            setUsers(result.payload.data)
+            setUsers(result.payload.data.users)
         }
         else
         	console.log(result.payload.message)

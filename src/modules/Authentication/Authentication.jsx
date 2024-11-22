@@ -85,7 +85,7 @@ function Login() {
                 const resultAction = await dispatch(login(credentials));
                 console.log('resultAction', resultAction);
 
-                if (login.fulfilled.match(resultAction)) {
+                if (resultAction.payload.status === 'success' ) {
                     setOpen(true);
                     if (submitBtn.current) {
                         submitBtn.current.disabled = true;
