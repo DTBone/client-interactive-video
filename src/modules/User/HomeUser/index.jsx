@@ -8,7 +8,7 @@ import { getAllCourse } from "~/store/slices/Course/action.js";
 import { useDispatch, useSelector } from 'react-redux';
 import SocketService from "~/hooks/SocketService.js";
 
-function HomeUser({user}) {
+function HomeUser({ user }) {
     const dispatch = useDispatch();
     const [loading, setLoading] = useState(false);
     const [page, setPage] = useState(1);
@@ -18,7 +18,7 @@ function HomeUser({user}) {
 
     const [recentCourses, setRecentCourses] = useState([]);
     const countAllCourses = useSelector(state => state.course?.count) || 0;
-    if(!user) {
+    if (!user) {
         user = {};
     }
 
@@ -28,7 +28,7 @@ function HomeUser({user}) {
             const result = await dispatch(getAllCourse({ limit, page }));
 
             if (getAllCourse.fulfilled.match(result)) {
-                const newCourses = result.payload;
+                const newCourses = result.payload.data;
                 return newCourses;
             }
             return [];

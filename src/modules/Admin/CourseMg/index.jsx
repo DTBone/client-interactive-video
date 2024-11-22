@@ -39,22 +39,24 @@ const CourseManager = () => {
 
   useEffect(() => {
     const getCourse = async () => {
-        const result = await dispatch(getAllCourse());
-        if(getAllCourse.fulfilled.match(result)) {
-            setCourses(result.payload);
-        }
-        else
-        {
-            console.log("error")
-        }
+      const result = await dispatch(getAllCourse());
+      if (getAllCourse.fulfilled.match(result)) {
+        setCourses(result.payload.data);
+        console.log('Courses:', result?.payload?.data)
+      }
+      else {
+        console.log("error")
+      }
     }
-    if(courses.length === 0) {
+    if (courses.length === 0) {
       getCourse();
     }
   }, [dispatch, courses, openApprove])
 
+
+
   // Filter and search logic
-  const filteredCourses = courses ? courses.filter(course => {
+  const filteredCourses = Array.isArray(courses) ? courses.filter(course => {
     const matchesSearch = course.title.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesLevel = filterLevel === 'all' || course.level === filterLevel;
     const matchesStatus = filterStatus === 'all' || course.status === filterStatus;
@@ -161,52 +163,53 @@ const CourseManager = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {filteredCourses ? filteredCourses
-              .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-              .map((course) => (
-                <TableRow key={course._id}>
-                  <TableCell>{course.title}</TableCell>
-                  <TableCell>
-                    <Chip
-                      label={course.level}
-                      className={`${getLevelColor(course.level)}`}
-                    />
-                  </TableCell>
-                  <TableCell>
-                    ${course.price}
-                  </TableCell>
-                  <TableCell>
-                    <Chip
-                      label={course.status}
-                      className={`${getStatusColor(course.status)}`}
-                    />
-                  </TableCell>
-                  <TableCell>{course.enrollmentCount}</TableCell>
-                  <TableCell>
-                    {course.isApproved ? (
-                      <Check className="text-green-600" />
-                    ) : (
-                      <Close className="text-red-600" />
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    <Box className="flex gap-2">
-                      {!course.isApproved ? (
-                        <IconButton onClick={() => handleApprove(course)} size="small" className="text-blue-600">
-                        <Tooltip title="Approve"><FactCheck size={20} /></Tooltip>
-                      </IconButton>
-                      ) : ''}
-                      {openApprove ? (<ApproveCourseModal courseData={courseData} setOpen={setOpenApprove} open={openApprove} />) : ''}
-                      <IconButton size="small" className="text-blue-600">
-                      <Tooltip title="Edit"><Edit size={20} /></Tooltip>
-                      </IconButton>
-                      <IconButton size="small" className="text-red-600">
-                      <Tooltip title="Delete"><Delete size={20} /></Tooltip>
-                      </IconButton>
-                    </Box>
-                  </TableCell>
-                </TableRow>
-              )) : ''}
+            {filteredCourses && filteredCourses.length > 0 ? (
+              filteredCourses
+                .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                .map((course) => (
+                  <TableRow key={course._id}>
+                    <TableCell>{course.title}</TableCell>
+                    <TableCell>
+                      <Chip
+                        label={course.level}
+                        className={`${getLevelColor(course.level)}`}
+                      />
+                    </TableCell>
+                    <TableCell>
+                      ${course.price}
+                    </TableCell>
+                    <TableCell>
+                      <Chip
+                        label={course.status}
+                        className={`${getStatusColor(course.status)}`}
+                      />
+                    </TableCell>
+                    <TableCell>{course.enrollmentCount}</TableCell>
+                    <TableCell>
+                      {course.isApproved ? (
+                        <Check className="text-green-600" />
+                      ) : (
+                        <Close className="text-red-600" />
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      <Box className="flex gap-2">
+                        {!course.isApproved ? (
+                          <IconButton onClick={() => handleApprove(course)} size="small" className="text-blue-600">
+                            <Tooltip title="Approve"><FactCheck size={20} /></Tooltip>
+                          </IconButton>
+                        ) : ''}
+                        {openApprove ? (<ApproveCourseModal courseData={courseData} setOpen={setOpenApprove} open={openApprove} />) : ''}
+                        <IconButton size="small" className="text-blue-600">
+                          <Tooltip title="Edit"><Edit size={20} /></Tooltip>
+                        </IconButton>
+                        <IconButton size="small" className="text-red-600">
+                          <Tooltip title="Delete"><Delete size={20} /></Tooltip>
+                        </IconButton>
+                      </Box>
+                    </TableCell>
+                  </TableRow>
+                ))) : ('')}
           </TableBody>
         </Table>
       </TableContainer>
@@ -214,7 +217,7 @@ const CourseManager = () => {
       {/* Pagination */}
       <TablePagination
         component="div"
-        count={filteredCourses?.length}
+        count={filteredCourses?.length || 0}
         rowsPerPage={rowsPerPage}
         page={page}
         onPageChange={handleChangePage}

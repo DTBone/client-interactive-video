@@ -83,15 +83,15 @@ const FileUpload = ({ onFileChange, accept = '.pdf,.doc,.docx,.jpg,.jpeg,.png, .
 
     const validateFile = (file) => {
         const allowedTypes = getAllowedTypes();
-        const maxSize = 100 * 1024 * 1024; // 100MB
+        const maxSize = 1000 * 1024 * 1024; // 1GB
 
         if (!allowedTypes.includes(file.type)) {
             showNotice('error', `File type not supported. Allowed types: ${accept}`);
             return `File type not supported. Allowed types: ${accept}`;
         }
         if (file.size > maxSize) {
-            showNotice('error', 'File size exceeds 100MB');
-            return 'File size exceeds 100MB';
+            showNotice('error', 'File size exceeds 1GB');
+            return 'File size exceeds 1GB';
         }
         return null;
     };

@@ -13,12 +13,12 @@ import Logout from '@mui/icons-material/Logout';
 import { useNavigate } from 'react-router-dom';
 import authService from '~/services/auth/authService';
 import Badge from '@mui/material/Badge';
-import {Notifications} from "@mui/icons-material";
-import {api} from "~/Config/api.js";
+import { Notifications } from "@mui/icons-material";
+import { api } from "~/Config/api.js";
 import socketService from "~/hooks/SocketService.js";
 import NotificationMenu from "~/components/Header/components/Notification/index.jsx";
 
-export default function AccountMenu({user}) {
+export default function AccountMenu({ user }) {
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [notifications, setNotifications] = React.useState([]);
   const [unreadNotifications, setUnreadNotifications] = React.useState(0);
@@ -40,42 +40,49 @@ export default function AccountMenu({user}) {
         user: user._id
       }
     });
-      console.log(result);
-    if(result.data.success){
-      setNotifications(result.data.data);
-      setUnreadNotifications(result.data.filter(notification => notification.read === false).length);
+    console.log('result', result);
+    // if(result.data.success){
+    //   setNotifications(result.data.data);
+    //   setUnreadNotifications(result.data.filter(notification => notification.read === false).length);
+    // }
+    if (result.data.success) {
+      const notifications = result.data.data; // Assuming this is the array of notifications
+      setNotifications(notifications);
+      setUnreadNotifications(
+        notifications.filter(notification => !notification.read).length
+      );
     }
   }
-    React.useEffect(() => {
-        fetchNotifications();
-        socket.on('notification:new', (data) => {
-          setNotifications([data, ...notifications]);
-          setUnreadNotifications(prevState => prevState + 1);
-        })
-    }, []);
+  React.useEffect(() => {
+    fetchNotifications();
+    socket.on('notification:new', (data) => {
+      setNotifications([data, ...notifications]);
+      setUnreadNotifications(prevState => prevState + 1);
+    })
+  }, []);
   const handleClick = (event) => {
     setAnchorEl(event.currentTarget);
   };
   const navigate = useNavigate();
-  const handleLogout =async () => {
+  const handleLogout = async () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     handleClose();
-    try{
+    try {
       const response = await authService.logout();
-      if(response.status === 'success'){
+      if (response.status === 'success') {
         // dispatch(logout());
         navigate('/home');
       }
     }
-    catch(error){
+    catch (error) {
       console.log(error);
     }
-}
-    const handleProfile = () => {
-      navigate('/profile/' + user._id);
-      handleClose();
-    }
+  }
+  const handleProfile = () => {
+    navigate('/profile/' + user._id);
+    handleClose();
+  }
   const handleClose = () => {
     setAnchorEl(null);
   };
@@ -83,20 +90,20 @@ export default function AccountMenu({user}) {
     <React.Fragment>
       <IconButton onClick={handleNotificationClick}>
         {unreadNotifications > 0 ? (
-            <Badge color="secondary" variant="dot">
-              <Notifications fontSize='large'/>
-            </Badge>
+          <Badge color="secondary" variant="dot">
+            <Notifications fontSize='large' />
+          </Badge>
         ) : (
-            <Notifications fontSize='large'/>
+          <Notifications fontSize='large' />
         )}
       </IconButton>
 
       <NotificationMenu
-          anchorEl={notificationAnchorEl}
-          open={notificationOpen}
-          onClose={handleNotificationClose}
-          notifications={notifications}
-          setNotifications={setNotifications}
+        anchorEl={notificationAnchorEl}
+        open={notificationOpen}
+        onClose={handleNotificationClose}
+        notifications={notifications}
+        setNotifications={setNotifications}
       />
       <Box sx={{ display: 'flex', alignItems: 'center', textAlign: 'center' }}>
         <Tooltip title="Account settings">

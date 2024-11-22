@@ -1,5 +1,5 @@
 import { createSlice, current } from "@reduxjs/toolkit";
-import {createModule, deleteModule, getAllModules, getModuleById, updateModule} from "./action";
+import { createModule, deleteModule, getAllModules, getAllModulesByModuleItemId, getModuleById, getModuleByItemId, updateModule } from "./action";
 
 const moduleSlice = createSlice({
     name: 'module-slice',
@@ -87,6 +87,33 @@ const moduleSlice = createSlice({
                 state.error = null;
             })
             .addCase(getModuleById.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
+            .addCase(getAllModulesByModuleItemId.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(getAllModulesByModuleItemId.fulfilled, (state, action) => {
+                state.loading = false;
+                console.log(action.payload)
+                state.modules = action.payload;
+                state.error = null;
+            })
+            .addCase(getAllModulesByModuleItemId.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
+            .addCase(getModuleByItemId.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(getModuleByItemId.fulfilled, (state, action) => {
+                state.loading = false;
+                state.currentModule = action.payload;
+                state.error = null;
+            })
+            .addCase(getModuleByItemId.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload;
             })

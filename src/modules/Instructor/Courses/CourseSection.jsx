@@ -253,18 +253,25 @@ const CourseSection = ({ state }) => {
 
 
     const handleOpenModuleSection = (courseId, moduleindex) => {
-        if (!courseId || !moduleindex) return;
-        const courseSlug = courseId.trim().toLowerCase().replace(/\s+/g, '-');
-        if (!moduleindex) {
-            navigate(`/course-management/${courseSlug}/module`);
+        // Ensure courseId and moduleindex are valid
+        console.log("courseId: ", courseId);
+        if (!courseId || moduleindex == null) {
+            console.error('Invalid courseId or moduleindex:', { courseId, moduleindex });
+            return;
         }
 
-        // Create URL-friendly strings
+        // Create a URL-friendly slug from courseId
+        const courseSlug = courseId.trim().toLowerCase().replace(/\s+/g, '-');
 
+        // Build the navigation path
+        const path = moduleindex === 0
+            ? `/course-management/${courseSlug}/module`
+            : `/course-management/${courseSlug}/module/${moduleindex}`;
 
-
-        navigate(`/course-management/${courseSlug}/module/${moduleindex}`);
+        // Navigate to the constructed path
+        navigate(path);
     };
+
 
 
 
@@ -385,7 +392,7 @@ const CourseSection = ({ state }) => {
                                 <Grid item xs={12}>
                                     <div className="flex justify-between items-center mb-2">
                                         <h3
-                                            onClick={() => handleOpenModuleSection(courseId, 1)}
+                                            onClick={() => handleOpenModuleSection(courseId, 0)}
                                             style={{
                                                 cursor: 'pointer',
                                                 textDecoration: 'none'

@@ -9,12 +9,12 @@ import { styled } from '@mui/material/styles';
 
 
 import { Circle } from '@mui/icons-material';
-import {useEffect, useState} from 'react';
+import { useEffect, useState } from 'react';
 
-import {useNavigate, useParams} from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { Typography } from '@mui/material';
-import {useSelector, useDispatch} from "react-redux";
-import {getAllModules} from "~/store/slices/Module/action.js";
+import { useSelector, useDispatch } from "react-redux";
+import { getAllModules } from "~/store/slices/Module/action.js";
 
 
 const SideBar = () => {
@@ -32,9 +32,9 @@ const SideBar = () => {
     };
     const handleModuleItemClick = (buttonId, module) => {
         setActiveButton(`${buttonId.toLowerCase()}`);
-        console.log(`${buttonId.toLowerCase().replace(/\s+/g, '/')}`)
+        //console.log(`${buttonId.toLowerCase().replace(/\s+/g, '/')}`)
         navigate(`module/${buttonId.toLowerCase().replace(/\s+/g, '/')}`, { state: { module } });
-        
+
     };
     const [expanded, setExpanded] = useState(false);
 
@@ -126,7 +126,7 @@ const SideBar = () => {
     }));
 
     const CustomButton = styled(Button)(({ theme, isActive }) => ({
-    
+
 
 
         justifyContent: 'flex-start',
@@ -167,22 +167,24 @@ const SideBar = () => {
 
     const [modules, setModules] = useState(useSelector(state => state.module.modules) || []);
     const { courseId, moduleId } = useParams();
-    console.log(courseId)
+    console.log('local', courseId, moduleId);
+    localStorage.setItem('courseId', courseId)
+    localStorage.setItem('moduleId', moduleId)
+    //console.log(courseId)
     useEffect(() => {
         const fetchData = async () => {
-            try{
-                const result =await dispatch(getAllModules(courseId))
-                if(getAllModules.fulfilled.match(result)){
-                console.log(result.payload)
+            try {
+                const result = await dispatch(getAllModules(courseId))
+                if (getAllModules.fulfilled.match(result)) {
+                    //console.log(result.payload)
                     setModules(result.payload)
                 }
             }
-            catch (e)
-            {
+            catch (e) {
                 console.log(e)
             }
         }
-        if(courseId){
+        if (courseId) {
             fetchData()
         }
     }, [courseId]);
@@ -206,8 +208,8 @@ const SideBar = () => {
                         <CustomButton
                             key={index}
                             fullWidth
-                            onClick={() => handleModuleItemClick(item._id, item)}
-                            isActive={activeButton === item._id} >
+                            onClick={() => handleModuleItemClick(item.index, item)}
+                            isActive={activeButton === item.index} >
                             <Circle sx={{ color: '#c1cad9' }} />
                             {`Module ${index + 1}`}
 

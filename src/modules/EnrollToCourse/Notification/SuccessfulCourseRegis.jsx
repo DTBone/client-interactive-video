@@ -23,7 +23,7 @@ const SuccessfulCourseRegis = ({ openSnackbar, closeSnackbar, snackbarState }) =
             key={vertical + horizontal}
         >
             <Alert onClose={handleClose} severity="success" sx={{ width: '100%' }}>
-                Đăng ký khóa học thành công!
+                You have successfully registered for the course!
             </Alert>
         </Snackbar>
     )

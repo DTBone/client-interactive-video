@@ -83,3 +83,30 @@ export const deleteModule = createAsyncThunk(
     }
 )
 
+export const getAllModulesByModuleItemId = createAsyncThunk(
+    'module/getAllModulesByModuleItemId',
+    async ({ itemId }, { rejectWithValue }) => {
+        console.log('Received itemId in thunk:', itemId);
+        try {
+            const { data } = await axiosInstance.get(`/learns/moduleitem/getAllModule/${itemId}`);
+            console.log('Received data:', data.data);
+            return data.data;
+        } catch (error) {
+            console.error('Error fetching modules:', error);
+            return rejectWithValue(error.message);
+        }
+    }
+)
+
+export const getModuleByItemId = createAsyncThunk(
+    'module/getModuleByItemId',
+    async ({ itemId }, { rejectWithValue }) => {
+        try {
+            const { data } = await axiosInstance.get(`/learns/moduleitem/getModule/${itemId}`);
+            return data.data;
+        } catch (error) {
+            return rejectWithValue(error.message);
+        }
+    }
+)
+

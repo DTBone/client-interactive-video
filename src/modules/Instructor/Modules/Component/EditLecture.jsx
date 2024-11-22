@@ -7,7 +7,7 @@ import {
 } from '@mui/material';
 import { useNavigate, useParams } from 'react-router-dom';
 import FileUpload from './FileUpload';
-import { useNotification } from '~/Hooks/useNotification';
+import { useNotification } from '~/hooks/useNotification';
 import QuizQuestionForm from './QuizQuestionForm';
 import { createModuleItemLecture } from '~/store/slices/ModuleItem/action';
 import { useDispatch } from 'react-redux';
