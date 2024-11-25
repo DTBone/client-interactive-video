@@ -8,6 +8,7 @@ import CustomScrollbar from '~/Components/Common/CustomScrollbar';
 const CourseDetail = () => {
 
     return (
+        
         <div className="h-screen flex flex-col overflow-hidden">
             <header className=' '>
                 <HeaderCourse />

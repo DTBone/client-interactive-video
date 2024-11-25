@@ -16,7 +16,8 @@ import {
     FormControl,
     RadioGroup,
     FormControlLabel,
-    DialogActions, Button, Radio, Snackbar, Alert
+    DialogActions, Button, Radio, Snackbar, Alert,
+    Checkbox
 } from '@mui/material';
 import {
     PlayArrow,
@@ -27,10 +28,66 @@ import {
     Fullscreen,
     FullscreenExit,
     Settings,
-    Speed, QuestionAnswer
+    Speed, QuestionAnswer,
+    CheckBox,
+    Close
 } from '@mui/icons-material';
+import { useDispatch, useSelector } from 'react-redux';
+import { updateLectureProgress } from '~/store/slices/Quiz/action';
 
-const Video = ({ src }) => {
+const questionsExample = [
+    {
+        startTime: 10, // seconds
+        question: "What was just discussed?",
+        questionType: "multipleChoice",
+        index: 1,
+        answers: [
+            {
+                content: "The importance of the topic",
+                isCorrect: true,
+                _id: 0
+            },
+            {
+                content: "The weather",
+                isCorrect: false,
+                _id: 1
+            },
+            {
+                content: "The latest sports news",
+                isCorrect: false,
+                _id: 2
+            }
+        ]
+    },
+    {
+        startTime: 20, // seconds
+        question: "What was just discussed?",
+        questionType: "onlyChoice",
+        index: 1,
+        answers: [
+            {
+                content: "The importance of the topic",
+                isCorrect: true,
+                _id: 0
+            },
+            {
+                content: "The weather",
+                isCorrect: false,
+                _id: 1
+            },
+            {
+                content: "The latest sports news",
+                isCorrect: false,
+                _id: 2
+            }
+        ]
+    }
+]
+
+const Video = ({ src, questions = questionsExample, isComplete, onCompleteVideo, moduleItemId }) => {
+    const dispatch = useDispatch();
+    const progress = useSelector((state) => Object.keys(state.progress.progress).length > 0 ? state.progress.progress?.moduleItemProgresses.find(p => p.moduleItemId === moduleItemId) : {});
+    const [complete, setComplete] = useState(progress?.status === 'completed' || isComplete);
     const videoRef = useRef(null);
     const [isPlaying, setIsPlaying] = useState(false);
     const [volume, setVolume] = useState(1);
@@ -46,37 +103,40 @@ const Video = ({ src }) => {
     const [isLoading, setIsLoading] = useState(true);
     const [alert, setAlert] = useState('');
     const speedOptions = [0.75, 1, 1.25];
-    const questions = [
-        {
-            time: 10, // seconds
-            question: "What was just discussed?",
-            options: ["Option A", "Option B", "Option C", "Option D"],
-            correctAnswer: 0,
-        }
-        // Add more questions as needed
-    ]
     const [openQuestionDialog, setOpenQuestionDialog] = useState(false);
     const [currentQuestion, setCurrentQuestion] = useState(null);
-    const [selectedAnswer, setSelectedAnswer] = useState(null);
+    const [selectedAnswer, setSelectedAnswer] = useState([]);
     const [answeredQuestions, setAnsweredQuestions] = useState(new Set());// Set chứa các câu hỏi đã trả lời
-    const [lastAllowedTime, setLastAllowedTime] = useState(0);
+    const [lastAllowedTime, setLastAllowedTime] = useState(progress?.status === 'completed' ? duration : progress?.result?.video?.lastPosition || 0);
+    const [progressVideo, setProgressVideo] = useState({
+        watchedDuration: 0,
+        totalDuration: 0,
+        lastPosition: 0,
+        completionPercentage: 0,
+        notes: []
+    });
     // Kiểm tra xem có câu hỏi nào cần hiển thị không
     const checkForQuestions = (currentTime) => {
-        const question = questions.find(q => {
-            const timeDiff = Math.abs(q.time - currentTime);
-            return timeDiff < 0.5 && !answeredQuestions.has(q.time);
-        });
-
-        if (question) {
-            videoRef.current.pause();
-            setIsPlaying(false);
-            setCurrentQuestion(question);
-            setOpenQuestionDialog(true);
+        if (progress?.status == 'completed') return;
+        else{
+            const question = questions.find(q => {
+                const timeDiff = Math.abs(q.startTime - currentTime);
+                return timeDiff < 0.5 && !answeredQuestions.has(q.startTime);
+            });
+    
+            if (question) {
+                videoRef.current.pause();
+                setIsPlaying(false);
+                setCurrentQuestion(question);
+                setOpenQuestionDialog(true);
+            }
         }
     };
     // Đảm bảo thời gian hiện tại không vượt quá thời gian của câu hỏi tiếp theo
     const enforceQuestionBoundary = (currentTime) => {
-        const nextUnansweredQuestion = questions
+        if (progress?.status === 'completed') return;
+        else
+        {const nextUnansweredQuestion = questions
             .filter(q => !answeredQuestions.has(q.time))
             .sort((a, b) => a.time - b.time)
             .find(q => q.time < currentTime);
@@ -85,35 +145,63 @@ const Video = ({ src }) => {
             videoRef.current.currentTime = nextUnansweredQuestion.time;
             setCurrentTime(nextUnansweredQuestion.time);
             setAlert('You cannot skip unanswered questions.');
-        }
+        }}
     };
 
     const handleAnswerSubmit = () => {
-        if (currentQuestion && selectedAnswer !== null) {
-            const isCorrect = selectedAnswer === currentQuestion.correctAnswer;
-            if(isCorrect) {
-                setAnsweredQuestions(new Set([...answeredQuestions, currentQuestion.time]));
-                setSelectedAnswer(null);
-                setOpenQuestionDialog(false);
-                setAlert('Congratulations! Your answer is correct.');
-            }
-            else {
-                setAnsweredQuestions(new Set([...answeredQuestions, currentQuestion.time]));
-                setSelectedAnswer(null);
-                setAlert('Please try again.');
-            }
+        if (!currentQuestion || selectedAnswer === null) return;
 
-            // Update the last allowed time to the next question or the end of the video
-            const nextQuestion = questions
-                .filter(q => q.time > currentQuestion.time)
-                .sort((a, b) => a.time - b.time)[0];
-            setLastAllowedTime(nextQuestion ? nextQuestion.time : duration);
+        let isCorrect = false;
+        
+        switch (currentQuestion.questionType) {
+            case 'multipleChoice':
+                isCorrect = currentQuestion.answers.some((answer, index) => {
+                    return selectedAnswer.includes(index) && answer.isCorrect;
+                })
+                break;
+            case 'onlyChoice':
+            case 'trueFalse':
+                console.log('selectedAnswer', selectedAnswer);
+                isCorrect = currentQuestion.answers.find(answer => answer._id === selectedAnswer[0]).isCorrect;
+                break;
+            default:
+                console.warn('Unknown question type:', currentQuestion.questionType);
+                return;
         }
+
+        if (isCorrect) {
+            setAnsweredQuestions(new Set([...answeredQuestions, currentQuestion.startTime]));
+            setAlert('Congratulations! Your answer is correct.');
+            setOpenQuestionDialog(false);
+            
+            // Find next question or set to video end
+            const nextQuestion = questions
+                .filter(q => q.startTime > currentQuestion.startTime)
+                .sort((a, b) => a.startTime - b.startTime)[0];
+            setLastAllowedTime(nextQuestion ? nextQuestion.startTime : duration);
+            
+            // Resume video playback
+            setTimeout(() => {
+                videoRef.current.play();
+                setIsPlaying(true);
+            }, 1500);
+        } else {
+            setAlert('Please try again.');
+        }
+        
+        setSelectedAnswer([]);
     };
+
+    const handleCloseDialog = () => {
+        setOpenQuestionDialog(false);
+    }
 
     useEffect(() => {
         const video = videoRef.current;
         if (!video) return;
+        if(progress?.status === 'in-progress' || false) {
+            video.currentTime = progress.result.video.lastPosition;
+        }
 
         const handleLoadedMetadata = () => {
             setDuration(video.duration);
@@ -122,8 +210,31 @@ const Video = ({ src }) => {
 
         const handleTimeUpdate = () => {
             setCurrentTime(video.currentTime);
-            checkForQuestions(video.currentTime);
-            enforceQuestionBoundary(video.currentTime);
+            if(progress?.status !== 'completed' || false) {
+                checkForQuestions(video.currentTime);
+                enforceQuestionBoundary(video.currentTime);
+                setProgressVideo({
+                    ...progressVideo,
+                    watchedDuration: video.currentTime,
+                    totalDuration: video.duration,
+                    lastPosition: video.currentTime,
+                    completionPercentage: (video.currentTime / video.duration) * 100
+                });
+            }
+            // Xem đến gần cuối video thì tự động hoàn thành (80%)
+            if (video.currentTime >= video.duration * 0.8 && complete !== true) {
+                setComplete(true);
+                setProgressVideo({
+                    ...progressVideo,
+                    completionPercentage: 100
+                })
+                onCompleteVideo({
+                    ...progressVideo,
+                    completionPercentage: 100,
+                    lastPosition: video.duration,
+                    watchedDuration: video.duration
+                });
+            }
             updateBufferProgress();
         };
 
@@ -161,42 +272,49 @@ const Video = ({ src }) => {
         video.addEventListener('progress', handleProgress);
         document.addEventListener('fullscreenchange', handleFullscreenChange);
 
+        const currentProgress = progressVideo;
+        const handleComplete = onCompleteVideo;
+
         return () => {
+            if (!video) return; // Thêm check null trong cleanup
             video.removeEventListener('loadedmetadata', handleLoadedMetadata);
             video.removeEventListener('timeupdate', handleTimeUpdate);
             video.removeEventListener('waiting', handleWaiting);
             video.removeEventListener('playing', handlePlaying);
             video.removeEventListener('progress', handleProgress);
             document.removeEventListener('fullscreenchange', handleFullscreenChange);
+            if(handleComplete && currentProgress.completionPercentage > 10) {
+                handleComplete(currentProgress);
+            }
         };
-    }, [questions, answeredQuestions]);
+    }, [questions, answeredQuestions, complete, isComplete, onCompleteVideo]);
 
-    useEffect(() => {
-        const video = videoRef.current;
-        if (!video) return;
+    // useEffect(() => {
+    //     const video = videoRef.current;
+    //     if (!video) return;
 
-        const handleLoadedMetadata = () => {
-            setDuration(video.duration);
-        };
+    //     const handleLoadedMetadata = () => {
+    //         setDuration(video.duration);
+    //     };
 
-        const handleTimeUpdate = () => {
-            setCurrentTime(video.currentTime);
-        };
+    //     const handleTimeUpdate = () => {
+    //         setCurrentTime(video.currentTime);
+    //     };
 
-        const handleFullscreenChange = () => {
-            setIsFullscreen(document.fullscreenElement !== null);
-        };
+    //     const handleFullscreenChange = () => {
+    //         setIsFullscreen(document.fullscreenElement !== null);
+    //     };
 
-        video.addEventListener('loadedmetadata', handleLoadedMetadata);
-        video.addEventListener('timeupdate', handleTimeUpdate);
-        document.addEventListener('fullscreenchange', handleFullscreenChange);
+    //     video.addEventListener('loadedmetadata', handleLoadedMetadata);
+    //     video.addEventListener('timeupdate', handleTimeUpdate);
+    //     document.addEventListener('fullscreenchange', handleFullscreenChange);
 
-        return () => {
-            video.removeEventListener('loadedmetadata', handleLoadedMetadata);
-            video.removeEventListener('timeupdate', handleTimeUpdate);
-            document.removeEventListener('fullscreenchange', handleFullscreenChange);
-        };
-    }, []);
+    //     return () => {
+    //         video.removeEventListener('loadedmetadata', handleLoadedMetadata);
+    //         video.removeEventListener('timeupdate', handleTimeUpdate);
+    //         document.removeEventListener('fullscreenchange', handleFullscreenChange);
+    //     };
+    // }, []);
 
     const formatTime = (timeInSeconds) => {
         const hours = Math.floor(timeInSeconds / 3600);
@@ -239,18 +357,30 @@ const Video = ({ src }) => {
         }
     };
 
-    const handleTimeSeek = (event, newValue) => {
-        const newTime = (newValue / 100) * duration;
-        console.log(newTime);
-        // Check if seeking past an unanswered question
+    const handleTimeSeek = (event, newValue) => { // Xử lý khi người dùng kéo Slider
+        const newTime = (newValue / 100) * duration; // Tính thời gian mới dựa trên giá trị của Slider
+        if(progress?.status === 'completed' || newTime < lastAllowedTime) {
+            console.log('newTime',newTime, lastAllowedTime);
+            videoRef.current.currentTime = newTime;
+            setCurrentTime(newTime);
+            return;
+        };
+        
+        if (!questions) {
+            videoRef.current.currentTime = newTime;
+            setCurrentTime(newTime);
+            return;
+        }
+
         const nextUnansweredQuestion = questions
-            .filter(q => !answeredQuestions.has(q.time))
-            .sort((a, b) => a.time - b.time)
-            .find(q => q.time < newTime);
+            .filter(q => !answeredQuestions.has(q.startTime))
+            .sort((a, b) => a.startTime - b.startTime)
+            .find(q => q.startTime < newTime);
 
         if (nextUnansweredQuestion) {
-            videoRef.current.currentTime = nextUnansweredQuestion.time;
-            setCurrentTime(nextUnansweredQuestion.time);
+            videoRef.current.currentTime = nextUnansweredQuestion.startTime;
+            setCurrentTime(nextUnansweredQuestion.startTime);
+            setAlert('You must answer this question before continuing.');
         } else {
             videoRef.current.currentTime = newTime;
             setCurrentTime(newTime);
@@ -284,6 +414,19 @@ const Video = ({ src }) => {
         if (volume < 0.5) return <VolumeDown />;
         return <VolumeUp />;
     };
+    const handleMultipleChoiceChange = (answerId) => {
+        if (selectedAnswer.includes(answerId)) {
+          setSelectedAnswer(selectedAnswer.filter(id => id !== answerId));
+        } else {
+          setSelectedAnswer([...selectedAnswer, answerId]);
+        }
+      };
+    
+      const handleSingleChoiceChange = (event) => {
+        console.log(event.target.value);
+        setSelectedAnswer([event.target.value]);
+      };
+    
 
     return (
         <Box
@@ -384,11 +527,11 @@ const Video = ({ src }) => {
                                 <Box
                                     sx={{
                                         position: 'absolute',
-                                        left: `${(q.time / duration) * 100}%`,
+                                        left: `${(q.startTime / duration) * 100}%`,
                                         top: 13,
                                         width: 4,
                                         height: 4,
-                                        bgcolor: answeredQuestions.has(q.time) ? 'success.main' : 'warning.main',
+                                        bgcolor: answeredQuestions.has(q.startTime) ? 'success.main' : 'warning.main',
                                         zIndex: 3,
                                         transform: 'translateX(-50%)',
                                         cursor: 'pointer'
@@ -522,8 +665,9 @@ const Video = ({ src }) => {
                 </Paper>
             </Popover>
             {/* Interactive Question Dialog */}
-            <Dialog
-                open={openQuestionDialog}
+            {(openQuestionDialog && progress?.status !== 'completed') && (
+                <Dialog
+                open={true}
                 onClose={() => {}}
                 maxWidth="sm"
                 fullWidth
@@ -539,38 +683,65 @@ const Video = ({ src }) => {
                     color: 'white',
                     display: 'flex',
                     alignItems: 'center',
+                    justifyContent: 'space-between',
                     gap: 1
                 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                     <QuestionAnswer /> Interactive Question
+                        </Box>
+                    <Button onClick={handleCloseDialog} sx={{ color: 'white',
+                        ":hover": {
+                            backgroundColor: 'rgba(255,255,255,0.1)'
+                        }
+                     }}><Tooltip
+                        title="Close"
+                        placement="bottom"
+                    ><Close /></Tooltip>
+                     </Button>
                 </DialogTitle>
                 <DialogContent sx={{ mt: 2 }}>
                     {currentQuestion && (
-                        <FormControl component="fieldset" sx={{ width: '100%' }}>
-                            <Typography variant="h6" sx={{ mb: 2 }}>
-                                {currentQuestion.question}
-                            </Typography>
-                            <RadioGroup
-                                value={selectedAnswer}
-                                onChange={(e) => setSelectedAnswer(Number(e.target.value))}
-                            >
-                                {currentQuestion.options.map((option, index) => (
-                                    <FormControlLabel
-                                        key={index}
-                                        value={index}
-                                        control={<Radio />}
-                                        label={option}
-                                        sx={{
-                                            mb: 1,
-                                            p: 1,
-                                            borderRadius: 1,
-                                            '&:hover': {
-                                                bgcolor: 'action.hover',
-                                            }
-                                        }}
-                                    />
-                                ))}
-                            </RadioGroup>
-                        </FormControl>
+                        <FormControl className="w-full">
+                        <Typography variant="h6" className="mb-4">
+                          {currentQuestion.question}
+                        </Typography>
+                        <Typography variant="subtitle1" className="mb-2">
+                            {currentQuestion.questionType === 'multipleChoice' ? 'Select all that apply:' : 'Select one:'}
+                        </Typography>
+                
+                        {currentQuestion.questionType === 'multipleChoice' ? (
+                          <Stack className="space-y-4">
+                            {currentQuestion.answers.map((answer) => (
+                              <FormControlLabel
+                                key={answer._id}
+                                control={
+                                  <Checkbox
+                                    checked={selectedAnswer?.includes(answer._id)}
+                                    onChange={() => handleMultipleChoiceChange(answer._id)}
+                                  />
+                                }
+                                label={answer.content}
+                              />
+                            ))}
+                          </Stack>
+                        ) : (
+                          <RadioGroup
+                            value={selectedAnswer?.[0] || ''}
+                            onChange={handleSingleChoiceChange}
+                          >
+                            <Stack className="space-y-4">
+                              {currentQuestion.answers.map((answer) => (
+                                <FormControlLabel
+                                  key={answer._id}
+                                  value={answer._id}
+                                  control={<Radio />}
+                                  label={answer.content}
+                                />
+                              ))}
+                            </Stack>
+                          </RadioGroup>
+                        )}
+                      </FormControl>
                     )}
                 </DialogContent>
                 <DialogActions sx={{ p: 2 }}>
@@ -584,10 +755,15 @@ const Video = ({ src }) => {
                     </Button>
                 </DialogActions>
             </Dialog>
+            )}
             <Snackbar
                 open={Boolean(alert)}
-                autoHideDuration={5000}
-                onClose={() => setAlert('')}
+                autoHideDuration={3000}
+                onClose={() => {
+                    setTimeout(() => {
+                        setAlert('');
+                    }, 3000);
+                }}
             >
                 <Alert
                     onClose={() => setAlert('')}

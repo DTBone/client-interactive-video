@@ -12,6 +12,17 @@ export const getQuizById = createAsyncThunk(
         }
     }
 );
+export const getLectureById = createAsyncThunk(
+    'quiz/getLectureById',
+    async (id, { rejectWithValue }) => {
+        try {
+            const data = await api.get(`/videos/${id}`);
+            return data.data;
+        } catch (error) {
+            return rejectWithValue(error || 'Get reviews failed');
+        }
+    }
+);
 
 export const submitQuiz = createAsyncThunk(
     'quiz/submitQuiz',
@@ -24,6 +35,21 @@ export const submitQuiz = createAsyncThunk(
             return res.data;
         } catch (error) {
             return rejectWithValue(error || 'Submit quiz failed');
+        }
+    }
+);
+
+export const updateLectureProgress = createAsyncThunk(
+    'quiz/updateLectureProgress',
+    async (data, { rejectWithValue }) => {
+        try {
+            console.log('data', data);
+            const res = await api.put(`/progress/${data.progressId}/video`, {
+                progressVideo: data.progressVideo
+            });
+            return res.data;
+        } catch (error) {
+            return rejectWithValue(error || 'Update lecture progress failed');
         }
     }
 );

@@ -8,6 +8,7 @@ const axiosInstance = axios.create({
     withCredentials: true,  // Gửi cookie khi gọi API từ domain khác
     headers: {
         'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('token')}`,  // Thêm token vào header Authorization
         'Access-Control-Allow-Origin': '*',
         // Thêm token hoặc các headers khác ở đây nếu cần
     }

@@ -47,7 +47,7 @@ const CourseManager = () => {
         else
         {
             console.log("error")
-
+        }
     }
     if (courses.length === 0) {
       getCourse();

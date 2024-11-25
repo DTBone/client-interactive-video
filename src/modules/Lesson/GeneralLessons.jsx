@@ -4,7 +4,7 @@ import SideBar from './SideBar/SideBar';
 import { Divider } from '@mui/material';
 import { Outlet, useLocation, useParams } from 'react-router-dom';
 import Breadcrumb from '~/Components/Common/Breadcrumbs/Breadcrumb';
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import CustomScrollbar from '~/Components/Common/CustomScrollbar';
 import { useDispatch, useSelector } from 'react-redux';
 import Module from './../CourseDetail/MainSection/Modules/Module';
@@ -15,9 +15,13 @@ const GeneralLessons = () => {
     const location = useLocation();
     const courseID = localStorage.getItem('courseId');
     const moduleID = localStorage.getItem('moduleId');
+    const [isSubmitted, setIsSubmitted] = useState(false);
 
     console.log('module', moduleID);
     console.log('course', courseID);
+    const onQuizSubmit = (result) => {
+        setIsSubmitted(result || false);
+    }
     const [isExpanded, setIsExpanded] = useState(true);
     const handleSidebarButtonClick = () => {
         setIsExpanded(!isExpanded);
@@ -47,7 +51,7 @@ const GeneralLessons = () => {
 
                             <div className="flex flex-row overflow-y-scroll h-[calc(100vh-1px)]">
                                 <div className=" mt-2 ">
-                                    <SideBar handleSidebarButtonClick={handleSidebarButtonClick} isExpanded={isExpanded} />
+                                    <SideBar handleSidebarButtonClick={handleSidebarButtonClick} isSubmitted={isSubmitted} isExpanded={isExpanded} />
                                 </div>
                                 <Divider orientation="vertical" flexItem />
                             </div>
@@ -70,7 +74,7 @@ const GeneralLessons = () => {
                         <CustomScrollbar className=''>
 
                             <div className="bg-white overflow-y-scroll  h-[calc(100vh-150px)] pt-3 pl-3 pr-3">
-                                <Outlet />
+                                <Outlet context={{onQuizSubmit}}/>
                             </div>
                         </CustomScrollbar>
                     </Grid>
