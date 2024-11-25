@@ -1,24 +1,21 @@
+/* eslint-disable react/prop-types */
 import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Typography } from "@mui/material"
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import CustomMenuItemButton from "../Button/CustomMenuItemButton";
 import IconComponent from "~/Components/Common/Button/IconComponent";
-import { useSelector } from "react-redux";
+import { useLocation } from "react-router-dom";
 
-const MenuList = ({ moduleList, onQuizComplete }) => {
+const MenuList = ({ module, onQuizSubmit }) => {
     const { quizId } = useParams();
+    const location = useLocation();
+    console.log('location', location)
     const navigate = useNavigate();
-    const [module, setModuleList] = useState(moduleList || null);
     const [activeButton, setActiveButton] = useState(quizId);
     const [showDialog, setShowDialog] = useState(false);
     const [currentItem, setCurrentItem] = useState(module?.moduleItems?.find(item => item.quiz === quizId) || null);
     const [itemSelected, setItemSelected] = useState(null);
-
-    const { currentModule } = useSelector((state) => state.module);
-    useEffect(() => {
-        setModuleList(currentModule)
-        console.log('modules lessons', currentModule)
-    }, [currentModule])
+    console.log('module', module)
 
     useEffect(() => {
         if (currentItem?.type === "quiz" && currentItem?.status === "completed") {
@@ -28,14 +25,9 @@ const MenuList = ({ moduleList, onQuizComplete }) => {
                     return { ...item, status: "completed" };
                 }
                 return item;
-            });
-
-            // If there's an onQuizComplete callback, call it with updated items
-            if (onQuizComplete) {
-                onQuizComplete(updatedModuleItems);
-            }
+            })
         }
-    }, [currentItem, module?.moduleItems, onQuizComplete]);
+    }, [currentItem, module?.moduleItems, module]);
 
     const navigateToItem = (item) => {
         if (item) {

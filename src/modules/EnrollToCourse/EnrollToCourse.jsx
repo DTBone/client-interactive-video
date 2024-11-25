@@ -51,6 +51,7 @@ const EnrollToCourse = () => {
         else setSubmit(false)
     };
     const handleLearn = () => {
+        console.log('course', course);
         navigate(`/learns/${courseId}/`, { state: { course } });
     }
     useEffect(() => {

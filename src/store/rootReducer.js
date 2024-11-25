@@ -4,7 +4,7 @@ import authSlice from './slices/Auth/authSlice';
 import paymentSlice from './slices/Payment/paymentSlice';
 import accountSlice from './slices/Account/accountSlice';
 import moduleSlice from './slices/Module/moduleSlice';
-
+import progressSlice from './slices/Progress/progressSlice';
 import moduleItemSlice from './slices/ModuleItem/moduleItemSlice';
 
 
@@ -16,6 +16,7 @@ const rootReducer = combineReducers({
     account: accountSlice,
     module: moduleSlice,
     moduleItem: moduleItemSlice,
+    progress: progressSlice,
 });
 
 export default rootReducer;

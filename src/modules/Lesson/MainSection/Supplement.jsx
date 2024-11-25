@@ -1,12 +1,38 @@
-import React, { useState } from "react";
+import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { Download, FileText, BookOpen } from 'lucide-react';
 import axios from 'axios';
+import { useOutletContext } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux"
+import { updateSupplementProgress } from "~/store/slices/Progress/action.js";
 
 const Supplement = () => {
     const location = useLocation();
     const { module, item } = location.state || {};
+    const dispatch = useDispatch();
     const [loading, setLoading] = useState(false);
+    const { onQuizSubmit } = useOutletContext();
+    const progress = useSelector((state) => state.progress.progress);
+    
+    const handleCompeleSupplement = async () => {
+        const rep = await dispatch(updateSupplementProgress({progressId: progress._id, progressSupplement: {status: 'completed', supplementId: item._id}}))
+        if (rep.payload.success) {
+            if (onQuizSubmit) {
+                onQuizSubmit(true);
+            }
+        }
+        else {
+            console.log('update progress failed')
+        }
+    }
+
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            handleCompeleSupplement();
+        }, 5000);
+        return () => clearTimeout(timer);
+    }, [])
+
 
     const handleDownloadPDF = async () => {
         try {

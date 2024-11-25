@@ -11,29 +11,31 @@ import { styled } from '@mui/material/styles';
 import { Circle } from '@mui/icons-material';
 import { useEffect, useState } from 'react';
 
-import { useNavigate, useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { Typography } from '@mui/material';
 import { useSelector, useDispatch } from "react-redux";
 import { getAllModules } from "~/store/slices/Module/action.js";
 
 
 const SideBar = () => {
+    const location = useLocation();
     // const { id } = useParams();
     const navigate = useNavigate();
     const dispatch = useDispatch();
-
+    const { course } = location.state;
+    console.log('course', course)
     const [activeButton, setActiveButton] = useState(null);
 
     const handleButtonClick = (buttonId) => {
         setActiveButton(`${buttonId.toLowerCase()}`);
-        navigate(`${buttonId.toLowerCase().replace(/\s+/g, '/')}`);
+        navigate(`${buttonId.toLowerCase().replace(/\s+/g, '/')}`,  { state: { course } });
 
 
     };
     const handleModuleItemClick = (buttonId, module) => {
         setActiveButton(`${buttonId.toLowerCase()}`);
         //console.log(`${buttonId.toLowerCase().replace(/\s+/g, '/')}`)
-        navigate(`module/${buttonId.toLowerCase().replace(/\s+/g, '/')}`, { state: { module } });
+        navigate(`module/${buttonId.toLowerCase().replace(/\s+/g, '/')}`, { state: { module, course } });
 
     };
     const [expanded, setExpanded] = useState(false);
@@ -191,7 +193,7 @@ const SideBar = () => {
     return (
         <div className="">
             <div className="w-full bg-transparent h-full flex justify-start items-center py-8 ">
-                <Typography variant='h4' fontSize="bold" sx={{ textTransform: "none" }}>Course Name</Typography>
+                <Typography variant='h4' fontSize="bold" sx={{ textTransform: "none" }}>{course.title}</Typography>
 
             </div>
             <CustomAccordion expanded={expanded === 'panel'} onChange={handleChange('panel')}>
