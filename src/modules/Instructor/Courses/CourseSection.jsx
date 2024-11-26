@@ -133,7 +133,7 @@ const CourseSection = ({ state }) => {
             setCourseData(currentCourse.data);
             setSelectedImageFile(currentCourse.photo);
         }
-        console.log('course:', currentCourse, error, loading);
+        console.log('course:', currentCourse, error, loading,);
     }, [currentCourse])
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -212,7 +212,7 @@ const CourseSection = ({ state }) => {
             } else {
                 await dispatch(createCourse(updatedCourseData)).unwrap();
                 showNotice('success', 'Course created successfully!');
-                navigate('/course-management', { replace: true });
+                navigate('/instructor/course-management', { replace: true });
             }
 
 
@@ -336,7 +336,9 @@ const CourseSection = ({ state }) => {
         <div className="h-screen flex flex-col overflow-hidden">
             <header>
                 <HeaderCourse />
-                <Breadcrumb />
+                <Breadcrumb
+                    courseId={currentCourse?.data?.courseId}
+                />
             </header>
 
             <div className="flex h-full px-6 overflow-y-auto pt-5">
@@ -445,7 +447,7 @@ const CourseSection = ({ state }) => {
                                             onInputChange={(event, newInputValue) => {
                                                 setInputValue(newInputValue);
                                             }}
-                                            options={suggestedTags.filter(tag => 
+                                            options={suggestedTags.filter(tag =>
                                                 !courseData.tags?.includes(tag)
                                             )}
                                             renderInput={(params) => (

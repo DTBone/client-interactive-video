@@ -1,17 +1,19 @@
-import ExpandBtn from "../Button/ExpandBtn"
-import HideBtn from "../Button/HideBtn"
+import React from 'react'
+
+
 import { Button, Typography } from "@mui/material";
-import MenuItem from "./MenuList";
+
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import MenuList from "./MenuList";
+
 import { useDispatch, useSelector } from "react-redux";
 import { getAllModulesByModuleItemId, getModuleById, getModuleByItemId } from "~/store/slices/Module/action.js";
+import MenuList from './MenuList';
+import ExpandBtn from '~/modules/Lesson/Button/ExpandBtn';
+import HideBtn from '~/modules/Lesson/Button/HideBtn';
 
 
-
-const Sidebar = ({ handleSidebarButtonClick, isExpanded }) => {
-    //const { itemId } = useParams();
+const SideBar = ({ handleSidebarButtonClick, isExpanded }) => {
     const pathSegments = window.location.pathname.split('/');
     const itemId = pathSegments[pathSegments.length - 1];
     console.log("Extracted ItemId:", itemId);
@@ -50,26 +52,28 @@ const Sidebar = ({ handleSidebarButtonClick, isExpanded }) => {
         getModuleByModuleId()
     }, [moduleId]);
 
-    if (loading || !currentModule) {
+    if (loading) {
         return <div>Loading...</div>
     }
 
     return (
-        <div style={{
-            //width: isExpanded ? `${sidebarWidth}px` : '55px',
-            //minWidth: isExpanded ? `${sidebarWidth}px` : '55px',
-            //transition: 'width 0.01s, min-width 0.3s',
-        }} className="flex flex-col ">
-            <div onClick={handleSidebarButtonClick} className="flex items-center justify-center">
-                {isExpanded ?
-                    (<ExpandBtn />) : (<HideBtn />) // change the button based on the state
-                }
+        <div>
+            <div style={{
+                //width: isExpanded ? `${sidebarWidth}px` : '55px',
+                //minWidth: isExpanded ? `${sidebarWidth}px` : '55px',
+                //transition: 'width 0.01s, min-width 0.3s',
+            }} className="flex flex-col ">
+                <div onClick={handleSidebarButtonClick} className="flex items-center justify-center">
+                    {isExpanded ?
+                        (<ExpandBtn />) : (<HideBtn />) // change the button based on the state
+                    }
+                </div>
+                {isExpanded ? (<MenuList />) : null}
+
+
             </div>
-            {isExpanded ? (<MenuList />) : null}
-
-
         </div>
     )
 }
 
-export default Sidebar
+export default SideBar

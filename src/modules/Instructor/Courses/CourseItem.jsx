@@ -43,11 +43,11 @@ const StyledCardContent = styled(CardContent)({
     },
 });
 
-const CourseItem = ({ isFree, courseImg, courseName, courseId, status, approveBy }) => {
+const CourseItem = ({ isFree, courseImg, courseName, courseId, status, approveBy, course }) => {
     const navigate = useNavigate();
     //console.log("imge url", courseImg)
     const handleClickCourseItem = (courseId) => {
-        navigate(`${courseId.trim().toLowerCase().replace(/\s+/g, '-')}`)
+        navigate(`/course-management/${courseId.trim().toLowerCase().replace(/\s+/g, '-')}`)
     }
     const handleClickListStudentOfCourse = (courseId) => {
         navigate(`student/${courseId.trim().toLowerCase().replace(/\s+/g, '-')}`)

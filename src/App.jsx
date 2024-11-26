@@ -52,7 +52,8 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import MainSection from './modules/Instructor/Modules/MainSection/MainSection';
 import Blogs from "~/modules/User/Blogs/index.jsx";
-
+import HomeIntructor from './modules/Instructor/HomeIntructor';
+import HTMLEditor from './testFile';
 function App() {
   const dispatch = useDispatch();
   // const navigate = useNavigate();
@@ -201,11 +202,21 @@ function App() {
         </Route>
 
         {/* Instructor routes */}
-        <Route path="/course-management" element={
+        <Route path="instructor" element={
+          <ProtectedRoute allowedRoles={['instructor', 'admin']}>
+            <HomeIntructor />
+          </ProtectedRoute>
+        }>
+          <Route index element={<InstructorSection />} />
+          <Route path="course-management" element={<InstructorSection />} />
+          {/* <Route path="course-management/:courseId" element={<CourseSection state={'edit'} />} />
+          <Route path="course-management/new-course" element={<CourseSection state={'new'} />} /> */}
+        </Route>
+        {/* <Route path="/course-management" element={
           <ProtectedRoute allowedRoles={['instructor', 'admin']}>
             <InstructorSection />
           </ProtectedRoute>
-        } />
+        } /> */}
         <Route path="/course-management/:courseId" element={
           <ProtectedRoute allowedRoles={['instructor', 'admin']}>
             <CourseSection state={'edit'} />
@@ -257,7 +268,7 @@ function App() {
               <CourseManager />
             </DashboardLayout>
           </ProtectedRoute>
-        } />
+        } > </Route>
         <Route path="/instructor-manager" element={
           <ProtectedRoute allowedRoles={['admin']}>
             <DashboardLayout>
@@ -280,7 +291,9 @@ function App() {
 
         {/* Catch all route */}
         <Route path="*" element={<Navigate to="/error" replace />} />
+        <Route path='/test' element={<HTMLEditor />} />
       </Routes>
+
     </div>
   );
 }

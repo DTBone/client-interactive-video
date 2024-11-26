@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
     TextField,
     Button,
@@ -16,6 +16,7 @@ import {
     FormControlLabel,
 
 } from '@mui/material';
+import JoditEditor from 'jodit-react';
 import { Add as AddIcon, Delete as DeleteIcon } from '@mui/icons-material';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useNotification } from '~/hooks/useNotification';
@@ -23,6 +24,7 @@ import * as Yup from 'yup';
 import { useDispatch } from 'react-redux';
 import { createModuleItemProgramming } from '~/store/slices/ModuleItem/action';
 import { toggleRefresh } from '~/store/slices/Module/moduleSlice';
+import HTMLEditor from './HTMLEditor';
 
 const programProblemSchema = Yup.object().shape({
     problemName: Yup.string()
@@ -30,8 +32,8 @@ const programProblemSchema = Yup.object().shape({
         .max(100, 'Problem name cannot be more than 100 characters')
         .trim(),
     content: Yup.string()
-        .required('Problem content is required')
-        .max(5000, 'Problem content cannot be more than 5000 characters'),
+        .required('Problem content is required'),
+    // .max(5000, 'Problem content cannot be more than 5000 characters'),
     difficulty: Yup.string()
         .required('Difficulty is required')
         .oneOf(['Easy', 'Medium', 'Hard'], 'Difficulty must be one of: Easy, Medium, Hard'),
@@ -88,6 +90,8 @@ const Programming = () => {
     const dispatch = useDispatch();
     const { showNotice } = useNotification();
     const { courseId, moduleId } = useParams();
+    //const [htmlContent, setHtmlContent] = useState('');
+    //const [previewMode, setPreviewMode] = useState(false);
     const [problemData, setProblemData] = useState({
         title: '',
         description: '',
@@ -118,6 +122,40 @@ const Programming = () => {
         }]
     });
 
+    const editor = useRef(null);
+    const [editorContent, setEditorContent] = useState('');
+    // Cấu hình Jodit
+    const config = {
+        readonly: false, // Cho phép chỉnh sửa
+        placeholder: 'Enter your description...',
+        height: 400,
+        minHeight: 400,
+        maxHeight: 600,
+        // Các nút trong thanh công cụ
+        buttons: [
+            'bold', 'italic', 'underline', 'strikethrough', '|',
+            'font', 'fontsize', 'brush', 'paragraph', '|',
+            'image', 'link', '|',
+            'align', 'list', 'indent', 'outdent', '|',
+            'hr', 'copyformat', '|',
+            'undo', 'redo', '|',
+            'fullsize', 'preview', 'print', '|',
+            'source' // Nút xem mã HTML
+        ],
+        // Cấu hình ngôn ngữ
+        language: 'vi',
+
+        // Tùy chọn xuất HTML
+        defaultMode: 1, // Chế độ WYSIWYG
+        beautyHTML: true,
+
+        // Cấu hình upload hình ảnh (nếu cần)
+        uploader: {
+            url: '/upload', // Điều chỉnh đường dẫn upload
+            insertImageAsBase64URI: true
+        }
+    };
+
     const [newTag, setNewTag] = useState('');
 
     // Handle basic problem info changes
@@ -129,7 +167,24 @@ const Programming = () => {
         setProblemData(updatedProblemData);
 
     };
+    const handleEditorChange = (newContent) => {
+        // Log để kiểm tra 
+        console.log('Current content:', newContent);
 
+        setEditorContent(prevContent => {
+            // Nếu nội dung mới trống, giữ nội dung cũ
+            if (!newContent && prevContent) {
+                return prevContent;
+            }
+            return newContent;
+        });
+
+        // Cập nhật problemData
+        setProblemData(prevData => ({
+            ...prevData,
+            content: newContent || prevData.content
+        }));
+    };
     // Handle tags
     const handleAddTag = () => {
         if (newTag && !problemData.tags.includes(newTag)) {
@@ -203,6 +258,7 @@ const Programming = () => {
             dispatch(toggleRefresh());
             showNotice('success', 'Successfully created programming problem');
             navigate(`/course-management/${courseId}/module/${moduleId}`);
+            //console.log("Programming problem data:", problemData);
         } catch (error) {
             if (error instanceof Yup.ValidationError) {
                 // Display validation errors
@@ -237,6 +293,7 @@ const Programming = () => {
                             value={problemData.description}
                             onChange={handleProblemChange('description')}
                         />
+
                     </div>
                 </CardContent>
             </Card>
@@ -264,14 +321,23 @@ const Programming = () => {
                             onChange={handleProblemChange('problemName')}
                             helperText="Unique identifier for the problem"
                         />
-                        <TextField
-                            fullWidth
-                            multiline
-                            rows={4}
-                            label="Content"
-                            value={problemData.content}
-                            onChange={handleProblemChange('content')}
-                        />
+                        <div className="py-4 ">
+                            <JoditEditor
+                                ref={editor}
+                                value={editorContent}
+                                config={config}
+                                onBlur={newContent => handleEditorChange(newContent)}
+                                onChange={newContent => { }}
+                            />
+                        </div>
+                        {/* <TextField
+                                    fullWidth
+                                    multiline
+                                    rows={4}
+                                    label="Description"
+                                    value={problemData.content}
+                                    onChange={handleProblemChange('content')}
+                                /> */}
 
                         <FormControl fullWidth>
                             <InputLabel>Difficulty</InputLabel>
