@@ -7,48 +7,50 @@ import { useNavigate, useParams } from "react-router-dom";
 import MenuList from "./MenuList";
 import { useDispatch, useSelector } from "react-redux";
 import { getAllModulesByModuleItemId, getModuleById, getModuleByItemId } from "~/store/slices/Module/action.js";
+import { useLocation } from "react-router-dom";
 
 
 
-const Sidebar = ({ handleSidebarButtonClick, isExpanded }) => {
+const Sidebar = ({ handleSidebarButtonClick, isExpanded, isSubmitted }) => {
     //const { itemId } = useParams();
-    const pathSegments = window.location.pathname.split('/');
-    const itemId = pathSegments[pathSegments.length - 1];
-    console.log("Extracted ItemId:", itemId);
+    // const pathSegments = window.location.pathname.split('/');
+    // const itemId = pathSegments[pathSegments.length - 1];
+    const location = useLocation();
+    const locationState = location.state;
 
     //console.log("Sidebar itemId", itemId)
-    const moduleId = window.location.pathname.split("/")[4]
+    const moduleId = locationState?.module._id;
+    // console.log("moduleId", moduleId)
     const dispatch = useDispatch()
     const { currentModule, loading } = useSelector((state) => state.module)
-    const [module, setModule] = useState(currentModule);
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                await dispatch(getModuleByItemId({ itemId }));
-                console.log("itemId", itemId)
-            }
-            catch (err) {
-                console.error('Error:', err);
-            }
+    const [module, setModule] = useState(locationState?.module);
+    // useEffect(() => {
+    //     const fetchData = async () => {
+    //         try {
+    //             await dispatch(getModuleByItemId({ itemId }));
+    //             console.log("itemId", itemId)
+    //         }
+    //         catch (err) {
+    //             console.error('Error:', err);
+    //         }
 
-        };
-        fetchData()
-    }, [dispatch, itemId])
+    //     };
+    //     fetchData()
+    // }, [dispatch, itemId])
 
-    useEffect(() => {
-        console.log("modules", currentModule)
-        setModule(currentModule)
-    }, [currentModule])
+    // useEffect(() => {
+    //     console.log("modules", currentModule)
+    //     setModule(currentModule)
+    // }, [currentModule])
     const getModuleByModuleId = async () => {
         const result = await dispatch(getModuleById({ moduleId }))
         if (result.payload.success) {
             setModule(result.payload.data.module);
-            console.log(module)
         }
     }
     useEffect(() => {
         getModuleByModuleId()
-    }, [moduleId]);
+    }, [isExpanded, isSubmitted]);
 
     if (loading || !currentModule) {
         return <div>Loading...</div>
@@ -65,7 +67,9 @@ const Sidebar = ({ handleSidebarButtonClick, isExpanded }) => {
                     (<ExpandBtn />) : (<HideBtn />) // change the button based on the state
                 }
             </div>
-            {isExpanded ? (<MenuList />) : null}
+
+            {isExpanded ? (<MenuList module={module} />) : null}
+
 
 
         </div>

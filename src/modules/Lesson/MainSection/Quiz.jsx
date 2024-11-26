@@ -15,16 +15,19 @@ import {
     AlertTitle,
     Box,
     Stack, CircularProgress,
+    Checkbox,
 } from '@mui/material';
 import { TimerOutlined, CheckCircle, Cancel } from '@mui/icons-material';
 import { useDispatch } from "react-redux";
 import {getQuizById, submitQuiz} from "~/store/slices/Quiz/action.js";
-import {useParams} from "react-router-dom";
-import {updateModuleItemStatus} from "~/store/slices/Quiz/quizSlice.js";
+import { useLocation } from 'react-router-dom';
+import { useOutletContext } from 'react-router-dom';
+
 
 
 const Quiz = () => {
     const dispatch = useDispatch();
+    const { onQuizSubmit } = useOutletContext();
     const [currentQuestion, setCurrentQuestion] = useState(0);
     const [selectedAnswers, setSelectedAnswers] = useState([]);
     const [isSubmitted, setIsSubmitted] = useState(false);
@@ -60,8 +63,8 @@ const Quiz = () => {
         totalPoints: 1
     });
     const [isLoading, setIsLoading] = useState(false);
-
-    const { quizId } = useParams();
+    const location = useLocation();
+    const quizId = location.state.item.quiz;
 
     useEffect(() => {
         setCurrentQuestion(0);
@@ -116,21 +119,44 @@ const Quiz = () => {
         const remainingSeconds = seconds % 60;
         return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
     };
-
     const handleAnswerSelect = (event) => {
-        setSelectedAnswers(prev => ({
-            ...prev,
-            [currentQuestion]: event.target.value
-        }));
+        setSelectedAnswers(prev => {
+            const currentAnswers = prev[currentQuestion] || [];
+            if (quiz.questions[currentQuestion].type === 'multiple-choice') {
+                if (prev[currentQuestion] && prev[currentQuestion].includes(event.target.value)) {
+                    return {
+                        ...prev,
+                        [currentQuestion]: prev[currentQuestion].filter((answer) => answer !== event.target.value)
+                    };
+                } else { 
+                    return {
+                        ...prev,
+                        [currentQuestion]: [...currentAnswers, event.target.value]
+                    };
+                }
+            } else {
+                return {
+                    ...prev,
+                    [currentQuestion]: event.target.value
+                };
+            }
+        });
+    
+            
     };
 
     const handleSubmit = async () => {
         setIsLoading(true);
-        const result = await dispatch(submitQuiz({answers: Object.entries(selectedAnswers).map(([key, value]) => value), timeSpent:quiz.duration - timeLeft , quizId}));
+        const result = await dispatch(submitQuiz({answers: Object.entries(selectedAnswers).map(([, value]) => value), timeSpent:quiz.duration - timeLeft , quizId}));
         if(result.payload.success){
             setScore(result.payload.data.score);
             setIsPassed(result.payload.data.passed);
             setIsSubmitted(true);
+            // Gọi callback để thông báo quiz đã hoàn thành
+            console.log('onQuizSubmit', onQuizSubmit)
+            if (onQuizSubmit) {
+                onQuizSubmit(true);
+            }
         }
         else {
             console.error('Failed to submit quiz:', result.payload.error);
@@ -203,10 +229,19 @@ const Quiz = () => {
                             <Typography variant="h6">
                                 Question {currentQuestion + 1} of {quiz.questions.length}
                             </Typography>
-                            <Typography variant="body1">
-                                {question.content}
+                            <Typography variant="body1" sx={{
+                                color: 'text.secondary',
+                                fontStyle: 'italic'
+                            }}>
+                            {question.type === 'multiple-choice' && '(Select all that apply)'}
+                            {question.type === 'only-choice' && '(Select one)'}
+                            {question.type === 'true-false' && '(True or False)'}
                             </Typography>
-                            <RadioGroup
+                            <Typography variant="body1">
+                                {question.content} 
+                            </Typography>
+                            {(question.type === 'only-choice' || question.type === 'true-false') && (
+                                <RadioGroup
                                 value={selectedAnswer || ''}
                                 onChange={handleAnswerSelect}
                             >
@@ -221,12 +256,30 @@ const Quiz = () => {
                                     ))}
                                 </Stack>
                             </RadioGroup>
+                            )}
+                            {question.type === 'multiple-choice' && (
+                                <Stack spacing={2}>
+                                    {question.answers.map((answer) => (
+                                        <FormControlLabel
+                                            key={answer._id}
+                                            control={
+                                                <Checkbox
+                                                    checked={selectedAnswer?.includes(answer._id)}
+                                                    onChange={handleAnswerSelect}
+                                                    value={answer._id}
+                                                />
+                                            }
+                                            label={answer.content}
+                                        />
+                                    ))}
+                                </Stack>
+                            )}
                         </Stack>
                     )}
                 </CardContent>
 
                 <CardActions sx={{ justifyContent: 'space-between', p: 2 }}>
-                    {!isSubmitted && (
+                    { (
                         <>
                             <Button
                                 variant="outlined"
@@ -235,7 +288,7 @@ const Quiz = () => {
                             >
                                 Previous
                             </Button>
-                            {isLastQuestion ? (
+                            {isLastQuestion && !isSubmitted ? (
                                 <Button
                                     variant="contained"
                                     onClick={handleSubmit}
@@ -248,7 +301,7 @@ const Quiz = () => {
                                 <Button
                                     variant="contained"
                                     onClick={() => setCurrentQuestion(prev => prev + 1)}
-                                    disabled={!selectedAnswer}
+                                    disabled={!selectedAnswer || currentQuestion === quiz.questions.length - 1}  
                                     color="primary"
                                 >
                                     Next
