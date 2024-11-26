@@ -32,19 +32,20 @@ const InstructorSection = () => {
     //console.log(`Courses: `, courses)
     return (
         <div className="h-screen flex flex-col overflow-hidden">
-            <header className=''>
+            {/* <header className=''>
                 <HeaderCourse />
                 <Breadcrumb />
             </header>
             <div className='mx-5 mt-3 flex flex-row justify-between'>
                 <Typography sx={{ fontSize: '2rem' }}>Wellcome, {user?.profile?.fullname} </Typography>
                 <Button onClick={() => handleClickNewCourse()}>Add New Course</Button>
-            </div>
+            </div> */}
             <div className="flex h-full justify-center overflow-auto ">
                 <Grid container className=" justify-start gap-5 mx-5 py-4">
                     {courses.map((course, index) => (
                         <CourseItem key={index} isFree={checkFreeCourse(course.price)} courseImg={course.photo} courseName={course.title}
                             courseId={course._id}
+                            course={course}
                             status={course.status} approveBy={course.isApproved} />
 
                     ))}

@@ -85,7 +85,7 @@ function Login() {
                 const resultAction = await dispatch(login(credentials));
                 console.log('resultAction', resultAction);
 
-                if (resultAction.payload.status === 'success' ) {
+                if (resultAction.payload.status === 'success') {
                     setOpen(true);
                     if (submitBtn.current) {
                         submitBtn.current.disabled = true;
@@ -106,7 +106,7 @@ function Login() {
                         navigate('/admin');
                     }
                     if (user.role === 'instructor') {
-                        navigate(`/course-management`, { state: { user: user } });
+                        navigate(`/instructor`, { state: { user: user } });
                     }
                 }
             } catch (err) {

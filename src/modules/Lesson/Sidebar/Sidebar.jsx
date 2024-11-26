@@ -67,7 +67,9 @@ const Sidebar = ({ handleSidebarButtonClick, isExpanded, isSubmitted }) => {
                     (<ExpandBtn />) : (<HideBtn />) // change the button based on the state
                 }
             </div>
+
             {isExpanded ? (<MenuList module={module} />) : null}
+
 
 
         </div>

@@ -39,6 +39,14 @@ const CourseManager = () => {
 
   useEffect(() => {
     const getCourse = async () => {
+      const result = await dispatch(getAllCourse());
+      if (getAllCourse.fulfilled.match(result)) {
+        setCourses(result.payload.data);
+      } else {
+        console.log("error");
+      }
+    };
+
 
         const result = await dispatch(getAllCourse());
         if(getAllCourse.fulfilled.match(result)) {
@@ -49,11 +57,11 @@ const CourseManager = () => {
             console.log("error")
         }
     }
+
     if (courses.length === 0) {
       getCourse();
     }
-  }, [dispatch, courses, openApprove])
-
+  }, [dispatch, courses, openApprove]);
 
 
   // Filter and search logic

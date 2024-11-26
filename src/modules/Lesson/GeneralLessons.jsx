@@ -25,7 +25,7 @@ const GeneralLessons = () => {
     const [isExpanded, setIsExpanded] = useState(true);
     const handleSidebarButtonClick = () => {
         setIsExpanded(!isExpanded);
-        console.log('isExpanded', isExpanded);
+        //console.log('isExpanded', isExpanded);
         //setSidebarWidth(isExpanded ? 55 : 255);
     };
     const dispatch = useDispatch();

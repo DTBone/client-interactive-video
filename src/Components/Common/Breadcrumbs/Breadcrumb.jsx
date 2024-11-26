@@ -24,7 +24,7 @@ export default function Breadcrumb({ courseId, moduleIndex, itemTitle }) {
 
         switch (path) {
             case 'home':
-                navigatePath = role === 'student' ? '/homeuser' : '/course-management';
+                navigatePath = role === 'student' ? '/homeuser' : '/instructor';
                 break;
             case 'course':
                 navigatePath = role === 'student'
