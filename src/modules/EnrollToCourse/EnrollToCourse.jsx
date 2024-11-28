@@ -8,9 +8,9 @@ import SuccessfulCourseRegis from './Notification/SuccessfulCourseRegis';
 import Tabcourse from './Tab/tabcourse'
 import courseService from '../../services/api/courseService'
 
-import {useNavigate, useParams} from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { enrollCourse as enroll } from '~/store/slices/Course/action'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 
 
 
@@ -35,12 +35,12 @@ const EnrollToCourse = () => {
     const [course, setCourse] = useState({});
     const [intructor, setIntructor] = useState({});
     const courseId = window.location.pathname.split('/').at(-1);
-    const { id } = useParams();
+    const { currentCourse } = useSelector((state) => state.course)
     const [isSubmit, setSubmit] = useState(false);
     const user = JSON.parse(localStorage.getItem('user'));
     const navigate = useNavigate();
     const handleDataFromButotnSubmit = async (data) => {
-        const result = await dispatch(enroll({ courseId: courseId}));
+        const result = await dispatch(enroll({ courseId: courseId }));
         console.log(result);
         if (result.payload.success) {
             setSubmit(true);
@@ -93,7 +93,7 @@ const EnrollToCourse = () => {
             <section className='ml-5'>
 
                 <Breadcrumb
-                    courseId={id}
+                    courseId={currentCourse?.courseId}
                 //moduleIndex={ }
                 //itemTitle={ }
                 />

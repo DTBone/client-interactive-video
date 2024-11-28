@@ -10,10 +10,6 @@ import Console from '../TestCase/Console';
 
 const CodeSection = () => {
 
-
-
-
-
     return (
 
         <div className="flex flex-col h-full ">

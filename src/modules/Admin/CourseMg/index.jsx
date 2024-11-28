@@ -47,17 +47,6 @@ const CourseManager = () => {
       }
     };
 
-
-        const result = await dispatch(getAllCourse());
-        if(getAllCourse.fulfilled.match(result)) {
-            setCourses(result.payload.data);
-        }
-        else
-        {
-            console.log("error")
-        }
-    }
-
     if (courses.length === 0) {
       getCourse();
     }

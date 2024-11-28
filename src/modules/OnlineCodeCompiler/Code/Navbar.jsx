@@ -6,11 +6,33 @@ import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import CloudDoneIcon from '@mui/icons-material/CloudDone';
 import compile from './Compile';
 import { useCode } from '../CodeContext';
+import { useNotification } from '~/hooks/useNotification';
+import { useDispatch, useSelector } from 'react-redux';
+import { compileRunCode } from '~/store/slices/Compile/action';
+import { useParams } from 'react-router-dom';
 
 const Navbar = () => {
     //const context = useCode();
     // console.log('Context in Navbar:', context);
     const { userLang, setLoading, setUserOutput, userCode, userInput } = useCode();
+    const { compile, loading, error, submission, problem } = useSelector((state) => state.compile);
+    const { showNotice } = useNotification();
+    const dispatch = useDispatch();
+    const { problemId } = useParams();
+    const handleRunCodeClick = () => {
+        setLoading(true);
+        if (!userLang || !userCode) {
+            showNotice('error', 'Please select language and write code before running!');
+            return;
+        }
+        dispatch(compileRunCode({ userCode, userLang, userInput: problem?.inputFormat, itemId: problemId }))
+            .then(() => {
+                setLoading(false); // Set loading to false after successful run
+            })
+            .catch(() => {
+                setLoading(false); // Set loading to false after error
+            });
+    }
     // console.log('userLang:', userLang, 'userCode:', userCode);
     return (
         <div className="flex flex-col w-full">
@@ -39,15 +61,7 @@ const Navbar = () => {
                     <Button
                         variant="contained"
                         color="primary"
-                        onClick={() => compile(
-                            {
-                                setLoading,
-                                setUserOutput,
-                                userCode,
-                                userLang,
-                                userInput,
-                            }
-                        )}
+                        onClick={() => handleRunCodeClick()}
                         sx={{
                             mr: 1, background: "#e5e6e8", width: "7rem", height: "2rem", color: "#000000",
                             '&:hover': {

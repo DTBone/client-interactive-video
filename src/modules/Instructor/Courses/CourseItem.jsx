@@ -98,11 +98,11 @@ const CourseItem = ({ isFree, courseImg, courseName, courseId, status, approveBy
                     Approve: {approveBy ? "Passed" : "Not Approve Yet"}
                 </Typography>
                 <div className='flex justify-end'>
-                    <Button
+                    {/* <Button
                         variant="contained"
                         onClick={() => handleClickListStudentOfCourse(courseId)}
                         sx={{}}
-                    >List Student</Button>
+                    >List Student</Button> */}
                 </div>
             </StyledCardContent>
         </StyledCard >

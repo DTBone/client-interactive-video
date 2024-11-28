@@ -1,5 +1,5 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
-import axiosInstance from '~/Config/axiosInstance';    
+import axiosInstance from '~/Config/axiosInstance';
 
 export const createModuleItemSupplement = createAsyncThunk(
     'module/moduleItem/addNewSupplement',

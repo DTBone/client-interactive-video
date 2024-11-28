@@ -122,14 +122,15 @@ const Programming = () => {
         }]
     });
 
+    const [selectField, setSelectField] = useState('content');
     const editor = useRef(null);
     const [editorContent, setEditorContent] = useState('');
     // Cấu hình Jodit
     const config = {
         readonly: false, // Cho phép chỉnh sửa
         placeholder: 'Enter your description...',
-        height: 400,
-        minHeight: 400,
+        height: 300,
+        minHeight: 200,
         maxHeight: 600,
         // Các nút trong thanh công cụ
         buttons: [
