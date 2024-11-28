@@ -25,6 +25,7 @@ const TestCaseSection = () => {
                 setTestcases(problem?.testcases || []);
             } catch (error) {
                 console.error("Fetch data error:", error);
+                console.log(error);
             }
         };
         fetchData();
