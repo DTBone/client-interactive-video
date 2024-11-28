@@ -1,16 +1,15 @@
 import React, { useState } from 'react';
 import { Button, Menu, MenuItem, MenuList, Typography } from '@mui/material';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
-import { useCode } from '../CodeContext';
 
-const LanguageButtonSelector = () => {
-    const { userLang, setUserLang } = useCode();
-    //console.log('userLang:', userLang);
+const LanguageSelector = ({ onLanguageChange }) => {
+    // Default language is now passed via prop or defaulted to 'python'
+    const [userLang, setUserLang] = useState('python');
+
     const [anchorEl, setAnchorEl] = useState(null);
     const open = Boolean(anchorEl);
 
     const handleClick = (event) => {
-        //console.log(userLang);
         setAnchorEl(event.currentTarget);
     };
 
@@ -21,11 +20,17 @@ const LanguageButtonSelector = () => {
     const handleLanguageSelect = (selectedLanguage) => {
         const mappedLang = languageMap[selectedLanguage];
         setUserLang(mappedLang);
-        //console.log(mappedLang)
+
+        // Call the prop function to pass language back to parent
+        if (onLanguageChange) {
+            onLanguageChange(mappedLang);
+        }
+
         handleClose();
     };
 
     const languages = ['Java', 'Python', 'C++', 'C'];
+
     const languageMap = {
         'Java': 'java',
         'Python': 'python',
@@ -41,20 +46,24 @@ const LanguageButtonSelector = () => {
     };
 
     return (
-        <>
+        <div className='py-2'>
             <Typography
                 variant="contained"
                 onClick={handleClick}
                 sx={{
-                    textTransform: "capitalize", color: '#2c7dff', padding: '0.9em', borderRadius: '10px',
+                    textTransform: "capitalize",
+                    color: '#2c7dff',
+                    padding: '0.9em',
+                    borderRadius: '10px',
+                    cursor: 'pointer',
                     '&:hover': {
-                        background: '#becbd8', // Hoặc bạn có thể sử dụng một màu cụ thể như '#4a90e2'
+                        background: '#becbd8',
                     },
                 }}
             >
                 {reverseLanguageMap[userLang]}
-                < KeyboardArrowDownIcon />
-            </Typography >
+                <KeyboardArrowDownIcon />
+            </Typography>
             <Menu
                 anchorEl={anchorEl}
                 open={open}
@@ -72,8 +81,8 @@ const LanguageButtonSelector = () => {
                     ))}
                 </MenuList>
             </Menu>
-        </>
+        </div>
     );
 };
 
-export default LanguageButtonSelector;
+export default LanguageSelector;

@@ -25,6 +25,8 @@ const Navbar = () => {
             showNotice('error', 'Please select language and write code before running!');
             return;
         }
+        // const code = `${problem.inputFormat}\n\n${userCode}\n`;
+        // console.log('code:', code);
         dispatch(compileRunCode({ userCode, userLang, userInput: problem?.inputFormat, itemId: problemId }))
             .then(() => {
                 setLoading(false); // Set loading to false after successful run
