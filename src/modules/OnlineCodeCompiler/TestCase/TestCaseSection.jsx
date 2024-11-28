@@ -18,17 +18,17 @@ const TestCaseSection = () => {
     //console.log("Testcases", testcases);
     const dispatch = useDispatch();
     const [selectedIndex, setSelectedIndex] = useState(-1);
-    // useEffect(() => {
-    //     const fetchData = async () => {
-    //         try {
-    //             dispatch(getProgramming({ problemId }));
-    //             setTestcases(problem?.testcases || []);
-    //         } catch (error) {
-    //             console.error("Fetch data error:", error);
-    //         }
-    //     };
-    //     fetchData();
-    // }, [dispatch]);
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+
+                setTestcases(problem?.testcases || []);
+            } catch (error) {
+                console.error("Fetch data error:", error);
+            }
+        };
+        fetchData();
+    }, [problem]);
     const handleClickTestcase = (index) => {
         setSelectedIndex(index);
 

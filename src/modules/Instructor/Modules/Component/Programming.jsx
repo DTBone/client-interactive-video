@@ -16,6 +16,8 @@ import {
     FormControlLabel,
 
 } from '@mui/material';
+import Editor from "@monaco-editor/react";
+import { light } from '@mui/material/styles/createPalette';
 import JoditEditor from 'jodit-react';
 import { Add as AddIcon, Delete as DeleteIcon } from '@mui/icons-material';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -25,6 +27,9 @@ import { useDispatch } from 'react-redux';
 import { createModuleItemProgramming } from '~/store/slices/ModuleItem/action';
 import { toggleRefresh } from '~/store/slices/Module/moduleSlice';
 import HTMLEditor from './HTMLEditor';
+import { useCode } from '~/modules/OnlineCodeCompiler/CodeContext';
+import LanguageButtonSelector from '~/modules/OnlineCodeCompiler/Code/LanguageSelector';
+import LanguageSelector from './LanguageSelector';
 
 const programProblemSchema = Yup.object().shape({
     problemName: Yup.string()
@@ -90,6 +95,7 @@ const Programming = () => {
     const dispatch = useDispatch();
     const { showNotice } = useNotification();
     const { courseId, moduleId } = useParams();
+
     //const [htmlContent, setHtmlContent] = useState('');
     //const [previewMode, setPreviewMode] = useState(false);
     const [problemData, setProblemData] = useState({
@@ -106,6 +112,10 @@ const Programming = () => {
         constraints: '',
         inputFormat: '',
         outputFormat: '',
+        codeFormat: [{
+            language: '',
+            code: ''
+        }],
         sampleInput: '',
         sampleOutput: '',
         explanation: '',
@@ -122,7 +132,41 @@ const Programming = () => {
         }]
     });
 
-    const [selectField, setSelectField] = useState('content');
+    const editorOptions = {
+        minimap: { enabled: false },
+        scrollBeyondLastLine: false,
+        fontSize: 16,
+        lineNumbers: 'on',
+        automaticLayout: true,
+
+
+    };
+
+    const [selectedLanguage, setSelectedLanguage] = useState('python');
+
+    const handleLanguageChange = (lang) => {
+        setSelectedLanguage(lang);
+        // // Check if a code format for this language already exists
+        // const existingCodeFormatIndex = problemData.codeFormat.findIndex(
+        //     cf => cf.language === lang
+        // );
+
+        // // If the language doesn't exist, add a new entry
+        // if (existingCodeFormatIndex === -1) {
+        //     setProblemData(prev => ({
+        //         ...prev,
+        //         codeFormat: [
+        //             ...prev.codeFormat,
+        //             { language: lang, code: '' }
+        //         ]
+        //     }));
+        // } else {
+        //     // If the language already exists, just update the selected language
+        //     setSelectedLanguage(lang);
+        // }
+    };
+
+
     const editor = useRef(null);
     const [editorContent, setEditorContent] = useState('');
     // Cấu hình Jodit
@@ -166,6 +210,7 @@ const Programming = () => {
             [field]: event.target.value
         };
         setProblemData(updatedProblemData);
+
 
     };
     const handleEditorChange = (newContent) => {
@@ -222,6 +267,18 @@ const Programming = () => {
             ]
         });
     };
+    const addCode = () => {
+        setProblemData({
+            ...problemData,
+            codeFormat: [
+                ...problemData.codeFormat,
+                {
+                    language: '',
+                    code: ''
+                }
+            ]
+        });
+    }
 
     const removeTestcase = (index) => {
         const updatedTestcases = problemData.testcases.filter((_, i) => i !== index);
@@ -229,6 +286,25 @@ const Programming = () => {
             ...problemData,
             testcases: updatedTestcases
         });
+    };
+
+    const removeCode = (index) => {
+        const updatedCode = problemData.codeFormat.filter((_, i) => i !== index);
+        setProblemData({
+            ...problemData,
+            codeFormat: updatedCode
+        });
+    }
+
+    const handleCodeChange = (newValue, language) => {
+        setProblemData(prev => ({
+            ...prev,
+            codeFormat: prev.codeFormat.map(format =>
+                format.language === language
+                    ? { ...format, code: newValue }
+                    : format
+            )
+        }));
     };
 
     const handleTestcaseChange = (index, field) => (event) => {
@@ -259,7 +335,7 @@ const Programming = () => {
             dispatch(toggleRefresh());
             showNotice('success', 'Successfully created programming problem');
             navigate(`/course-management/${courseId}/module/${moduleId}`);
-            //console.log("Programming problem data:", problemData);
+            console.log("Programming problem data:", problemData);
         } catch (error) {
             if (error instanceof Yup.ValidationError) {
                 // Display validation errors
@@ -414,6 +490,7 @@ const Programming = () => {
                             value={problemData.outputFormat}
                             onChange={handleProblemChange('outputFormat')}
                         />
+
                         <div className="grid grid-cols-2 gap-4">
                             <TextField
                                 fullWidth
@@ -449,6 +526,37 @@ const Programming = () => {
                             onChange={handleProblemChange('editorial')}
                         />
                     </div>
+                </CardContent>
+            </Card>
+
+
+            <Card>
+                <CardContent>
+                    <div className="flex justify-between items-center mb-4">
+                        <Typography variant="h6">Code Format</Typography>
+                    </div>
+
+                    <div className="mb-6 p-4 border rounded flex-col">
+                        <div className="flex flex-row justify-between items-center mb-4">
+                            <LanguageSelector
+                                onLanguageChange={handleLanguageChange}
+                            />
+                        </div>
+                        <div className="h-[50vh] w-full">
+                            <Editor
+                                options={editorOptions}
+                                height="100%"
+                                width="100%"
+                                theme="vs-light"
+                                language={selectedLanguage}
+                                defaultValue="# Enter your code here"
+                                onChange={(newValue) => handleCodeChange(newValue, selectedLanguage)}
+                            />
+                        </div>
+
+
+                    </div>
+
                 </CardContent>
             </Card>
 
