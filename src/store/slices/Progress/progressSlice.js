@@ -1,5 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit"
 import { getModuleById } from "../Module/action";
+import { getProgress } from "./action";
 const progressSlice = createSlice({
     name: 'progress-slice',
     initialState: {
@@ -34,6 +35,19 @@ const progressSlice = createSlice({
             .addCase(getModuleById.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload;
+            })
+            .addCase(getProgress.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(getProgress.fulfilled, (state, action) => {
+                state.loading = false;
+                state.progress = action.payload.data;
+                state.error = null;
+            })
+            .addCase(getProgress.rejected, (state, action) => {
+                state.loading = false
+                state.error = action.payload
             })
         }
 })

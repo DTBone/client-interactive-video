@@ -7,7 +7,7 @@ import CourseList from './components/CourseList';
 import { getAllCourse } from "~/store/slices/Course/action.js";
 import { useDispatch, useSelector } from 'react-redux';
 
-function HomeUser({ user }) {
+function HomeUser({ user, search }) {
     const dispatch = useDispatch();
     const [loading, setLoading] = useState(false);
     const [page, setPage] = useState(1);
@@ -24,7 +24,12 @@ function HomeUser({ user }) {
     const fetchRecentCourses = useCallback(async ({ limit, page }) => {
         try {
             setLoading(true);
-            const result = await dispatch(getAllCourse({ limit, page }));
+            const param = {
+                limit,
+                page,
+                search: search ? search : ''
+            }
+            const result = await dispatch(getAllCourse(param));
 
             if (getAllCourse.fulfilled.match(result)) {
                 const newCourses = result.payload.data;
@@ -37,7 +42,7 @@ function HomeUser({ user }) {
         } finally {
             setLoading(false);
         }
-    }, [dispatch]);
+    }, [dispatch, search]);
 
     // Initial load
     useEffect(() => {
@@ -51,7 +56,7 @@ function HomeUser({ user }) {
         };
 
         initializeCourses();
-    }, [fetchRecentCourses]);
+    }, [fetchRecentCourses, search]);
 
     const handleLoadMore = async () => {
         if (loading || !hasMore) return;
@@ -85,7 +90,7 @@ function HomeUser({ user }) {
             </Typography>
 
             <CourseList
-                title='Available Course'
+                title={search ? `Search results for "${search}"` : 'Recent courses'}
                 initialCourses={recentCourses}
                 handleClick={handleLoadMore}
                 hasMore={hasMore}

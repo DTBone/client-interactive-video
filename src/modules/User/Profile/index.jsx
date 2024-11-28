@@ -8,6 +8,7 @@ import background from '~/assets/backgroundDefault.jpg';
 import { Button, Divider, TextField, Typography } from "@mui/material";
 import SliderCourses from "~/components/SliderCourses";
 import ModalEditProfile from "./ModalEditProfile";
+import TransactionHistory from "./PaymentHistory";
 function Profile() {
     const path = window.location.pathname;
 
@@ -29,6 +30,7 @@ function Profile() {
             const token = localStorage.getItem('token');
             try {
                 const response = await userService.getUserById(id, token);
+                console.log(response.data);
                 setUser(response.data);
             } catch (error) {
                 if(error.status === 401) {
@@ -111,7 +113,10 @@ function Profile() {
             </div>
             <Divider className="pt-2 w-5/6 self-center" variant="middle" />
             {/* Khoa hoc */}
-            <SliderCourses className="w-5/6" title="Khóa học gần đây" user={user} colunms={3}/>
+            <SliderCourses className="w-5/6" title="Khóa học gần đây" course={user?.enrolled_courses} colunms={3}/>
+
+            {/* Lịch sử giao dịch */}
+            <TransactionHistory userId= {user._id} />
 
         </div>
       );

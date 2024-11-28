@@ -3,7 +3,7 @@ import { api } from '../../../Config/api';
 
 
 export const updateLectureProgress = createAsyncThunk(
-    'quiz/updateLectureProgress',
+    'progress/updateLectureProgress',
     async (data, { rejectWithValue }) => {
         try {
             console.log('data', data);
@@ -18,7 +18,7 @@ export const updateLectureProgress = createAsyncThunk(
 );
 
 export const updateSupplementProgress = createAsyncThunk(
-    'quiz/updateSupplementProgress',
+    'progress/updateSupplementProgress',
     async (data, { rejectWithValue }) => {
         try {
             console.log('data', data);
@@ -29,6 +29,22 @@ export const updateSupplementProgress = createAsyncThunk(
             return res.data;
         } catch (error) {
             return rejectWithValue(error || 'Update lecture progress failed');
+        }
+    }
+);
+
+export const getProgress = createAsyncThunk(
+    'progress/getProgress',
+    async (courseId, { rejectWithValue }) => {
+        try {
+            const res = await api.get(`/progress`, {
+                params: {
+                    courseId
+                }
+            });
+            return res.data;
+        } catch (error) {
+            return rejectWithValue(error || 'Get progress failed');
         }
     }
 );

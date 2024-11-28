@@ -162,7 +162,7 @@ const EnrollToCourse = () => {
                 </div>
             </section>
             <section className='ml-5 space-y-2 mr-6'>
-                <Tabcourse course={course} />
+                <Tabcourse course={course} isEnrolled={enrollCourse} />
             </section>
         </div>
     )
