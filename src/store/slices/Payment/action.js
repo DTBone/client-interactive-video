@@ -9,7 +9,8 @@ export const getPaymentByFilter = createAsyncThunk(
                 params : {
                     fromMonth: params.from,
                     toMonth: params.to,
-                    year: params.year ? params.year : new Date().getFullYear()
+                    year: params.year ? params.year : new Date().getFullYear(),
+                    userId: params?.userId
                 }
             });
             return data.data;

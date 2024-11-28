@@ -24,7 +24,8 @@ function VerifyEmailAccount() {
         }   
     }
     catch (error) {
-        setError(error.response.data.message);
+        console.log(error);
+        setError(error.response.data.error);
     }
   };
   return (

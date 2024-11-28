@@ -15,6 +15,7 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { Typography } from '@mui/material';
 import { useSelector, useDispatch } from "react-redux";
 import { getAllModules } from "~/store/slices/Module/action.js";
+import { getProgress } from '~/store/slices/Progress/action';
 
 
 const SideBar = () => {
@@ -127,8 +128,7 @@ const SideBar = () => {
         },
     }));
 
-    const CustomButton = styled(Button)(({ theme, isActive }) => ({
-
+    const CustomButton = styled(Button)(({ theme, isActive, isCompleted }) => ({
 
 
         justifyContent: 'flex-start',
@@ -153,7 +153,7 @@ const SideBar = () => {
             left: 0,
             width: '4px',
             height: '100%',
-            backgroundColor: 'transparent',
+            backgroundColor: isCompleted === true ? 'green' : 'transparent',
             transition: 'background-color 0.3s',
         },
         '&:hover': {
@@ -169,16 +169,29 @@ const SideBar = () => {
 
     const [modules, setModules] = useState(useSelector(state => state.module.modules) || []);
     const { courseId, moduleId } = useParams();
+    const [moduleDatas, setModuleDatas] = useState([]);
     console.log('local', courseId, moduleId);
     localStorage.setItem('courseId', courseId)
     localStorage.setItem('moduleId', moduleId)
+    const fetchProgress = async () => {
+        try {
+            const rep = await dispatch(getProgress(course._id))
+            console.log(rep.payload)
+            if(rep.payload.success) {
+                setModuleDatas(rep.payload.data)
+            }
+        }
+        catch (error) {
+            console.log(error)
+        }
+    }
     //console.log(courseId)
     useEffect(() => {
         const fetchData = async () => {
             try {
                 const result = await dispatch(getAllModules(courseId))
                 if (getAllModules.fulfilled.match(result)) {
-                    //console.log(result.payload)
+                    console.log(result.payload)
                     setModules(result.payload)
                 }
             }
@@ -188,6 +201,7 @@ const SideBar = () => {
         }
         if (courseId) {
             fetchData()
+            fetchProgress()
         }
     }, [courseId]);
     return (
@@ -212,7 +226,11 @@ const SideBar = () => {
                             fullWidth
                             onClick={() => handleModuleItemClick(item.index, item)}
                             isActive={activeButton === item.index} >
-                            <Circle sx={{ color: '#c1cad9' }} />
+                            <Circle sx={{ 
+                                color: moduleDatas[index]?.status === 'completed' ? 'green' : 'transparent',
+                                fontSize: '16px',
+                                marginRight: '8px'
+                            }} />
                             {`Module ${index + 1}`}
 
                         </CustomButton>

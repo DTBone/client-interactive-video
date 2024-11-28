@@ -6,7 +6,7 @@ import AvatarProfile from './components/Profile';
 import logo from '../../assets/logo_codechef.png';
 import { SearchIcon } from 'lucide-react';
 import { TextField, InputAdornment } from '@mui/material';
-function Header({isLogin, user }) {
+function Header({isLogin, user, setSearch }) {
     if (!isLogin) {
         isLogin = false;
     }
@@ -22,7 +22,9 @@ function Header({isLogin, user }) {
           }
         }
 
-      
+      const handleSearchChange = (value) => {
+          setSearch(value);
+      }
       
       const handleClick = () => {
           window.location.href = '/';
@@ -39,7 +41,14 @@ function Header({isLogin, user }) {
                         <TextField
                         id="input-with-icon-textfield"
                         label="Search"
-                        size="small"    
+                        size="small"
+                        onKeyDown={
+                            (e) => {
+                                if (e.key === 'Enter') {
+                                    handleSearchChange(e.target.value);
+                                }
+                            }
+                        }
                         sx={{
                             width: '400px',
                         }}

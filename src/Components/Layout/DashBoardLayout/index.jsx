@@ -91,6 +91,7 @@ export default function MiniDrawer({ children }) {
   const userId = urlParams.get('userId');
   const token = localStorage.getItem('token');
   const [error, setError] = React.useState(null);
+  const [search, setSearch] = useState('');
   var user = null
   if (!user) {
     const localUser = localStorage.getItem('user');
@@ -137,7 +138,7 @@ export default function MiniDrawer({ children }) {
           >
             {!open ? <MenuIcon fontSize="large" /> : <MenuOpenIcon fontSize="large" />}
           </IconButton>
-          <Header className='h-4' isLogin={true} user={user} />
+          <Header className='h-4' isLogin={true} user={user} setSearch={setSearch} />
         </Toolbar>
       </AppBar>
       <Drawer variant="permanent" open={open}>
@@ -163,7 +164,7 @@ export default function MiniDrawer({ children }) {
           transition: 'all 0.5s',
         }}
         >
-        {React.cloneElement(children, { user } )}
+        {React.cloneElement(children, { user, search } )}
         </div>
       </Box>
     </Box>

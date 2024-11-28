@@ -10,6 +10,7 @@ export const getAllCourse = createAsyncThunk(
                 params: {
                     page: filter?.page,
                     limit: filter?.limit,
+                    search: filter?.search,
                 }
             });
             return data;
