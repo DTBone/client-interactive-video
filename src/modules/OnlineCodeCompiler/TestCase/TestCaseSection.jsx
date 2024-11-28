@@ -5,63 +5,30 @@ import ButtonTestcase from "./ButtonTestcase"
 import Console from "./Console"
 import DetailTestCase from "./DetailTC"
 import { useEffect, useState } from "react"
+import { useDispatch, useSelector } from "react-redux"
+import { getProgramming } from "~/store/slices/Compile/action"
+import { useParams } from "react-router-dom"
 
 
 const TestCaseSection = () => {
-
-    const testcase = [
-        {
-            id: 1,
-            input: "[1,2,3,4] ",
-            actualOutput: "1",
-            expectedOutput: "1 10 2 3 4",
-            executeTimeLimit: "1000",
-            executeTime: "2",
-        },
-        {
-            id: 2,
-            input: "[1,2,3,5 , 6 , 7] 1",
-            actualOutput: "2",
-            expectedOutput: "1 10 2 3 4",
-            executeTimeLimit: "1000",
-            executeTime: "",
-        },
-        {
-            id: 2,
-            input: "[1,2,3,5 , 6 , 7] 1",
-            actualOutput: "2",
-            expectedOutput: "1 10 2 3 4",
-            executeTimeLimit: "1000",
-            executeTime: "",
-        },
-        {
-            id: 2,
-            input: "[1,2,3,5 , 6 , 7] 1",
-            actualOutput: "2",
-            expectedOutput: "1 10 2 3 4",
-            executeTimeLimit: "1000",
-            executeTime: "",
-        },
-        {
-            id: 2,
-            input: "[1,2,3,5 , 6 , 7] 1",
-            actualOutput: "2",
-            expectedOutput: "1 10 2 3 4",
-            executeTimeLimit: "1000",
-            executeTime: "",
-        },
-        {
-            id: 3,
-            input: "[1,2,3,4, 12 , 123, 123, 123, 123 ] 1 10",
-            actualOutput: "4",
-            expectedOutput: "1 10 2 3 4",
-            executeTimeLimit: "1000",
-            executeTime: "",
-        }
-    ]
-
+    const { problem, loading, error } = useSelector((state) => state.compile);
+    //console.log("problem", problem);
+    const { problemId } = useParams();
+    const [testcases, setTestcases] = useState(problem?.testcases || []);
+    //console.log("Testcases", testcases);
+    const dispatch = useDispatch();
     const [selectedIndex, setSelectedIndex] = useState(-1);
-
+    // useEffect(() => {
+    //     const fetchData = async () => {
+    //         try {
+    //             dispatch(getProgramming({ problemId }));
+    //             setTestcases(problem?.testcases || []);
+    //         } catch (error) {
+    //             console.error("Fetch data error:", error);
+    //         }
+    //     };
+    //     fetchData();
+    // }, [dispatch]);
     const handleClickTestcase = (index) => {
         setSelectedIndex(index);
 
@@ -82,7 +49,7 @@ const TestCaseSection = () => {
                     />
 
 
-                    {testcase.map((item, index) => (
+                    {testcases.map((item, index) => (
 
                         < ButtonTestcase
                             key={index}
@@ -102,7 +69,7 @@ const TestCaseSection = () => {
                     (<Console></Console>)
                     :
                     (<DetailTestCase
-                        {...testcase[selectedIndex]}
+                        {...testcases[selectedIndex]}
                     />)}
 
             </div>

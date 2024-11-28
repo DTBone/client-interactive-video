@@ -60,7 +60,7 @@ const HomeIntructor = () => {
                             //     transition: 'width 0.3s ease'
                             // }}
                             className=" relative ">
-                            <section className=' mx-5 mt-3 flex flex-row justify-between'>
+                            <section className=' mx-6 mt-3 flex flex-row justify-between'>
 
                                 {/* <Breadcrumb
                                 //courseId={courseID}
@@ -71,12 +71,12 @@ const HomeIntructor = () => {
                                     <AddToPhotosIcon />
                                     Add New Course</Button>
                             </section>
-                            <CustomScrollbar className=''>
 
-                                <div className="bg-white overflow-y-scroll  h-[calc(100vh-150px)] pt-3 pl-3 pr-3">
-                                    <Outlet />
-                                </div>
-                            </CustomScrollbar>
+                            <div className="bg-white overflow-y-hide  h-[calc(100vh-150px)] pt-3 pl-3 pr-3">
+                                <Outlet />
+                            </div>
+                            {/* <CustomScrollbar className=''>
+                            </CustomScrollbar> */}
                         </Grid>
                     </Grid>
                 </div>

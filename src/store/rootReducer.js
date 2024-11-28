@@ -6,7 +6,7 @@ import accountSlice from './slices/Account/accountSlice';
 import moduleSlice from './slices/Module/moduleSlice';
 import progressSlice from './slices/Progress/progressSlice';
 import moduleItemSlice from './slices/ModuleItem/moduleItemSlice';
-
+import compileSlice from './slices/Compile/compileSlice';
 
 
 const rootReducer = combineReducers({
@@ -17,6 +17,7 @@ const rootReducer = combineReducers({
     module: moduleSlice,
     moduleItem: moduleItemSlice,
     progress: progressSlice,
+    compile: compileSlice,
 });
 
 export default rootReducer;
