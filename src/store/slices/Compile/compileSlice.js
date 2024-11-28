@@ -1,5 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { compileRunCode, getProgramming } from "./action";
+import { compileRunCode, compileSubmitCode, getProgramming } from "./action";
 const compileSlice = createSlice({
     name: 'compile-slice',
     initialState: {
@@ -47,7 +47,20 @@ const compileSlice = createSlice({
             .addCase(compileRunCode.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload;
-            });
+            })
+            .addCase(compileSubmitCode.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(compileSubmitCode.fulfilled, (state, action) => {
+                state.loading = false;
+                state.submission = action.payload;
+                state.error = null;
+            })
+            .addCase(compileSubmitCode.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
     }
 });
 
