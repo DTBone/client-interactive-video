@@ -31,3 +31,19 @@ export const compileRunCode = createAsyncThunk(
         }
     }
 )
+
+export const compileSubmitCode = createAsyncThunk(
+    '/compile',
+    async ({ userCode, userLang, itemId, testcases }, { rejectWithValue }) => {
+        try {
+            const { data } = await axiosInstance.post(`/problem/submit/${itemId}`, {
+                code: userCode,
+                language: userLang.toLowerCase(),
+                testcases,
+            });
+            return data.data;
+        } catch (e) {
+            return rejectWithValue(e.message);
+        }
+    }
+)

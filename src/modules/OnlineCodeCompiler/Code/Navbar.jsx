@@ -35,6 +35,21 @@ const Navbar = () => {
                 setLoading(false); // Set loading to false after error
             });
     }
+
+    const handleSubmitCodeClick = async () => {
+        setLoading(true);
+        if (!userLang || !userCode) {
+            showNotice('error', 'Please select language and write code before running!');
+            return;
+        }
+        dispatch(compileRunCode({ userCode, userLang, itemId: problemId, testcases: problem?.testcases }))
+            .then(() => {
+                setLoading(false); // Set loading to false after successful run
+            })
+            .catch(() => {
+                setLoading(false);
+            }); // Set loading to false after error
+    }
     // console.log('userLang:', userLang, 'userCode:', userCode);
     return (
         <div className="flex flex-col w-full">
@@ -78,7 +93,7 @@ const Navbar = () => {
                     <Button
                         variant="contained"
                         color="secondary"
-
+                        onClick={() => handleSubmitCodeClick()}
                         sx={{
                             background: "#0037eb", width: "7rem", height: "2rem", color: "#FFFFFF",
                             '&:hover': {
