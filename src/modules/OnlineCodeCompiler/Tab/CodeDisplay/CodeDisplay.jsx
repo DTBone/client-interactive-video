@@ -43,7 +43,7 @@ const CodeDisplay = ({ submissionData }) => {
                         overflow: 'auto'
                     }}
                 >
-                    {submissionData.code}
+                    {submissionData.src}
                 </SyntaxHighlighter>
             </Paper>
         </div>
