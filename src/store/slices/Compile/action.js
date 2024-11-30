@@ -17,13 +17,14 @@ export const getProgramming = createAsyncThunk(
 )
 
 export const compileRunCode = createAsyncThunk(
-    '/compile',
-    async ({ userCode, userLang, userInput, itemId }, { rejectWithValue }) => {
+    '/compile/runcode',
+    async ({ userCode, userLang, userInput, itemId, codeExecute }, { rejectWithValue }) => {
         try {
             const { data } = await axiosInstance.post(`/problem/runcode/${itemId}`, {
                 code: userCode,
                 language: userLang.toLowerCase(),
                 input: userInput,
+                codeExecute: codeExecute,
             });
             return data.data;
         } catch (e) {
@@ -33,15 +34,16 @@ export const compileRunCode = createAsyncThunk(
 )
 
 export const compileSubmitCode = createAsyncThunk(
-    '/compile',
-    async ({ userCode, userLang, itemId, testcases }, { rejectWithValue }) => {
+    '/compile/submitcode',
+    async ({ userCode, userLang, itemId, testcases, codeExecute }, { rejectWithValue }) => {
         try {
-            const { data } = await axiosInstance.post(`/problem/submit/${itemId}`, {
+            const { data } = await axiosInstance.post(`/problem/submitcode/${itemId}`, {
                 code: userCode,
                 language: userLang.toLowerCase(),
                 testcases,
+                codeExecute,
             });
-            return data.data;
+            return data;
         } catch (e) {
             return rejectWithValue(e.message);
         }

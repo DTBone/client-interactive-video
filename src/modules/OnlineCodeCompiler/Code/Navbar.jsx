@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Button, Typography, Divider } from "@mui/material";
 import { Code2 } from "lucide-react";
 import LanguageButtonSelector from "./LanguageSelector";
@@ -8,7 +8,7 @@ import compile from './Compile';
 import { useCode } from '../CodeContext';
 import { useNotification } from '~/hooks/useNotification';
 import { useDispatch, useSelector } from 'react-redux';
-import { compileRunCode } from '~/store/slices/Compile/action';
+import { compileRunCode, compileSubmitCode } from '~/store/slices/Compile/action';
 import { useParams } from 'react-router-dom';
 
 const Navbar = () => {
@@ -16,9 +16,26 @@ const Navbar = () => {
     // console.log('Context in Navbar:', context);
     const { userLang, setLoading, setUserOutput, userCode, userInput } = useCode();
     const { compile, loading, error, submission, problem } = useSelector((state) => state.compile);
+    const [codeExe, setCodeExe] = React.useState('');
     const { showNotice } = useNotification();
     const dispatch = useDispatch();
     const { problemId } = useParams();
+
+    useEffect(() => {
+        const fetchData = () => {
+            if (problem?.codeFormat && problem.codeFormat.length > 0) {
+                const matchedFormat = problem.codeFormat.find(format => format.language === userLang);
+
+                if (matchedFormat) {
+                    console.log("matchedFormat: ", matchedFormat);
+                    setCodeExe(matchedFormat.codeExecute);
+                }
+                console.log("codeExecute: ", codeExe)
+            }
+        }
+        fetchData();
+    }, [userLang, problem])
+
     const handleRunCodeClick = () => {
         setLoading(true);
         if (!userLang || !userCode) {
@@ -27,7 +44,7 @@ const Navbar = () => {
         }
         // const code = `${problem.inputFormat}\n\n${userCode}\n`;
         // console.log('code:', code);
-        dispatch(compileRunCode({ userCode, userLang, userInput: problem?.inputFormat, itemId: problemId }))
+        dispatch(compileRunCode({ userCode, userLang, userInput: problem?.inputFormat, itemId: problemId, codeExecute: codeExe }))
             .then(() => {
                 setLoading(false); // Set loading to false after successful run
             })
@@ -36,13 +53,16 @@ const Navbar = () => {
             });
     }
 
+
+
+
     const handleSubmitCodeClick = async () => {
         setLoading(true);
         if (!userLang || !userCode) {
             showNotice('error', 'Please select language and write code before running!');
             return;
         }
-        dispatch(compileRunCode({ userCode, userLang, itemId: problemId, testcases: problem?.testcases }))
+        dispatch(compileSubmitCode({ userCode, userLang, itemId: problemId, testcases: problem?.testcases, codeExecute: codeExe }))
             .then(() => {
                 setLoading(false); // Set loading to false after successful run
             })

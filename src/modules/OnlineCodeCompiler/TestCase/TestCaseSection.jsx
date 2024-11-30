@@ -11,13 +11,21 @@ import { useParams } from "react-router-dom"
 
 
 const TestCaseSection = () => {
-    const { problem, loading, error } = useSelector((state) => state.compile);
+    const { problem, loading, error, tc } = useSelector((state) => state.compile);
     //console.log("problem", problem);
     const { problemId } = useParams();
     const [testcases, setTestcases] = useState(problem?.testcases || []);
     //console.log("Testcases", testcases);
     const dispatch = useDispatch();
     const [selectedIndex, setSelectedIndex] = useState(-1);
+
+    useEffect(() => {
+        const fetchData = () => {
+            setTestcases(tc)
+        }
+        fetchData();
+    }, [tc])
+
     useEffect(() => {
         const fetchData = async () => {
             try {
@@ -51,13 +59,17 @@ const TestCaseSection = () => {
 
 
                     {testcases.map((item, index) => (
+                        <div key={index} className={`
+                            rounded-md
+                            ${item.passed !== undefined ? (item.passed ? "bg-green-200" : "bg-red-200") : ""}
+                        `}>
+                            < ButtonTestcase
 
-                        < ButtonTestcase
-                            key={index}
-                            index={index}
-                            handleClickTestcase={handleClickTestcase}
-                            isSelected={index === selectedIndex}
-                        />
+                                index={index}
+                                handleClickTestcase={handleClickTestcase}
+                                isSelected={index === selectedIndex}
+                            />
+                        </div>
 
                     ))}
 
@@ -74,7 +86,7 @@ const TestCaseSection = () => {
                     />)}
 
             </div>
-        </div>
+        </div >
     )
 }
 

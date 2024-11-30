@@ -11,13 +11,12 @@ import {
     MenuItem,
     Chip,
     IconButton,
-
     Switch,
     FormControlLabel,
+    Divider,
 
 } from '@mui/material';
 import Editor from "@monaco-editor/react";
-import { light } from '@mui/material/styles/createPalette';
 import JoditEditor from 'jodit-react';
 import { Add as AddIcon, Delete as DeleteIcon } from '@mui/icons-material';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -26,9 +25,6 @@ import * as Yup from 'yup';
 import { useDispatch } from 'react-redux';
 import { createModuleItemProgramming } from '~/store/slices/ModuleItem/action';
 import { toggleRefresh } from '~/store/slices/Module/moduleSlice';
-import HTMLEditor from './HTMLEditor';
-import { useCode } from '~/modules/OnlineCodeCompiler/CodeContext';
-import LanguageButtonSelector from '~/modules/OnlineCodeCompiler/Code/LanguageSelector';
 import LanguageSelector from './LanguageSelector';
 
 const programProblemSchema = Yup.object().shape({
@@ -114,7 +110,8 @@ const Programming = () => {
         outputFormat: '',
         codeFormat: [{
             language: '',
-            code: ''
+            codeDefault: '',
+            codeExecute: ''
         }],
         sampleInput: '',
         sampleOutput: '',
@@ -142,29 +139,7 @@ const Programming = () => {
 
     };
 
-    const [selectedLanguage, setSelectedLanguage] = useState('python');
 
-    const handleLanguageChange = (lang) => {
-        setSelectedLanguage(lang);
-        // // Check if a code format for this language already exists
-        // const existingCodeFormatIndex = problemData.codeFormat.findIndex(
-        //     cf => cf.language === lang
-        // );
-
-        // // If the language doesn't exist, add a new entry
-        // if (existingCodeFormatIndex === -1) {
-        //     setProblemData(prev => ({
-        //         ...prev,
-        //         codeFormat: [
-        //             ...prev.codeFormat,
-        //             { language: lang, code: '' }
-        //         ]
-        //     }));
-        // } else {
-        //     // If the language already exists, just update the selected language
-        //     setSelectedLanguage(lang);
-        // }
-    };
 
 
     const editor = useRef(null);
@@ -274,7 +249,8 @@ const Programming = () => {
                 ...problemData.codeFormat,
                 {
                     language: '',
-                    code: ''
+                    codeDefault: '',
+                    codeExecute: ''
                 }
             ]
         });
@@ -295,17 +271,30 @@ const Programming = () => {
             codeFormat: updatedCode
         });
     }
+    const [selectedLanguage, setSelectedLanguage] = useState('python');
 
-    const handleCodeChange = (newValue, language) => {
-        setProblemData(prev => ({
-            ...prev,
-            codeFormat: prev.codeFormat.map(format =>
-                format.language === language
-                    ? { ...format, code: newValue }
-                    : format
+    const handleLanguageChange = (language) => {
+        setSelectedLanguage(language);
+
+    };
+
+    const handleCodeDefaultChange = (index, newValue, language) => {
+        setProblemData((prevData) => ({
+            ...prevData,
+            codeFormat: prevData.codeFormat.map((format, i) =>
+                i === index ? { ...format, codeDefault: newValue, language: language } : format
             )
         }));
+        console.log("result:", problemData.codeFormat.index.language);
     };
+    const handleCodeExecuteChange = (index, newValue, language) => {
+        setProblemData((prevData) => ({
+            ...prevData,
+            codeFormat: prevData.codeFormat.map((format, i) =>
+                i === index ? { ...format, codeExecute: newValue, language: language } : format
+            )
+        }));
+    }
 
     const handleTestcaseChange = (index, field) => (event) => {
         const value = field === 'isHidden' ? event.target.checked : event.target.value;
@@ -329,12 +318,12 @@ const Programming = () => {
 
         try {
             // Validate the problemData object
-            await programProblemSchema.validate(problemData, { abortEarly: false });
-            dispatch(createModuleItemProgramming({ courseId, moduleId, formData: problemData }));
-            // Submit programming problem
-            dispatch(toggleRefresh());
-            showNotice('success', 'Successfully created programming problem');
-            navigate(`/course-management/${courseId}/module/${moduleId}`);
+            // await programProblemSchema.validate(problemData, { abortEarly: false });
+            // dispatch(createModuleItemProgramming({ courseId, moduleId, formData: problemData }));
+            // // Submit programming problem
+            // dispatch(toggleRefresh());
+            // showNotice('success', 'Successfully created programming problem');
+            // navigate(`/course-management/${courseId}/module/${moduleId}`);
             console.log("Programming problem data:", problemData);
         } catch (error) {
             if (error instanceof Yup.ValidationError) {
@@ -534,28 +523,61 @@ const Programming = () => {
                 <CardContent>
                     <div className="flex justify-between items-center mb-4">
                         <Typography variant="h6">Code Format</Typography>
+                        <Button
+                            startIcon={<AddIcon />}
+                            onClick={addCode}
+                            variant="outlined"
+                        >
+                            Add Code
+                        </Button>
                     </div>
 
-                    <div className="mb-6 p-4 border rounded flex-col">
-                        <div className="flex flex-row justify-between items-center mb-4">
-                            <LanguageSelector
-                                onLanguageChange={handleLanguageChange}
-                            />
-                        </div>
-                        <div className="h-[50vh] w-full">
-                            <Editor
-                                options={editorOptions}
-                                height="100%"
-                                width="100%"
-                                theme="vs-light"
-                                language={selectedLanguage}
-                                defaultValue="# Enter your code here"
-                                onChange={(newValue) => handleCodeChange(newValue, selectedLanguage)}
-                            />
-                        </div>
+                    {problemData.codeFormat.map((code, index) => (
+                        <div key={index} className="mb-6 p-4 border rounded">
+                            <div className="flex justify-between items-center mb-4">
 
+                                <LanguageSelector
+                                    onLanguageChange={handleLanguageChange}
+                                />
 
-                    </div>
+                                <Typography variant="subtitle1">Code {index + 1}</Typography>
+                                <IconButton
+                                    onClick={() => removeCode(index)}
+                                    disabled={problemData.codeFormat.length === 1}
+                                >
+                                    <DeleteIcon />
+                                </IconButton>
+                            </div>
+                            <div className='flex flex-col'>
+                                <Typography>Code Default Show For Student</Typography>
+                                <div className="h-[30vh] w-[100vh]">
+                                    <Editor
+                                        options={editorOptions}
+                                        height="100%"
+                                        width="100%"
+                                        theme="vs-light"
+                                        language={selectedLanguage}
+                                        defaultValue="# Enter your code here"
+                                        onChange={(newValue) => handleCodeDefaultChange(index, newValue, selectedLanguage)}
+                                        loading={<div>Loading Editor...</div>}
+                                    />
+                                </div>
+                                <Divider />
+                                <Typography>Code Execute</Typography>
+                                <div className="h-[30vh] w-[100vh]">
+                                    <Editor
+                                        options={editorOptions}
+                                        height="100%"
+                                        width="100%"
+                                        theme="vs-light"
+                                        language={selectedLanguage}
+                                        defaultValue="# Enter your code here"
+                                        onChange={(newValue) => handleCodeExecuteChange(index, newValue, selectedLanguage)}
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    ))}
 
                 </CardContent>
             </Card>

@@ -10,7 +10,8 @@ const compileSlice = createSlice({
         problem: null,
         list: [],
         compile: null,
-        submission: null
+        submission: null,
+        tc: null
     },
     reducers: {
         clearError: (state) => {
@@ -54,7 +55,8 @@ const compileSlice = createSlice({
             })
             .addCase(compileSubmitCode.fulfilled, (state, action) => {
                 state.loading = false;
-                state.submission = action.payload;
+                state.submission = action.payload.data;
+                state.tc = action.payload.testcases;
                 state.error = null;
             })
             .addCase(compileSubmitCode.rejected, (state, action) => {
