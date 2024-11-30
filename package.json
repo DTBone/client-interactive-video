@@ -45,6 +45,7 @@
     "mermaid": "^11.4.0",
     "minio": "^8.0.2",
     "moment": "^2.30.1",
+    "monaco-editor": "^0.52.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-facebook-login": "^4.1.1",

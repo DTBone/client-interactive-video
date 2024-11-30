@@ -41,7 +41,7 @@ const Console = () => {
         };
 
         fetchData();
-    }, [dispatch, compile]);
+    }, [dispatch, compile, problem]);
 
     return (
         <div>

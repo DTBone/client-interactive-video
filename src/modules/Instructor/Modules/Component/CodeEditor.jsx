@@ -2,7 +2,7 @@ import { Editor } from '@monaco-editor/react'
 import { Divider, Typography } from '@mui/material'
 import React from 'react'
 
-const HTMLEditor = (selectedLanguage, handleCodeChange, index) => {
+const CodeEditor = (selectedLanguage, handleCodeChange, index) => {
     const editorOptions = {
         minimap: { enabled: false },
         scrollBeyondLastLine: false,
@@ -11,10 +11,8 @@ const HTMLEditor = (selectedLanguage, handleCodeChange, index) => {
         automaticLayout: true,
     };
 
-
     return (
-        <div className='h-[50vh] w-full'>
-            <Typography>Code</Typography>
+        <div>
             <Editor
                 options={editorOptions}
                 height="100%"
@@ -26,7 +24,7 @@ const HTMLEditor = (selectedLanguage, handleCodeChange, index) => {
             />
 
         </div>
-    );
-};
+    )
+}
 
-export default HTMLEditor;
+export default CodeEditor

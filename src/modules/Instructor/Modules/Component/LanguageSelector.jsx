@@ -4,7 +4,7 @@ import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 
 const LanguageSelector = ({ onLanguageChange }) => {
     // Default language is now passed via prop or defaulted to 'python'
-    const [userLang, setUserLang] = useState('python');
+    const [userLang, setUserLang] = useState('');
 
     const [anchorEl, setAnchorEl] = useState(null);
     const open = Boolean(anchorEl);
@@ -46,41 +46,44 @@ const LanguageSelector = ({ onLanguageChange }) => {
     };
 
     return (
-        <div className='py-2'>
-            <Typography
-                variant="contained"
-                onClick={handleClick}
-                sx={{
-                    textTransform: "capitalize",
-                    color: '#2c7dff',
-                    padding: '0.9em',
-                    borderRadius: '10px',
-                    cursor: 'pointer',
-                    '&:hover': {
-                        background: '#becbd8',
-                    },
-                }}
-            >
-                {reverseLanguageMap[userLang]}
-                <KeyboardArrowDownIcon />
-            </Typography>
-            <Menu
-                anchorEl={anchorEl}
-                open={open}
-                onClose={handleClose}
-                MenuListProps={{ selectedIndex: -1 }}
-            >
-                <MenuList sx={{ border: "none" }}>
-                    {languages.map((lang) => (
-                        <MenuItem
-                            key={lang}
-                            onClick={() => handleLanguageSelect(lang)}
-                        >
-                            {lang}
-                        </MenuItem>
-                    ))}
-                </MenuList>
-            </Menu>
+        <div className='py-2 flex flex-row'>
+            <Typography>Selected language</Typography>
+            <div>
+                <Typography
+                    variant="contained"
+                    onClick={handleClick}
+                    sx={{
+                        textTransform: "capitalize",
+                        color: '#2c7dff',
+                        padding: '0.9em',
+                        borderRadius: '10px',
+                        cursor: 'pointer',
+                        '&:hover': {
+                            background: '#becbd8',
+                        },
+                    }}
+                >
+                    {reverseLanguageMap[userLang]}
+                    <KeyboardArrowDownIcon />
+                </Typography>
+                <Menu
+                    anchorEl={anchorEl}
+                    open={open}
+                    onClose={handleClose}
+                    MenuListProps={{ selectedIndex: -1 }}
+                >
+                    <MenuList sx={{ border: "none" }}>
+                        {languages.map((lang) => (
+                            <MenuItem
+                                key={lang}
+                                onClick={() => handleLanguageSelect(lang)}
+                            >
+                                {lang}
+                            </MenuItem>
+                        ))}
+                    </MenuList>
+                </Menu>
+            </div>
         </div>
     );
 };
