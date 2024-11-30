@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
@@ -11,236 +11,62 @@ import MemoryIcon from '@mui/icons-material/Memory';
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 import { styled } from '@mui/material/styles';
 import { useTab } from './Context/TabContext';
+import { useDispatch, useSelector } from 'react-redux';
+import { setARIAContainer } from './../../../../node_modules/monaco-editor/esm/vs/base/browser/ui/aria/aria';
+import { getSubmission } from '~/store/slices/Compile/action';
+import { useParams } from 'react-router-dom';
 
 const SubmissionTab = () => {
     const { setOpenDetailSubmission, setSubmissionStatus, setSubmissionData } = useTab();
+    const { submissions, loading, error, submission } = useSelector((state) => state.compile);
+    const { problemId } = useParams();
+
+    const dispatch = useDispatch();
     const handleClickRow = (submission, status) => {
         console.log('row clicked', submission);
         setOpenDetailSubmission(true);
         setSubmissionStatus(status);
         setSubmissionData(submission);
-
-
-
     }
-    const submissions = [
-        {
-            id: 1,
-            status: "Accepted",
-            createdAt: "2023-01-01T00:00:00Z",
-            language: "java",
-            runtime: 28,
-            memory: 43.5,
-
-            code: `public class Solution {
-    public int strangePrinter(String s) {
-        int n = s.length();
-        if (n == 0) return 0;
-        
-        // Mảng dp[i][j] lưu trữ số lần in tối thiểu để in chuỗi con s[i...j]
-        int[][] dp = new int[n][n];
-        
-        for (int i = n - 1; i >= 0; i--) {
-            dp[i][i] = 1; // Chuỗi chỉ có 1 ký tự cần 1 lượt in
-            for (int j = i + 1; j < n; j++) {
-                dp[i][j] = dp[i][j - 1] + 1; // Giả định in thêm ký tự s[j]
-                
-                for (int k = i; k < j; k++) {
-                    if (s.charAt(k) == s.charAt(j)) {
-                        dp[i][j] = Math.min(dp[i][j], dp[i][k] + (k + 1 <= j - 1 ? dp[k + 1][j - 1] : 0));
-                    }
-                }
-            }
+    const [submissionList, setSubmissionList] = useState([]);
+    const [sortDirection, setSortDirection] = useState('desc');
+    const [sortedSubmissions, setSortedSubmissions] = useState([]);
+    useEffect(() => {
+        try {
+            dispatch(getSubmission({ problemId }))
+            console.log('submissions: ', submissions)
+            setSubmissionList(submissions.submissions)
+        } catch (e) {
+            console.log('error: ', e)
         }
-        
-        return dp[0][n - 1];
-    }
-}`
-        },
-        {
-            id: 2,
-            status: "Wrong Answer",
-            createdAt: "2023-09-01T00:00:00Z",
-            language: "javascript",
-            runtime: "false",
-            memory: "false",
+    }, [dispatch, submission]);
+    useEffect(() => {
+        const processSubmissions = () => {
+            // Đảm bảo submissionList luôn là một mảng
+            const submissionArray = Array.isArray(submissionList)
+                ? submissionList
+                : (submissionList ? [submissionList] : []);
 
-            code: `class Solution {
-    public int strangePrinter(String s) {
-        int n = s.length();
-        int sum = 1;
-        char[] fi = s.toCharArray();
-        char fChar = findMostFrequentChar(s);
-        System.out.println(fChar);
-        char[] se = new char[n];
-        for(int i = 0; i < n; i ++)
-        {
-            se[i] = fChar;
+            // Sắp xếp submissions với kiểm tra an toàn hơn
+            const sorted = [...submissionArray].sort((a, b) => {
+                // Sử dụng optional chaining và fallback date
+                const dateA = a?.createdAt ? new Date(a.createdAt) : new Date(0);
+                const dateB = b?.createdAt ? new Date(b.createdAt) : new Date(0);
+
+                return sortDirection === 'desc'
+                    ? dateB.getTime() - dateA.getTime()  // Sắp xếp giảm dần
+                    : dateA.getTime() - dateB.getTime(); // Sắp xếp tăng dần
+            });
+
+            // Cập nhật state với mảng đã sắp xếp
+            setSortedSubmissions(sorted);
+        };
+
+        // Kiểm tra xem submissionList có dữ liệu trước khi xử lý
+        if (submissionList && submissionList.length > 0) {
+            processSubmissions();
         }
-        for(int i = 0; i < n; i++)
-        {
-            if(fi[i] != se[i])
-            {
-                sum++;
-                char temp = fi[i];
-                int end = findCharPos(s, se, temp);
-                if(i ==0 && end == n - 1) 
-                {
-                    se[0] = temp;
-                    se[end] = temp;
-                }
-                else if(end >= i ) 
-                {
-                    for(int j = i; j <= end; j ++)
-                    {
-                        se[j] = temp;
-                    }
-                    System.out.println(sum);
-                    System.out.println(i + " " + end);
-                    System.out.println(Arrays.toString(fi));
-                    System.out.println(Arrays.toString(se));
-                    System.out.println();
-                }
-                
-
-            }
-
-        }
-        return sum;
-
-    }
-
-    public char findMostFrequentChar(String str) {
-    Map<Character, Integer> charCountMap = new HashMap<>();
-
-    // Duyệt qua chuỗi và đếm số lần xuất hiện của từng ký tự
-    for (char c : str.toCharArray()) {
-        charCountMap.put(c, charCountMap.getOrDefault(c, 0) + 1);
-    }
-
-    char mostFrequentChar = str.charAt(0); // Khởi tạo với ký tự đầu tiên
-    int maxCount = charCountMap.get(mostFrequentChar);
-
-    // Duyệt qua chuỗi theo thứ tự xuất hiện để tìm ký tự xuất hiện nhiều nhất
-    for (char c : str.toCharArray()) {
-        int currentCount = charCountMap.get(c);
-        if (currentCount > maxCount) {
-            mostFrequentChar = c;
-            maxCount = currentCount;
-        }
-    }
-
-    return mostFrequentChar;
-}
-
-    public int findCharPos(String s, char[] f,  char c)
-    {
-        for(int i = s.length() - 1; i >= 0 ; i--){
-            if(s.charAt(i) == f[i]) continue;
-            if(c == s.charAt(i)  ) return i;
-        }
-        return -1;
-    }
-    public boolean areCharArraysEqual(char[] array1, char[] array2) {
-        // Nếu độ dài của hai mảng không bằng nhau, chúng không thể giống nhau
-        if (array1.length != array2.length) {
-            return false;
-        }
-
-        // So sánh từng phần tử của hai mảng
-        for (int i = 0; i < array1.length; i++) {
-            if (array1[i] != array2[i]) {
-                return false;
-            }
-        }
-
-        // Nếu tất cả phần tử đều giống nhau, trả về true
-        return true;
-    }
-    
-}`
-
-        },
-        {
-            id: 3,
-            status: "Runtime Error",
-            createdAt: "2023-10-03T03:12:12Z",
-            language: "python",
-            runtime: "false",
-            memory: "false",
-
-            code: `class Solution {
-    public int strangePrinter(String s) {
-        HashSet<Character> hset = new HashSet<>();
-        int sum = 0;
-        for(int i = 0; i < s.length(); i++) {
-            char c = s.charAt(i);
-            if(hset.add(c)) sum++;
-            hset.add(c);
-
-        }
-        return sum - dupli(s);
-
-    }
-    public int dupli(String s)
-    {
-        int sum = 0;
-        for(int i = 0 ; i < s.length(); i++)
-        {
-            if (s.charAt(i) == s.charAt(i + 1))
-            {
-                sum ++;
-            }
-        }
-        return sum;
-    }
-}`
-        },
-        {
-            id: 4,
-            status: "Compiler Error",
-            createdAt: "2023-09-14T23:12:00Z",
-            language: "javascript",
-            runtime: "false",
-            memory: "false",
-
-            code: `class Solution {
-    public int strangePrinter(String s) {
-        HashSet<Character> hset = new HashSet<>();
-        int sum = 0;
-        for(int i = 0; i < s.length(); i++) {
-            char c = s.charAt(i);
-            if(hset.add(c)) sum++;
-            hset.add(c);
-
-        }
-        return sum - dupli(s);
-
-    }
-    public int dupli(String s)
-    {
-        int sum = 0;
-        for(int i = 0 ; i < s.length(); i++)
-        {
-            if (s.charAt(i) == s.charAt(i + 1))
-            {
-                sum ++;
-            }
-        }
-        return sum;
-    }
-}`
-        }
-    ]
-
-    const [sortDirection, setSortDirection] = useState('desc'); // Trạng thái để theo dõi hướng sắp xếp
-
-    // Hàm để sắp xếp submissions theo thời gian
-    const sortedSubmissions = [...submissions].sort((a, b) => {
-        return sortDirection === 'desc'
-            ? new Date(b.createdAt) - new Date(a.createdAt) // Sắp xếp giảm dần (mới nhất trước)
-            : new Date(a.createdAt) - new Date(b.createdAt); // Sắp xếp tăng dần (cũ nhất trước)
-    });
+    }, [submissionList, sortDirection]);
 
     // Hàm để xử lý sự kiện click vào tiêu đề
     const handleSort = () => {
@@ -308,11 +134,11 @@ const SubmissionTab = () => {
                                         whiteSpace: 'nowrap',
                                     }}>Language</Typography>
                             </TableCell>
-                            <TableCell sx={{ fontWeight: 'bold', whiteSpace: 'nowrap', width: '20%' }}><Typography
+                            {/* <TableCell sx={{ fontWeight: 'bold', whiteSpace: 'nowrap', width: '20%' }}><Typography
                                 sx={{
                                     fontWeight: 'bold',
                                     whiteSpace: 'nowrap',
-                                }}>Runtime</Typography></TableCell>
+                                }}>Runtime</Typography></TableCell> */}
                             <TableCell sx={{ fontWeight: 'bold', whiteSpace: 'nowrap', width: '20%' }}><Typography
                                 sx={{
                                     fontWeight: 'bold',
@@ -359,19 +185,19 @@ const SubmissionTab = () => {
                                 <TableCell sx={{ width: '20%', whiteSpace: 'nowrap', textTransform: "capitalize", }}>
                                     {submission.language}
                                 </TableCell>
-                                <TableCell sx={{ width: '20%', whiteSpace: 'nowrap', }}>
+                                {/* <TableCell sx={{ width: '20%', whiteSpace: 'nowrap', }}>
                                     <div className="flex flex-row justify-start items-center gap-1">
                                         <AccessTimeIcon />
                                         <div>
                                             {submission.runtime === "false" ? "N/A" : `${submission.runtime} ms`}
                                         </div>
                                     </div>
-                                </TableCell>
+                                </TableCell> */}
                                 <TableCell sx={{ width: '20%', whiteSpace: 'nowrap', }}>
                                     <div className="flex flex-row justify-start items-center gap-1">
                                         <MemoryIcon />
                                         <div>
-                                            {submission.memory === "false" ? "N/A" : `${submission.memory} MB`}
+                                            {submission.memory === "false" ? "N/A" : `${submission.memory} `}
                                         </div>
                                     </div>
                                 </TableCell>

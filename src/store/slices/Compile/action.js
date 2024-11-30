@@ -49,3 +49,15 @@ export const compileSubmitCode = createAsyncThunk(
         }
     }
 )
+export const getSubmission = createAsyncThunk(
+    '/compile/getsubmission',
+    async ({ problemId }, { rejectWithValue }) => {
+        try {
+            //console.log("problemID: ", problemId);
+            const { data } = await axiosInstance.get(`/problem/submitcode/${problemId}`);
+            return data.data;
+        } catch (e) {
+            return rejectWithValue(e.message);
+        }
+    }
+)
