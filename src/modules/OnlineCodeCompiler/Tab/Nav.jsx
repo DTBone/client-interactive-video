@@ -6,6 +6,7 @@ import ImportContactsOutlinedIcon from '@mui/icons-material/ImportContactsOutlin
 import HistoryOutlinedIcon from '@mui/icons-material/HistoryOutlined';
 import { useTab } from './Context/TabContext';
 import CloseIcon from '@mui/icons-material/Close';
+import { Article } from '@mui/icons-material';
 
 const Nav = ({ onNavClick }) => {
     const { openDetailSubmission, submissionStatus, setOpenDetailSubmission } = useTab();
@@ -34,6 +35,11 @@ const Nav = ({ onNavClick }) => {
                     onClick={() => onNavClick('submission')}
                     startIcon={<HistoryOutlinedIcon />}
                 >Submission</Button>
+                <Button
+                    variant="text"
+                    onClick={() => onNavClick('illustration')}
+                    startIcon={<Article />}
+                >Illustration Code</Button>
 
 
                 {openDetailSubmission && (

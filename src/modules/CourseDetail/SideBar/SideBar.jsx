@@ -206,6 +206,8 @@ const SideBar = () => {
     }, [courseId]);
     return (
         <div className="">
+            <Button onClick={() => navigate(`/course/${courseId}`)} className="flex items-center gap-2">⇽ Back to Courses</Button>
+
             <div className="w-full bg-transparent h-full flex justify-start items-center py-8 ">
                 <Typography variant='h4' fontSize="bold" sx={{ textTransform: "none" }}>{course.title}</Typography>
 

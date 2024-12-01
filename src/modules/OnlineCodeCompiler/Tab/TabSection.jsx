@@ -5,7 +5,7 @@ import Nav from './Nav'
 import SubmissionTab from './Submission';
 import { TabProvider, useTab } from './Context/TabContext';
 import DetailSubmission from './DetailSubmission';
-
+import Illustration from './Illustration';
 
 const MainSection = ({ activeComponent }) => {
     const { openDetailSubmission } = useTab();
@@ -13,7 +13,8 @@ const MainSection = ({ activeComponent }) => {
         description: Description,
         editorial: Editorial,
         submission: SubmissionTab,
-        detailSubmission: DetailSubmission
+        detailSubmission: DetailSubmission,
+        illustration: Illustration,
     };
 
     let ComponentToRender;
@@ -38,8 +39,8 @@ const TabSection = () => {
         setActiveComponent(componentName);
     };
     return (
-        <TabProvider>
-            <div className='w-full h-full'>
+        <TabProvider >
+            <div className='w-full h-auto overscroll-y-auto '>
                 <section className=''>
                     <Nav onNavClick={handleNavClick} />
                 </section>

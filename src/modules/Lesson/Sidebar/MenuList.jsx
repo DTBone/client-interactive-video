@@ -7,13 +7,13 @@ import IconComponent from "~/Components/Common/Button/IconComponent";
 import { useLocation } from "react-router-dom";
 
 const MenuList = ({ module, onQuizSubmit }) => {
-    const { quizId } = useParams();
+    const { itemId } = useParams();
     const location = useLocation();
     console.log('location', location)
     const navigate = useNavigate();
-    const [activeButton, setActiveButton] = useState(quizId);
+    const [activeButton, setActiveButton] = useState(itemId);
     const [showDialog, setShowDialog] = useState(false);
-    const [currentItem, setCurrentItem] = useState(module?.moduleItems?.find(item => item.quiz === quizId) || null);
+    const [currentItem, setCurrentItem] = useState(module?.moduleItems?.find(item => item.quiz === itemId) || null);
     const [itemSelected, setItemSelected] = useState(null);
     console.log('module', module)
 
@@ -27,7 +27,7 @@ const MenuList = ({ module, onQuizSubmit }) => {
                 return item;
             })
         }
-    }, [currentItem, module?.moduleItems, module]);
+    }, [currentItem, module?.moduleItems, module, itemId]);
 
     const navigateToItem = (item) => {
         if (item) {
@@ -73,8 +73,9 @@ const MenuList = ({ module, onQuizSubmit }) => {
                     onClick={() => {
                         setItemSelected(item);
                         handleModuleItemClick(item);
+                        setActiveButton(item._id)
                     }}
-                    isActive={activeButton === item.quiz || activeButton === item.programming || activeButton === item.reading || activeButton === item.video}
+                    isActive={activeButton === item._id}
                     isCompleted={item.status === "completed"}
                     icon={<IconComponent icon={item.icon} />}
                 >
