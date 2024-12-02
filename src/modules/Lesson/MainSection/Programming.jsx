@@ -72,6 +72,8 @@ import { Button, Typography, Card, CardContent, Chip } from "@mui/material";
 import { useNavigate, useParams } from "react-router-dom";
 import { useDispatch, useSelector } from 'react-redux';
 import { getModuleItemById } from '~/store/slices/ModuleItem/action';
+import { updateProgrammingProgress } from '~/store/slices/Progress/action';
+import { toggleRefresh } from '~/store/slices/Progress/progressSlice';
 
 const Programming = () => {
     const navigate = useNavigate();
@@ -79,7 +81,7 @@ const Programming = () => {
     const { itemId } = useParams();
 
     const { currentItem, loading, error } = useSelector(state => state.moduleItem);
-
+    console.log("currentItem", currentItem);
     useEffect(() => {
         const fetchData = async () => {
             try {
@@ -105,6 +107,8 @@ const Programming = () => {
             const url = `/problems/${formatUrlSlug(currentItem.data.programming._id)}`;
             window.open(url, '_blank', 'noopener,noreferrer');
         }
+        dispatch(updateProgrammingProgress({ moduleItemId: currentItem.data._id, moduleId: currentItem.data.module, data: { status: 'in-progress' } }));
+        dispatch(toggleRefresh());
     };
 
     if (loading) {

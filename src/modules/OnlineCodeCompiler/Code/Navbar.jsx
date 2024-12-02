@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Button, Typography, Divider } from "@mui/material";
 import { Code2 } from "lucide-react";
 import LanguageButtonSelector from "./LanguageSelector";
@@ -10,17 +10,34 @@ import { useNotification } from '~/hooks/useNotification';
 import { useDispatch, useSelector } from 'react-redux';
 import { compileRunCode, compileSubmitCode } from '~/store/slices/Compile/action';
 import { useParams } from 'react-router-dom';
+import { toggleRefresh } from '~/store/slices/Compile/compileSlice';
+import { getProgrammingProgressByProblemId } from '~/store/slices/Progress/action';
 
 const Navbar = () => {
     //const context = useCode();
     // console.log('Context in Navbar:', context);
     const { userLang, setLoading, setUserOutput, userCode, userInput } = useCode();
     const { compile, loading, error, submission, problem } = useSelector((state) => state.compile);
+
+    const { moduleProgress, moduleItemProgress, refresh } = useSelector((state) => state.progress);
     const [codeExe, setCodeExe] = React.useState('');
     const { showNotice } = useNotification();
     const dispatch = useDispatch();
     const { problemId } = useParams();
-
+    const [progressData, setProgressData] = useState(moduleItemProgress);
+    console.log("moduleItemProgress: ", moduleItemProgress);
+    useEffect(() => {
+        const fetchDat = async (req, res, next) => {
+            await dispatch(getProgrammingProgressByProblemId({ problemId: problemId }));
+            setProgressData(moduleItemProgress);
+        }
+        //dispatch(getProgrammingProgressByProblemId({ problemId: problemId }));
+        fetchDat();
+    }, [dispatch])
+    useEffect(() => {
+        console.log("progressData: ", progressData)
+        setProgressData(moduleItemProgress);
+    }, [moduleItemProgress, moduleProgress, refresh])
     useEffect(() => {
         const fetchData = () => {
             if (problem?.codeFormat && problem.codeFormat.length > 0) {
@@ -43,7 +60,7 @@ const Navbar = () => {
             return;
         }
         // const code = `${problem.inputFormat}\n\n${userCode}\n`;
-        // console.log('code:', code);
+
         dispatch(compileRunCode({ userCode, userLang, userInput: problem?.inputFormat, itemId: problemId, codeExecute: codeExe }))
             .then(() => {
                 setLoading(false); // Set loading to false after successful run
@@ -62,7 +79,9 @@ const Navbar = () => {
             showNotice('error', 'Please select language and write code before running!');
             return;
         }
-        dispatch(compileSubmitCode({ userCode, userLang, itemId: problemId, testcases: problem?.testcases, codeExecute: codeExe }))
+        dispatch(toggleRefresh());
+        console.log('progressData:', progressData);
+        dispatch(compileSubmitCode({ userCode, userLang, itemId: problemId, testcases: problem?.testcases, codeExecute: codeExe, progressData: progressData }))
             .then(() => {
                 setLoading(false); // Set loading to false after successful run
             })

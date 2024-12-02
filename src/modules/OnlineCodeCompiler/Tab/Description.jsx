@@ -1,11 +1,23 @@
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 // import content from './../../../../node_modules/jodit/esm/typings.d';
 import DOMPurify from 'dompurify';
 import { Chip, Typography, Box, Card, CardContent } from "@mui/material";
 import { Star, Clock, Code, ArrowUpRight } from 'lucide-react';
+import { useEffect, useState } from "react";
+import { getSubmission } from "~/store/slices/Compile/action";
 
 const Description = () => {
-    const { problem, loading, error } = useSelector((state) => state.compile);
+    const { problem, loading, error, submissions, submission } = useSelector((state) => state.compile);
+    const dispatch = useDispatch();
+    const [submissionData, setSubmissonData] = useState(submissions.stats);
+    useEffect(() => {
+        const fetchData = async (req, res, next) => {
+            await dispatch(getSubmission({ problemId: problem?._id }));
+            setSubmissonData(submissions.stats);
+        }
+        fetchData();
+    }, [submission])
+    console.log("submissionData: ", submissionData);
     //console.log("problem", problem);
     const sanitizedContent = problem?.content
         ? DOMPurify.sanitize(problem.content)
@@ -37,13 +49,13 @@ const Description = () => {
                 <Card variant="outlined">
                     <CardContent className="flex items-center space-x-2">
                         <Code size={24} />
-                        <Typography>Total Submissions: {problem?.totalSubmissions}</Typography>
+                        <Typography>Total Submissions: {submissionData?.total}</Typography>
                     </CardContent>
                 </Card>
                 <Card variant="outlined">
                     <CardContent className="flex items-center space-x-2">
                         <Clock size={24} />
-                        <Typography>Accepted Count: {problem?.acceptedCount}</Typography>
+                        <Typography>Accepted Count: {submissionData?.acceptedCount}</Typography>
                     </CardContent>
                 </Card>
             </Box>

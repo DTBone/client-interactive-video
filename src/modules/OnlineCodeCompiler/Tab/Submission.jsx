@@ -18,7 +18,7 @@ import { useParams } from 'react-router-dom';
 
 const SubmissionTab = () => {
     const { setOpenDetailSubmission, setSubmissionStatus, setSubmissionData } = useTab();
-    const { submissions, loading, error, submission } = useSelector((state) => state.compile);
+    const { submissions, loading, error, submission, refresh } = useSelector((state) => state.compile);
     const { problemId } = useParams();
 
     const dispatch = useDispatch();
@@ -28,9 +28,10 @@ const SubmissionTab = () => {
         setSubmissionStatus(status);
         setSubmissionData(submission);
     }
-    const [submissionList, setSubmissionList] = useState([]);
+    const [submissionList, setSubmissionList] = useState(submissions);
     const [sortDirection, setSortDirection] = useState('desc');
     const [sortedSubmissions, setSortedSubmissions] = useState([]);
+
     useEffect(() => {
         try {
             dispatch(getSubmission({ problemId }))
@@ -39,7 +40,12 @@ const SubmissionTab = () => {
         } catch (e) {
             console.log('error: ', e)
         }
-    }, [dispatch, submission]);
+    }, [submission, refresh]);
+
+    useEffect(() => {
+        setSubmissionList(submissions.submissions);
+    }, [submissions])
+
     useEffect(() => {
         const processSubmissions = () => {
             // Đảm bảo submissionList luôn là một mảng
