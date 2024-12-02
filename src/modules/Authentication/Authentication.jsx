@@ -25,6 +25,7 @@ function Login() {
     const [isLogin, setIsLogin] = useState(true);
     const [open, setOpen] = useState(false);
     const [message, setMessage] = useState(null);
+    const [load, setLoad] = useState(false);
     const [formData, setFormData] = useState({
         fullname: '',
         username: '',
@@ -75,7 +76,7 @@ function Login() {
     const handleLogin = async (e) => {
         e.preventDefault();
         setMessage(null);
-
+        setLoad(true);
         if (isLogin) {
             try {
                 const credentials = {
@@ -111,6 +112,8 @@ function Login() {
                 }
             } catch (err) {
                 setMessage('Login failed. Please check your credentials.');
+            } finally {
+                setLoad(false);
             }
 
         } else {
@@ -139,6 +142,8 @@ function Login() {
                         }
                     } catch (err) {
                         setMessage(err.response?.data?.message || 'Registration failed');
+                    } finally {
+                        setLoad(false);
                     }
                 } else {
                     alert("Captcha invalid");
@@ -299,10 +304,10 @@ function Login() {
                             className="w-full"
                             variant="contained"
                             color="secondary"
-                            disabled={loading}
+                            disabled={load}
                             sx={{ backgroundColor: 'white', color: 'black' }}
                         >
-                            {loading ? 'Processing...' : title}
+                            {load ? 'Processing...' : title}
                         </Button>
                         {isLogin && (
                             <div className="groupButton self-start text-white">
@@ -350,9 +355,10 @@ function Login() {
                             className="w-full"
                             variant="contained"
                             color="secondary"
+                            disabled={load}
                             sx={{ backgroundColor: 'white', color: 'black' }}
                         >
-                            {switchText}
+                            {load ? 'Processing...' : switchText}
                         </Button>
                     </div>
                 </div>

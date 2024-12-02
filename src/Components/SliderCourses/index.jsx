@@ -13,29 +13,16 @@ import "swiper/css/navigation";
 
 import { EffectCoverflow, Pagination, Navigation } from 'swiper/modules';
 import { useEffect, useState } from "react";
-import courseService from "~/services/api/courseService";
 
 
-function SliderCourses({ user, title }) {
+function SliderCourses({ course, title }) {
 
-  const [courses, setCourses] = useState([]);
-  console.log(courses);
-  const userId = user._id;
-  
+  const [courses, setCourses] = useState(course || []);
+
   useEffect(() => {
-    const fetchCourses = async () => {
-      try {
-        var response = await courseService.getCoursesByStudentId(userId);
-        if (response.length < 5) {
-          response = [...response, ...response];
-        }
-        setCourses(response);
-      } catch (error) {
-        console.error("Error fetching courses: ", error);
-      }
-    };
-    fetchCourses();
-  }, [userId, setCourses]);
+    console.log(course);
+  }, [course]);
+  
 
   return (
     <div className="w-5/6 p-0 flex flex-col items-center justify-center relative">
@@ -75,7 +62,7 @@ function SliderCourses({ user, title }) {
         modules={[EffectCoverflow, Pagination, Navigation]}
         className="swiper_container"
         >
-          {courses?.map((course, index) => (
+          {course?.map((course, index) => (
             <SwiperSlide
             style={{
               width: '33%',

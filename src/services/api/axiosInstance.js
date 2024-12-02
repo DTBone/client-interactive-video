@@ -9,6 +9,7 @@ const axiosInstance = axios.create({
     headers: {
         'Content-Type': 'application/json',
         'Access-Control-Allow-Origin': 'http://localhost:3000',
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
         // Thêm token hoặc các headers khác ở đây nếu cần
     }
 });
