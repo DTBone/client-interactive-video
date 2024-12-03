@@ -2,16 +2,33 @@ import Grid from '@mui/material/Grid';
 import HeaderCourse from '~/Components/Common/Header/HeaderCourse'
 import SideBar from './SideBar/SideBar';
 import { Divider } from '@mui/material';
-import { Outlet } from 'react-router-dom';
+import { Outlet, useParams } from 'react-router-dom';
 import CustomScrollbar from '~/Components/Common/CustomScrollbar';
+import Breadcrumb from '~/Components/Common/Breadcrumbs/Breadcrumb';
+import { useEffect } from 'react';
+import { useDispatch } from 'react-redux';
+import { getCourseByID } from '~/store/slices/Course/action';
 
 const CourseDetail = () => {
+    const courseID = localStorage.getItem('courseId');
+    const { courseId } = useParams();
+    const dispatch = useDispatch();
+    console.log("courseID ", courseId);
+    useEffect(() => {
+        if (courseId) {
+            const fetchData = async () => {
+                await dispatch(getCourseByID(courseId));
 
+            };
+            fetchData();
+        }
+    }, [courseId, dispatch]);
     return (
-        
+
         <div className="h-screen flex flex-col overflow-hidden">
             <header className=' '>
                 <HeaderCourse />
+
             </header>
             <div className="flex h-full overflow-hidden">
                 <Grid container className="  justify-between ">
@@ -27,7 +44,13 @@ const CourseDetail = () => {
                     </Grid>
 
                     <Grid item xs={12} sm={9} md={8} lg={9} className="p-5 relative  w-full">
+                        <section className='p-3 sticky top-0 z-10'>
 
+                            <Breadcrumb
+                                courseId={courseID}
+
+                            />
+                        </section>
 
                         <CustomScrollbar className=''>
 

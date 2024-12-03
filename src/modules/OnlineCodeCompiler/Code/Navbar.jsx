@@ -29,14 +29,17 @@ const Navbar = () => {
     useEffect(() => {
         const fetchDat = async (req, res, next) => {
             await dispatch(getProgrammingProgressByProblemId({ problemId: problemId }));
-            setProgressData(moduleItemProgress);
+            //setProgressData(moduleItemProgress);
         }
         //dispatch(getProgrammingProgressByProblemId({ problemId: problemId }));
         fetchDat();
     }, [dispatch])
     useEffect(() => {
-        console.log("progressData: ", progressData)
-        setProgressData(moduleItemProgress);
+        if (moduleItemProgress) {
+            setProgressData(moduleItemProgress);
+            console.log("progressData: ", progressData)
+        }
+
     }, [moduleItemProgress, moduleProgress, refresh])
     useEffect(() => {
         const fetchData = () => {
@@ -61,7 +64,13 @@ const Navbar = () => {
         }
         // const code = `${problem.inputFormat}\n\n${userCode}\n`;
 
-        dispatch(compileRunCode({ userCode, userLang, userInput: problem?.inputFormat, itemId: problemId, codeExecute: codeExe }))
+        dispatch(compileRunCode({
+            userCode,
+            userLang,
+            userInput: problem?.inputFormat,
+            itemId: problemId,
+            codeExecute: codeExe
+        }))
             .then(() => {
                 setLoading(false); // Set loading to false after successful run
             })
@@ -81,7 +90,14 @@ const Navbar = () => {
         }
         dispatch(toggleRefresh());
         console.log('progressData:', progressData);
-        dispatch(compileSubmitCode({ userCode, userLang, itemId: problemId, testcases: problem?.testcases, codeExecute: codeExe, progressData: progressData }))
+        dispatch(compileSubmitCode({
+            userCode,
+            userLang,
+            itemId: problemId,
+            testcases: problem?.testcases,
+            codeExecute: codeExe,
+            progressData: progressData
+        }))
             .then(() => {
                 setLoading(false); // Set loading to false after successful run
             })
