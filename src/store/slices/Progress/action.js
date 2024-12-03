@@ -39,7 +39,7 @@ export const updateProgrammingProgress = createAsyncThunk(
     'programming/updateProgrammingProgress',
     async ({ moduleItemId, moduleId, data }, { rejectWithValue }) => {
         try {
-            console.log('data programming', data, moduleItemId, moduleId);
+            //console.log('data programming', data, moduleItemId, moduleId);
             const res = await axiosInstance.put(`/progress/${moduleItemId}/programming`, {
                 progressProgramming: data,
                 moduleId: moduleId,
