@@ -23,13 +23,18 @@ const SideBar = () => {
     // const { id } = useParams();
     const navigate = useNavigate();
     const dispatch = useDispatch();
-    const { course } = location.state;
+    const { currentCourse } = useSelector((state) => state.course);
+    const [course, setCourse] = useState();
     console.log('course', course)
     const [activeButton, setActiveButton] = useState(null);
-
+    useEffect(() => {
+        if (currentCourse) {
+            setCourse(currentCourse.data);
+        }
+    }, [currentCourse])
     const handleButtonClick = (buttonId) => {
         setActiveButton(`${buttonId.toLowerCase()}`);
-        navigate(`${buttonId.toLowerCase().replace(/\s+/g, '/')}`,  { state: { course } });
+        navigate(`${buttonId.toLowerCase().replace(/\s+/g, '/')}`, { state: { course } });
 
 
     };
@@ -209,7 +214,7 @@ const SideBar = () => {
             <Button onClick={() => navigate(`/course/${courseId}`)} className="flex items-center gap-2">⇽ Back to Courses</Button>
 
             <div className="w-full bg-transparent h-full flex justify-start items-center py-8 ">
-                <Typography variant='h4' fontSize="bold" sx={{ textTransform: "none" }}>{course.title}</Typography>
+                <Typography variant='h4' fontSize="bold" sx={{ textTransform: "none" }}>{course?.title}</Typography>
 
             </div>
             <CustomAccordion expanded={expanded === 'panel'} onChange={handleChange('panel')}>

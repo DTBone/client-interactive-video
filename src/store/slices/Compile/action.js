@@ -37,7 +37,7 @@ export const compileSubmitCode = createAsyncThunk(
     '/compile/submitcode',
     async ({ userCode, userLang, itemId, testcases, codeExecute, progressData }, { rejectWithValue }) => {
         try {
-            console.log("progressData: ", progressData)
+            //console.log("progressData: ", progressData)
             const { data } = await axiosInstance.post(`/problem/submitcode/${itemId}`, {
                 code: userCode,
                 language: userLang.toLowerCase(),

@@ -52,9 +52,9 @@ const Sidebar = ({ handleSidebarButtonClick, isExpanded, isSubmitted }) => {
         getModuleByModuleId()
     }, [isExpanded, isSubmitted]);
 
-    if (loading || !currentModule) {
-        return <div>Loading...</div>
-    }
+    // if (loading || !currentModule) {
+    //     return <div>Loading...</div>
+    // }
 
     return (
         <div style={{

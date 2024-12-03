@@ -52,7 +52,7 @@ const CourseItem = ({ isFree, courseImg, courseName, courseId, status, approveBy
     const handleClickListStudentOfCourse = (courseId) => {
         navigate(`student/${courseId.trim().toLowerCase().replace(/\s+/g, '-')}`)
     }
-    console.log("CourseId: ", approveBy)
+    console.log("CourseId: ", courseId)
     return (
         <StyledCard elevation={2} onClick={() => handleClickCourseItem(courseId)}>
             <div style={{ position: 'relative', padding: '1rem' }}
@@ -72,8 +72,6 @@ const CourseItem = ({ isFree, courseImg, courseName, courseId, status, approveBy
             </div>
 
             <StyledCardContent>
-
-
                 <Typography
                     gutterBottom
                     variant="h6"
