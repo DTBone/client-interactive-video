@@ -12,7 +12,6 @@ import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 import { styled } from '@mui/material/styles';
 import { useTab } from './Context/TabContext';
 import { useDispatch, useSelector } from 'react-redux';
-import { setARIAContainer } from './../../../../node_modules/monaco-editor/esm/vs/base/browser/ui/aria/aria';
 import { getSubmission } from '~/store/slices/Compile/action';
 import { useParams } from 'react-router-dom';
 
