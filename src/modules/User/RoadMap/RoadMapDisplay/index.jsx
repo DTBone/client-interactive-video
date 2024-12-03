@@ -1,4 +1,5 @@
-﻿import React from 'react';
+﻿/* eslint-disable react/prop-types */
+import React from 'react';
 import {
     Box,
     Card,
@@ -87,9 +88,14 @@ const ProgressChip = styled(Chip)(({ theme, completed }) => ({
     },
 }));
 
+
 const RoadMapDisplay = ({ data, userProgress }) => { // userProgress indicates current phase
     const [expandedPhase, setExpandedPhase] = React.useState(null);
     const theme = useTheme();
+
+    const handleClickItem = (phase, item) => {
+        console.log('Clicked on item:', item);
+    };
 
     const handleExpandPhase = (phaseNumber) => {
         setExpandedPhase(expandedPhase === phaseNumber ? null : phaseNumber);
@@ -315,6 +321,7 @@ const RoadMapDisplay = ({ data, userProgress }) => { // userProgress indicates c
                                                     <Paper
                                                         key={itemIndex}
                                                         elevation={0}
+                                                        onClick={() => handleClickItem(phase, item)}
                                                         sx={{
                                                             p: 2,
                                                             bgcolor: isPhaseActive(phase.phase)
@@ -325,6 +332,10 @@ const RoadMapDisplay = ({ data, userProgress }) => { // userProgress indicates c
                                                                 ? 'warning.light'
                                                                 : 'divider',
                                                             borderRadius: 2,
+                                                            transition: 'all 0.3s ease',
+                                                            ":hover": { boxShadow: 2,
+                                                                        scale: 1.01
+                                                            }
                                                         }}
                                                     >
                                                         <Box sx={{ display: 'flex', gap: 2, alignItems: 'flex-start' }}>
@@ -360,6 +371,16 @@ const RoadMapDisplay = ({ data, userProgress }) => { // userProgress indicates c
                                                                         : theme.palette.text.primary
                                                                 }}>
                                                                     {item.name}
+                                                                    {item.tags && item.tags.map((tag, index) => (
+                                                                        <Chip
+                                                                        key={index}
+                                                                        variant='outlined'
+                                                                        color='primary'
+                                                                        size='small'
+                                                                        label={`#${tag}`}
+                                                                        sx={{ ml: 1 }}
+                                                                        ></Chip>
+                                                                    ))}
                                                                 </Typography>
                                                                 <Typography variant="body2" color="text.secondary">
                                                                     {item.description}

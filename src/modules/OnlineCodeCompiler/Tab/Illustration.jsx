@@ -1,8 +1,10 @@
 import MermaidChart from "~/modules/User/RoadMap/MermaidChart";
 import { useCode } from "~/modules/OnlineCodeCompiler/CodeContext";
-import { useEffect, useState } from "react";
+import { useState } from "react"
 import { Button } from "@mui/material";
 import { api } from "~/Config/api";
+import { useSelector } from "react-redux";
+import language from "react-syntax-highlighter/dist/esm/languages/hljs/1c";
 // const chartCodeExam = `graph TD
 //     A[Start] --> B[Initialize left = 0]
 //     B --> C["Initialize right = len(nums) - 1"]
@@ -20,77 +22,32 @@ import { api } from "~/Config/api";
 //     G --> L
 //     `;
 function Illustration() {
-    const { userCode, userLang } = useCode();
+    const { userCode, userLang, userInput } = useCode();
     const [chartCode, setChartCode] = useState(null);
     const [loading, setLoading] = useState(false);
-    function normalizeMermaidCode(code) {
-        /**
-         * Normalizes Mermaid code by quoting only the outermost brackets/braces.
-         * @param {string} code - The input Mermaid code
-         * @returns {string} Normalized Mermaid code with proper quoting
-         */
-        
-        // Split the code into lines
-        const lines = code.trim().split('\n');
-        
-        // Process each line
-        const normalizedLines = lines.map(line => {
-            line = line.trim();
-            let depth = 0;
-            let inBracket = false;
-            let result = '';
-            let content = '';
-            let bracketType = null;
-            
-            for (let i = 0; i < line.length; i++) {
-                const char = line[i];
-                
-                // Start of bracket/brace
-                if (char === '[' || char === '{') {
-                    depth++;
-                    if (depth === 1) {
-                        inBracket = true;
-                        bracketType = char;
-                        result += char + '"';
-                        continue;
-                    }
-                }
-                // End of bracket/brace
-                else if ((char === ']' && bracketType === '[') || 
-                         (char === '}' && bracketType === '{')) {
-                    depth--;
-                    if (depth === 0) {
-                        inBracket = false;
-                        bracketType = null;
-                        result += '"' + char;
-                        continue;
-                    }
-                }
-                
-                // Add character to result
-                result += char;
-            }
-            
-            return result;
-        });
-        
-        // Join the lines back together
-        return normalizedLines.join('\n');
-    }
+    const { problem, compile, error } = useSelector(state => state.compile);
+    const [errorState, setErrorState] = useState(null);
+    const codeExecute = problem.codeFormat.find(format => format.language === userLang).codeExecute;
+
     const generateChartCode = async () => {
         setLoading(true);
-        const res = await api.post('/problem/generate-chart', { code: userCode, language: userLang });
-        console.log('res', res.data.data);
-        if (res.status === 200 && res.data) {
+        try {
+            const res = await api.post('/problem/generate-chart', { code: userCode, input: problem?.inputFormat, language: userLang, codeExecute });
+            console.log('res', res.data);
             setChartCode(res.data.data);
+            setErrorState(null);
+            setLoading(false);
+        } catch (error) {
+            console.log('error', error.response.data);
+            setErrorState(error.response.data.error);
+            setLoading(false);
         }
-        else if (res.data.error) {
-            console.log('error', res.data.error);
-        }
-        setLoading(false);
+        
     };
 
-
+    const handleRerender = async () => {
+        await generateChartCode();
+    }
 
     const handleNodeClick = (node) => {
         alert(node.text);
@@ -101,7 +58,8 @@ function Illustration() {
             {!chartCode && <Button variant="contained"
             sx={{ backgroundColor: '#E77672', color: 'white' }}
             onClick={() => generateChartCode()}>{loading ? 'Loading...' : 'Generate Chart'}</Button>}
-            <MermaidChart chartCode={chartCode} onNodeDoubleClick={handleNodeClick} />
+            {errorState && <div className="text-red-500">{errorState}</div>}
+            <MermaidChart chartCode={chartCode} modal={true} onRerender={handleRerender} onNodeClick={handleNodeClick} />
         </div>
     );
 }
