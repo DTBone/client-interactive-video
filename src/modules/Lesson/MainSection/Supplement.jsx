@@ -27,6 +27,10 @@ const Supplement = () => {
     }
 
     useEffect(() => {
+        console.log('progress', progress)
+        if(progress && progress.moduleItemProgresses && progress.moduleItemProgresses.find(p => p.moduleItemId === item._id)?.status === 'completed') {
+            return;
+        }
         const timer = setTimeout(() => {
             handleCompeleSupplement();
         }, 5000);

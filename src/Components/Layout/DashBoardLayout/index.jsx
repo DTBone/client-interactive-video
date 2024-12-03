@@ -149,10 +149,7 @@ export default function MiniDrawer({ children }) {
       </Drawer>
       <Box component="main" sx={{
         flexGrow: 1, p: 3,
-        backgroundImage: `url(${backgroundGif})`,
-        backgroundSize: 'cover',
-        backgroundRepeat: 'no-repeat',
-        backgroundPosition: 'center',
+        backgroundColor: 'rgba(255, 255, 240 , 0.5)',
       }}>
         <DrawerHeader />
         <div
