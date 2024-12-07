@@ -86,7 +86,14 @@ const questionsExample = [
 
 const Video = ({ src, questions = questionsExample, isComplete, onCompleteVideo, moduleItemId }) => {
     const dispatch = useDispatch();
-    const progress = useSelector((state) => Object.keys(state.progress.progress).length > 0 ? state.progress.progress?.moduleItemProgresses.find(p => p.moduleItemId === moduleItemId) : {});
+    // const progress = useSelector((state) => Object.keys(state.progress.progress).length > 0 ? state.progress.progress?.moduleItemProgresses.find(p => p.moduleItemId === moduleItemId) : {});
+    const progress = useSelector((state) => {
+        if (!state.progress?.progress) {
+            return {};
+        }
+
+        return state.progress.progress.moduleItemProgresses?.find(p => p.moduleItemId === moduleItemId) || {};
+    });
     const [complete, setComplete] = useState(progress?.status === 'completed' || isComplete);
     const videoRef = useRef(null);
     const [isPlaying, setIsPlaying] = useState(false);
@@ -118,12 +125,12 @@ const Video = ({ src, questions = questionsExample, isComplete, onCompleteVideo,
     // Kiểm tra xem có câu hỏi nào cần hiển thị không
     const checkForQuestions = (currentTime) => {
         if (progress?.status == 'completed') return;
-        else{
+        else {
             const question = questions.find(q => {
                 const timeDiff = Math.abs(q.startTime - currentTime);
                 return timeDiff < 0.5 && !answeredQuestions.has(q.startTime);
             });
-    
+
             if (question) {
                 videoRef.current.pause();
                 setIsPlaying(false);
@@ -135,24 +142,25 @@ const Video = ({ src, questions = questionsExample, isComplete, onCompleteVideo,
     // Đảm bảo thời gian hiện tại không vượt quá thời gian của câu hỏi tiếp theo
     const enforceQuestionBoundary = (currentTime) => {
         if (progress?.status === 'completed') return;
-        else
-        {const nextUnansweredQuestion = questions
-            .filter(q => !answeredQuestions.has(q.time))
-            .sort((a, b) => a.time - b.time)
-            .find(q => q.time < currentTime);
+        else {
+            const nextUnansweredQuestion = questions
+                .filter(q => !answeredQuestions.has(q.time))
+                .sort((a, b) => a.time - b.time)
+                .find(q => q.time < currentTime);
 
-        if (nextUnansweredQuestion) {
-            videoRef.current.currentTime = nextUnansweredQuestion.time;
-            setCurrentTime(nextUnansweredQuestion.time);
-            setAlert('You cannot skip unanswered questions.');
-        }}
+            if (nextUnansweredQuestion) {
+                videoRef.current.currentTime = nextUnansweredQuestion.time;
+                setCurrentTime(nextUnansweredQuestion.time);
+                setAlert('You cannot skip unanswered questions.');
+            }
+        }
     };
 
     const handleAnswerSubmit = () => {
         if (!currentQuestion || selectedAnswer === null) return;
 
         let isCorrect = false;
-        
+
         switch (currentQuestion.questionType) {
             case 'multipleChoice':
                 isCorrect = currentQuestion.answers.some((answer, index) => {
@@ -173,13 +181,13 @@ const Video = ({ src, questions = questionsExample, isComplete, onCompleteVideo,
             setAnsweredQuestions(new Set([...answeredQuestions, currentQuestion.startTime]));
             setAlert('Congratulations! Your answer is correct.');
             setOpenQuestionDialog(false);
-            
+
             // Find next question or set to video end
             const nextQuestion = questions
                 .filter(q => q.startTime > currentQuestion.startTime)
                 .sort((a, b) => a.startTime - b.startTime)[0];
             setLastAllowedTime(nextQuestion ? nextQuestion.startTime : duration);
-            
+
             // Resume video playback
             setTimeout(() => {
                 videoRef.current.play();
@@ -188,7 +196,7 @@ const Video = ({ src, questions = questionsExample, isComplete, onCompleteVideo,
         } else {
             setAlert('Please try again.');
         }
-        
+
         setSelectedAnswer([]);
     };
 
@@ -199,7 +207,7 @@ const Video = ({ src, questions = questionsExample, isComplete, onCompleteVideo,
     useEffect(() => {
         const video = videoRef.current;
         if (!video) return;
-        if(progress?.status === 'in-progress' || false) {
+        if (progress?.status === 'in-progress' || false) {
             video.currentTime = progress.result.video.lastPosition;
         }
 
@@ -210,7 +218,7 @@ const Video = ({ src, questions = questionsExample, isComplete, onCompleteVideo,
 
         const handleTimeUpdate = () => {
             setCurrentTime(video.currentTime);
-            if(progress?.status !== 'completed' || false) {
+            if (progress?.status !== 'completed' || false) {
                 checkForQuestions(video.currentTime);
                 enforceQuestionBoundary(video.currentTime);
                 setProgressVideo({
@@ -283,7 +291,7 @@ const Video = ({ src, questions = questionsExample, isComplete, onCompleteVideo,
             video.removeEventListener('playing', handlePlaying);
             video.removeEventListener('progress', handleProgress);
             document.removeEventListener('fullscreenchange', handleFullscreenChange);
-            if(handleComplete && currentProgress.completionPercentage > 10) {
+            if (handleComplete && currentProgress.completionPercentage > 10) {
                 handleComplete(currentProgress);
             }
         };
@@ -359,13 +367,13 @@ const Video = ({ src, questions = questionsExample, isComplete, onCompleteVideo,
 
     const handleTimeSeek = (event, newValue) => { // Xử lý khi người dùng kéo Slider
         const newTime = (newValue / 100) * duration; // Tính thời gian mới dựa trên giá trị của Slider
-        if(progress?.status === 'completed' || newTime < lastAllowedTime) {
-            console.log('newTime',newTime, lastAllowedTime);
+        if (progress?.status === 'completed' || newTime < lastAllowedTime) {
+            console.log('newTime', newTime, lastAllowedTime);
             videoRef.current.currentTime = newTime;
             setCurrentTime(newTime);
             return;
         };
-        
+
         if (!questions) {
             videoRef.current.currentTime = newTime;
             setCurrentTime(newTime);
@@ -416,17 +424,17 @@ const Video = ({ src, questions = questionsExample, isComplete, onCompleteVideo,
     };
     const handleMultipleChoiceChange = (answerId) => {
         if (selectedAnswer.includes(answerId)) {
-          setSelectedAnswer(selectedAnswer.filter(id => id !== answerId));
+            setSelectedAnswer(selectedAnswer.filter(id => id !== answerId));
         } else {
-          setSelectedAnswer([...selectedAnswer, answerId]);
+            setSelectedAnswer([...selectedAnswer, answerId]);
         }
-      };
-    
-      const handleSingleChoiceChange = (event) => {
+    };
+
+    const handleSingleChoiceChange = (event) => {
         console.log(event.target.value);
         setSelectedAnswer([event.target.value]);
-      };
-    
+    };
+
 
     return (
         <Box
@@ -493,7 +501,7 @@ const Video = ({ src, questions = questionsExample, isComplete, onCompleteVideo,
                         bottom: 0,
                         left: 0,
                         right: 0,
-                        backgroundColor:'transparent',
+                        backgroundColor: 'transparent',
                         backgroundImage: 'linear-gradient(0deg, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0) 100%)',
                         p: 1,
                         transition: 'opacity 0.3s',
@@ -667,94 +675,95 @@ const Video = ({ src, questions = questionsExample, isComplete, onCompleteVideo,
             {/* Interactive Question Dialog */}
             {(openQuestionDialog && progress?.status !== 'completed') && (
                 <Dialog
-                open={true}
-                onClose={() => {}}
-                maxWidth="sm"
-                fullWidth
-                PaperProps={{
-                    sx: {
-                        bgcolor: 'background.paper',
-                        borderRadius: 2,
-                    }
-                }}
-            >
-                <DialogTitle sx={{
-                    bgcolor: 'primary.main',
-                    color: 'white',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    gap: 1
-                }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <QuestionAnswer /> Interactive Question
-                        </Box>
-                    <Button onClick={handleCloseDialog} sx={{ color: 'white',
-                        ":hover": {
-                            backgroundColor: 'rgba(255,255,255,0.1)'
+                    open={true}
+                    onClose={() => { }}
+                    maxWidth="sm"
+                    fullWidth
+                    PaperProps={{
+                        sx: {
+                            bgcolor: 'background.paper',
+                            borderRadius: 2,
                         }
-                     }}><Tooltip
-                        title="Close"
-                        placement="bottom"
-                    ><Close /></Tooltip>
-                     </Button>
-                </DialogTitle>
-                <DialogContent sx={{ mt: 2 }}>
-                    {currentQuestion && (
-                        <FormControl className="w-full">
-                        <Typography variant="h6" className="mb-4">
-                          {currentQuestion.question}
-                        </Typography>
-                        <Typography variant="subtitle1" className="mb-2">
-                            {currentQuestion.questionType === 'multipleChoice' ? 'Select all that apply:' : 'Select one:'}
-                        </Typography>
-                
-                        {currentQuestion.questionType === 'multipleChoice' ? (
-                          <Stack className="space-y-4">
-                            {currentQuestion.answers.map((answer) => (
-                              <FormControlLabel
-                                key={answer._id}
-                                control={
-                                  <Checkbox
-                                    checked={selectedAnswer?.includes(answer._id)}
-                                    onChange={() => handleMultipleChoiceChange(answer._id)}
-                                  />
-                                }
-                                label={answer.content}
-                              />
-                            ))}
-                          </Stack>
-                        ) : (
-                          <RadioGroup
-                            value={selectedAnswer?.[0] || ''}
-                            onChange={handleSingleChoiceChange}
-                          >
-                            <Stack className="space-y-4">
-                              {currentQuestion.answers.map((answer) => (
-                                <FormControlLabel
-                                  key={answer._id}
-                                  value={answer._id}
-                                  control={<Radio />}
-                                  label={answer.content}
-                                />
-                              ))}
-                            </Stack>
-                          </RadioGroup>
+                    }}
+                >
+                    <DialogTitle sx={{
+                        bgcolor: 'primary.main',
+                        color: 'white',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        gap: 1
+                    }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <QuestionAnswer /> Interactive Question
+                        </Box>
+                        <Button onClick={handleCloseDialog} sx={{
+                            color: 'white',
+                            ":hover": {
+                                backgroundColor: 'rgba(255,255,255,0.1)'
+                            }
+                        }}><Tooltip
+                            title="Close"
+                            placement="bottom"
+                        ><Close /></Tooltip>
+                        </Button>
+                    </DialogTitle>
+                    <DialogContent sx={{ mt: 2 }}>
+                        {currentQuestion && (
+                            <FormControl className="w-full">
+                                <Typography variant="h6" className="mb-4">
+                                    {currentQuestion.question}
+                                </Typography>
+                                <Typography variant="subtitle1" className="mb-2">
+                                    {currentQuestion.questionType === 'multipleChoice' ? 'Select all that apply:' : 'Select one:'}
+                                </Typography>
+
+                                {currentQuestion.questionType === 'multipleChoice' ? (
+                                    <Stack className="space-y-4">
+                                        {currentQuestion.answers.map((answer) => (
+                                            <FormControlLabel
+                                                key={answer._id}
+                                                control={
+                                                    <Checkbox
+                                                        checked={selectedAnswer?.includes(answer._id)}
+                                                        onChange={() => handleMultipleChoiceChange(answer._id)}
+                                                    />
+                                                }
+                                                label={answer.content}
+                                            />
+                                        ))}
+                                    </Stack>
+                                ) : (
+                                    <RadioGroup
+                                        value={selectedAnswer?.[0] || ''}
+                                        onChange={handleSingleChoiceChange}
+                                    >
+                                        <Stack className="space-y-4">
+                                            {currentQuestion.answers.map((answer) => (
+                                                <FormControlLabel
+                                                    key={answer._id}
+                                                    value={answer._id}
+                                                    control={<Radio />}
+                                                    label={answer.content}
+                                                />
+                                            ))}
+                                        </Stack>
+                                    </RadioGroup>
+                                )}
+                            </FormControl>
                         )}
-                      </FormControl>
-                    )}
-                </DialogContent>
-                <DialogActions sx={{ p: 2 }}>
-                    <Button
-                        variant="contained"
-                        onClick={handleAnswerSubmit}
-                        disabled={selectedAnswer === null}
-                        startIcon={<QuestionAnswer />}
-                    >
-                        Submit Answer
-                    </Button>
-                </DialogActions>
-            </Dialog>
+                    </DialogContent>
+                    <DialogActions sx={{ p: 2 }}>
+                        <Button
+                            variant="contained"
+                            onClick={handleAnswerSubmit}
+                            disabled={selectedAnswer === null}
+                            startIcon={<QuestionAnswer />}
+                        >
+                            Submit Answer
+                        </Button>
+                    </DialogActions>
+                </Dialog>
             )}
             <Snackbar
                 open={Boolean(alert)}
@@ -767,7 +776,7 @@ const Video = ({ src, questions = questionsExample, isComplete, onCompleteVideo,
             >
                 <Alert
                     onClose={() => setAlert('')}
-                    severity= {alert.includes('correct') ? 'success' : 'error'}
+                    severity={alert.includes('correct') ? 'success' : 'error'}
                     variant="filled"
                     sx={{ width: '100%' }}
                 >

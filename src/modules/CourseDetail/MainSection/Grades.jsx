@@ -10,112 +10,155 @@ import {
 } from '@mui/material';
 import { AccessTime, Code } from '@mui/icons-material';
 import { useNavigate, useParams } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { useEffect, useState } from 'react';
+import { getGradeProgress } from '~/store/slices/Progress/action';
 const Grades = () => {
-    const { courseID } = useParams();
+    const { courseId } = useParams();
 
     const navigate = useNavigate();
-
-    const handleRowClick = (assignmentId, moduleID) => {
+    const dispatch = useDispatch();
+    const handleQuizClick = (assignmentId, moduleID) => {
         navigate(`/learn/${courseID}/programming/${moduleID.toLowerCase().replace(/\s+/g, '/')}/${assignmentId.toLowerCase().replace(/\s+/g, '-')}`);
     };
-    const assignments = [
-        {
-            name: 'Percolation',
-            type: 'Programming Assignment',
-            status: 'Overdue',
-            due: 'Sep 9 11:59 PM PDT',
-            weight: '20%',
-            icon: 'clock',
-            grade: '--',
-            module: 'module 1',
-        },
-        {
-            name: 'Deques and Randomized Queues',
-            type: 'Programming Assignment',
-            status: 'Overdue',
-            due: 'Sep 13 11:59 PM PDT',
-            weight: '20%',
-            icon: 'clock',
-            grade: '--',
-            module: 'module 2',
-        },
-        {
-            name: 'Collinear Points',
-            type: 'Programming Assignment',
-            status: 'Overdue',
-            due: 'Sep 16 11:59 PM PDT',
-            weight: '20%',
-            icon: 'clock',
-            grade: '--',
-            module: 'module 3',
-        },
-        {
-            name: '8 Puzzle',
-            type: 'Programming Assignment',
-            status: '--',
-            due: 'Sep 20 11:59 PM PDT',
-            weight: '20%',
-            icon: 'code',
-            grade: '--',
-            module: 'module 4',
-        },
-        {
-            name: 'Kd-Trees',
-            type: 'Programming Assignment',
-            status: '--',
-            due: 'Sep 25 11:59 PM PDT',
-            weight: '20%',
-            icon: 'code',
-            grade: '--',
-            module: 'module 1',
-        },
-    ];
+    const handleProgrammingClick = (problemId) => {
+        navigate(`/learn/${courseId}/programming/${problemId}`);
+    }
+
+
+
+
+    const { currentCourse } = useSelector((state) => state.course);
+
+    const { grade } = useSelector(state => state.progress)
+
+
+    const modules = currentCourse?.data?.modules || [];
+    console.log("modules", modules);
+
+    const extractModuleItems = (modules) => {
+        const gradedQuizItems = modules.flatMap(module =>
+            module.moduleItems.filter(item =>
+                item.isGrade === true && item.type === 'quiz'
+            )
+        );
+
+        const programmingItems = modules.flatMap(module =>
+            module.moduleItems.filter(item =>
+                item.type === 'programming'
+            )
+        );
+
+        const gradedQuizIds = gradedQuizItems.map(item => item._id);
+        const programmingItemIds = programmingItems.map(item => item._id);
+
+        return {
+            gradedQuizItems,
+            programmingItems,
+            gradedQuizIds,
+            programmingItemIds
+        };
+    };
+
+    // Usage
+    const {
+        gradedQuizItems,
+        programmingItems,
+        gradedQuizIds,
+        programmingItemIds
+    } = extractModuleItems(modules);
+    const ids = [...gradedQuizIds, ...programmingItemIds];
+    console.log('Graded Quizzes:', gradedQuizItems);
+    console.log('Programming Items:', programmingItems);
+    useEffect(() => {
+        const fetchData = async () => {
+            console.log('Fetching', ids, courseId);
+            await dispatch(getGradeProgress({ courseId: courseId, ids: ids }));
+        };
+        fetchData();
+    }, [courseId]);
+    const [gradeList, setGradeList] = useState([]);
+    useEffect(() => {
+        console.log('Grade:', grade);
+        setGradeList(grade);
+    }, [grade]);
+
+
+    const getResults = (id) => {
+        if (gradeList) {
+
+            return gradeList.find(item => item.moduleItemId === id);
+        }
+    };
 
     return (
-        <div>
+        <div className="pb-6 mb-6">
             <Typography variant='h4' className='font-bold pb-4'>Grades</Typography>
             <TableContainer component={Paper} className='shadow-lg'>
                 <Table className='min-w-full'>
-                    <TableHead classname="mb-4">
+                    <TableHead className="mb-4">
                         <TableRow className="bg-transparent">
                             <TableCell sx={{ fontWeight: 'bold' }}>Item</TableCell>
                             <TableCell sx={{ fontWeight: 'bold' }}>Status</TableCell>
-                            <TableCell sx={{ fontWeight: 'bold' }}>Due</TableCell>
-                            <TableCell sx={{ fontWeight: 'bold' }}>Weight</TableCell>
+                            <TableCell sx={{ fontWeight: 'bold' }}>Time</TableCell>
                             <TableCell sx={{ fontWeight: 'bold' }}>Grade</TableCell>
-
                         </TableRow>
                     </TableHead>
-                    <TableBody>
-                        {assignments.map((assignment, index) => (
-                            <TableRow key={index} className="hover:bg-gray-50">
-                                <TableCell className="flex items-center space-x-2">
+                    <TableBody sx={{ marginBottom: "16px", paddingBottom: "16px" }}>
+                        {[...gradedQuizItems, ...programmingItems].map((item, index) => {
+                            // Find corresponding result from gradeList
+                            const result = getResults(item._id);
 
-                                    <div className="flex flex-row space-x-3">
-                                        {assignment.icon === 'clock' ? (
-                                            <AccessTime className="text-yellow-500" />
-                                        ) : (
-                                            <Code className="text-blue-500" />
-                                        )}
-                                        <div>
-
-                                            <div onClick={() => handleRowClick(assignment.name, assignment.module)} className="text-blue-600 font-medium hover:underline">{assignment.name}</div>
-                                            <div className="text-gray-500 text-sm">{assignment.type}</div>
+                            return (
+                                <TableRow key={index} className="hover:bg-gray-50">
+                                    <TableCell className="flex items-center space-x-2">
+                                        <div className="flex flex-row space-x-3">
+                                            {item.icon === 'quiz' ? (
+                                                <AccessTime className="text-yellow-500" />
+                                            ) : (
+                                                <Code className="text-blue-500" />
+                                            )}
+                                            <div>
+                                                <div
+                                                    onClick={() =>
+                                                        item.type === 'quiz'
+                                                            ? handleQuizClick(item.title, item.module)
+                                                            : handleProgrammingClick(item.title)
+                                                    }
+                                                    className="text-blue-600 font-medium hover:underline"
+                                                >
+                                                    {item.title}
+                                                </div>
+                                                <div className="text-gray-500 text-sm">{item.type}</div>
+                                            </div>
                                         </div>
-                                    </div>
-                                </TableCell>
-                                <TableCell>{assignment.status}</TableCell>
-                                <TableCell>{assignment.due}</TableCell>
-                                <TableCell>{assignment.weight}</TableCell>
-                                <TableCell>{assignment.grade}</TableCell>
-                            </TableRow>
-                        ))}
-
+                                    </TableCell>
+                                    <TableCell>
+                                        {result ? result.status : '--'}
+                                    </TableCell>
+                                    <TableCell>
+                                        {result && result.completedAt ? new Date(result.completedAt).toLocaleString() : '--'}
+                                    </TableCell>
+                                    <TableCell>
+                                        {result
+                                            ? (
+                                                item.type === 'quiz'
+                                                    ? result.result?.quiz?.score ?? '--'
+                                                    : result.result?.programming?.score ?? '--'
+                                            )
+                                            : '--'
+                                        }
+                                    </TableCell>
+                                </TableRow>
+                            );
+                        })}
                     </TableBody>
                 </Table>
             </TableContainer>
-        </div >
-    )
+        </div>
+    );
 }
 
 export default Grades
+
+

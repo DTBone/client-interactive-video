@@ -80,4 +80,20 @@ export const getProgress = createAsyncThunk(
         }
     }
 );
+export const getGradeProgress = createAsyncThunk(
+    'progress/getGradeProgress',
+    async ({ courseId, ids = [] }, { rejectWithValue }) => {
+        try {
+            console.log('ids', ids);
+            const res = await axiosInstance.get(`/progress/${courseId}/grade`, {
+                params: {
+                    ids
+                }
+            });
+            return res.data;
+        } catch (error) {
+            return rejectWithValue(error || 'Get progress failed');
+        }
+    }
+);
 
