@@ -17,8 +17,10 @@ import { Notifications } from "@mui/icons-material";
 import { api } from "~/Config/api.js";
 import socketService from "~/hooks/SocketService.js";
 import NotificationMenu from "~/components/Header/components/Notification/index.jsx";
+import { useDispatch } from 'react-redux';
 
 export default function AccountMenu({ user }) {
+  const dispatch = useDispatch();
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [notifications, setNotifications] = React.useState([]);
   const [unreadNotifications, setUnreadNotifications] = React.useState(0);
@@ -26,6 +28,7 @@ export default function AccountMenu({ user }) {
   const socket = socketService.connect('http://localhost:3000')
   const [notificationAnchorEl, setNotificationAnchorEl] = React.useState(null);
   const notificationOpen = Boolean(notificationAnchorEl);
+  
 
   const handleNotificationClick = (event) => {
     setNotificationAnchorEl(event.currentTarget);
@@ -64,9 +67,11 @@ export default function AccountMenu({ user }) {
     setAnchorEl(event.currentTarget);
   };
   const navigate = useNavigate();
+
   const handleLogout = async () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
+    await dispatch({ type: 'CLEAR_STORE' });
     handleClose();
     try {
       const response = await authService.logout();

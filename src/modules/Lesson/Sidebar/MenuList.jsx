@@ -64,7 +64,7 @@ const MenuList = ({ module, onQuizSubmit }) => {
     return (
         <div className="flex flex-col items-start ml-4 pr-2">
             <Typography sx={{ fontWeight: "bold", fontSize: "medium", paddingLeft: "32px" }}>
-                {`${module.title} (${module.completionPercentage}%)`}
+                {`${module.title} (${module.completionPercentage || '0'}%)`}
             </Typography>
             {module?.moduleItems?.map((item, index) => (
                 <CustomMenuItemButton

@@ -30,12 +30,12 @@ const ModuleSection = () => {
                     </Grid>
 
                     <Grid item xs={12} sm={9} md={8} lg={9} className="p-5 relative  w-full">
-                        <section>
+
+                    <section>
                             <Breadcrumb
                                 courseId={currentCourse?.data?._id}
                             />
                         </section>
-
                         <CustomScrollbar className=''>
 
                             <div className="container mx-auto  overflow-y-scroll  h-[calc(100vh-100px)] pt-3 pl-3 pr-3 w-full">

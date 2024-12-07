@@ -241,7 +241,7 @@ const SideBar = () => {
                             onClick={() => handleModuleItemClick(item.index, item)}
                             isActive={activeButton === item.index} >
                             <Circle sx={{ 
-                                color: moduleDatas[index]?.status === 'completed' ? 'green' : 'transparent',
+                                color: moduleDatas.find(m => m.moduleId._id === item._id)?.status === 'completed' ? 'green' : 'transparent',
                                 fontSize: '16px',
                                 marginRight: '8px'
                             }} />
