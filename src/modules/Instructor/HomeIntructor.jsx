@@ -24,6 +24,7 @@ const HomeIntructor = () => {
         //console.log('isExpanded', isExpanded);
         //setSidebarWidth(isExpanded ? 55 : 255);
     };
+
     const handleClickNewCourse = () => {
         dispatch(clearCurrentCourse());
         navigate(`/course-management/new-course`)
