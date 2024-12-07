@@ -164,9 +164,10 @@ function Login() {
 
         try {
             const resultAction = await dispatch(login(credentials));
-            if (login.fulfilled.match(resultAction)) {
+            console.log('resultAction', resultAction);
+            if (resultAction.payload.status === 'success') {
                 setOpen(true);
-                const { user } = resultAction.payload;
+                const { user } = resultAction.payload.data;
                 navigate(`/homeuser?userid=${user.userId}`, { state: { user } });
             }
         } catch (err) {

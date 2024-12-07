@@ -17,6 +17,7 @@ export default function Breadcrumb({ courseId, moduleIndex, itemTitle }) {
     const user = useSelector(state => state.auth.user)
     const role = user?.role || 'student';
     const navigate = useNavigate();
+    const {currentCourse} = useSelector(state => state.course)
 
 
     const handleClick = (path) => {
@@ -66,7 +67,7 @@ export default function Breadcrumb({ courseId, moduleIndex, itemTitle }) {
                         onClick={() => handleClick('course')}
                         sx={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}
                     >
-                        {courseId}
+                        {currentCourse?.data.title}
                     </Link>
                 )}
 

@@ -9,7 +9,7 @@ import moduleItemSlice from './slices/ModuleItem/moduleItemSlice';
 import compileSlice from './slices/Compile/compileSlice';
 
 
-const rootReducer = combineReducers({
+const appReducer = combineReducers({
     course: courseSlice,
     auth: authSlice,
     payment: paymentSlice,
@@ -19,5 +19,13 @@ const rootReducer = combineReducers({
     progress: progressSlice,
     compile: compileSlice,
 });
+
+const rootReducer = (state, action) => {
+    if (action.type === 'CLEAR_STORE') {
+        const { auth } = state;
+        state = { auth };
+    }
+    return appReducer(state, action);
+};
 
 export default rootReducer;

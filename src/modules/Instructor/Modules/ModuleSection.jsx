@@ -4,8 +4,11 @@ import CustomScrollbar from '~/Components/Common/CustomScrollbar';
 import HeaderCourse from '~/Components/Common/Header/HeaderCourse'
 import Sidebar from './Sidebar/Sidebar';
 import { Outlet } from 'react-router-dom';
-
+import Breadcrumb from '~/components/Common/Breadcrumbs/Breadcrumb';
+import { useSelector } from 'react-redux';
+    
 const ModuleSection = () => {
+    const { currentCourse } = useSelector(state => state.course);
 
     return (
         <div className="h-screen flex flex-col overflow-hidden">
@@ -27,7 +30,11 @@ const ModuleSection = () => {
 
                     <Grid item xs={12} sm={9} md={8} lg={9} className="p-5 relative  w-full">
 
-
+                    <section>
+                            <Breadcrumb
+                                courseId={currentCourse?.data?._id}
+                            />
+                        </section>
                         <CustomScrollbar className=''>
 
                             <div className="container mx-auto  overflow-y-scroll  h-[calc(100vh-100px)] pt-3 pl-3 pr-3 w-full">

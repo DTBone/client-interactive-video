@@ -100,7 +100,6 @@ const LocationIndicator = styled('div')({
 
   function ColorlibStepIcon(props) {
     const { active, completed, className } = props;
-    console.log(props)
     const icons = {
       1: <StartOutlined />,
       2: <School />,
@@ -130,6 +129,8 @@ const Progress = ({course}) => {
     const [progress, setProgress] = useState(useSelector(state => state.progress.progress) || [])
     const dispatch = useDispatch()
     const [moduleDatas, setModuleDatas] = useState({})
+
+
     const fetchProgress = async () => {
         try {
             const rep = await dispatch(getProgress(course._id))
@@ -156,7 +157,6 @@ const Progress = ({course}) => {
     useEffect(() => {
         if(!progress || progress.length === 0 || !Array.isArray(progress)) {
             fetchProgress()
-            
         }
         fetchModule()
     }, [dispatch])

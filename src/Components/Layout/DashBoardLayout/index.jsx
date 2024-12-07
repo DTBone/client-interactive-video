@@ -62,8 +62,6 @@ const AppBar = styled(MuiAppBar, {
     easing: theme.transitions.easing.sharp,
     duration: theme.transitions.duration.leavingScreen,
   }),
-  backgroundImage: 'linear-gradient(to right, #3b82f6, #2dd4bf)',
-  backgroundColor: 'transparent',
   height: '80px',
   padding: '0 !important',
 }));
@@ -124,8 +122,24 @@ export default function MiniDrawer({ children }) {
     <Box sx={{ display: 'flex' }}>
       <ErrorModal error={error}/>
       <CssBaseline />
-      <AppBar position="fixed" open={open}>
-        <Toolbar>
+      <AppBar position="fixed" open={open} 
+      sx={{
+        backgroundColor: '#C5FFFF',
+        boxShadow: 'none',
+        backgroundSize: 'cover',
+      }}
+      >
+        <Toolbar sx={
+          {
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            padding: '0 0px',
+            height: '80px',
+            backgroundColor: '#C2E4F0',
+            boxShadow: 'none',
+          }
+        }>
           <IconButton
             color="inherit"
             aria-label="open drawer"
@@ -136,10 +150,16 @@ export default function MiniDrawer({ children }) {
               
             }}
           >
-            {!open ? <MenuIcon fontSize="large" /> : <MenuOpenIcon fontSize="large" />}
+            {!open ? <MenuIcon sx={{
+              color: 'rgba(0, 0, 0, 0.54)',
+            }} fontSize="large" /> : <MenuOpenIcon sx={{
+              color: 'rgba(0, 0, 0, 0.54)',
+            }}
+             fontSize="large" />}
           </IconButton>
           <Header className='h-4' isLogin={true} user={user} setSearch={setSearch} />
         </Toolbar>
+        <Divider />
       </AppBar>
       <Drawer variant="permanent" open={open}>
         <DrawerHeader>
@@ -149,7 +169,7 @@ export default function MiniDrawer({ children }) {
       </Drawer>
       <Box component="main" sx={{
         flexGrow: 1, p: 3,
-        backgroundColor: 'rgba(255, 255, 240 , 0.5)',
+        backgroundColor: 'rgba(255, 255, 245 , 0.5)',
       }}>
         <DrawerHeader />
         <div
