@@ -23,13 +23,18 @@ const SideBar = () => {
     // const { id } = useParams();
     const navigate = useNavigate();
     const dispatch = useDispatch();
-    const { course } = location.state;
+    const { currentCourse } = useSelector((state) => state.course);
+    const [course, setCourse] = useState();
     console.log('course', course)
     const [activeButton, setActiveButton] = useState(null);
-
+    useEffect(() => {
+        if (currentCourse) {
+            setCourse(currentCourse.data);
+        }
+    }, [currentCourse])
     const handleButtonClick = (buttonId) => {
         setActiveButton(`${buttonId.toLowerCase()}`);
-        navigate(`${buttonId.toLowerCase().replace(/\s+/g, '/')}`,  { state: { course } });
+        navigate(`${buttonId.toLowerCase().replace(/\s+/g, '/')}`, { state: { course } });
 
 
     };
@@ -177,7 +182,7 @@ const SideBar = () => {
         try {
             const rep = await dispatch(getProgress(course._id))
             console.log(rep.payload)
-            if(rep.payload.success) {
+            if (rep.payload.success) {
                 setModuleDatas(rep.payload.data)
             }
         }
@@ -204,12 +209,19 @@ const SideBar = () => {
             fetchProgress()
         }
     }, [courseId]);
+
+    const handleCourseTitleClick = (courseId) => {
+        navigate(`/learns/${courseId}`)
+    }
     return (
         <div className="">
             <Button onClick={() => navigate(`/course/${courseId}`)} className="flex items-center gap-2">⇽ Back to Courses</Button>
 
-            <div className="w-full bg-transparent h-full flex justify-start items-center py-8 ">
-                <Typography variant='h4' fontSize="bold" sx={{ textTransform: "none" }}>{course.title}</Typography>
+            <div
+                className="w-full bg-transparent h-full flex justify-start items-center py-8 "
+                onClick={() => handleCourseTitleClick(courseId)}
+            >
+                <Typography variant='h4' fontSize="bold" sx={{ textTransform: "none" }}>{course?.title}</Typography>
 
             </div>
             <CustomAccordion expanded={expanded === 'panel'} onChange={handleChange('panel')}>
@@ -221,7 +233,7 @@ const SideBar = () => {
                 >
                     Course Material
                 </CustomAccordionSummary>
-                <CustomAccordionDetails>
+                {/* <CustomAccordionDetails>
                     {modules.map((item, index) => (
                         <CustomButton
                             key={index}
@@ -237,6 +249,25 @@ const SideBar = () => {
 
                         </CustomButton>
                     ))}
+                </CustomAccordionDetails> */}
+                <CustomAccordionDetails>
+                    {modules.map((item, index) => {
+                        const formattedTitle = item.title.length > 8 ? item.title.slice(0, 8) + '...' : item.title;
+                        return (
+                            <CustomButton
+                                key={index}
+                                fullWidth
+                                onClick={() => handleModuleItemClick(item.index, item)}
+                                isActive={activeButton === item.index}>
+                                <Circle sx={{
+                                    color: moduleDatas[index]?.status === 'completed' ? 'green' : 'transparent',
+                                    fontSize: '16px',
+                                    marginRight: '8px'
+                                }} />
+                                {`Module ${index + 1}  ${formattedTitle}`}
+                            </CustomButton>
+                        );
+                    })}
                 </CustomAccordionDetails>
             </CustomAccordion>
             <CustomButton1 onClick={() => handleButtonClick("assignments")} isActive={activeButton === 'assignments'}>Grades</CustomButton1>

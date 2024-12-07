@@ -52,6 +52,7 @@ const FileUpload = ({ onFileChange, accept = '.pdf,.doc,.docx,.jpg,.jpeg,.png, .
         '.doc': 'application/msword',
         '.docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
     };
+    const test = '.pdf, .html, .docx';
 
     // Chuyển đổi accept string thành array của allowed MIME types
     const getAllowedTypes = useCallback(() => {

@@ -4,6 +4,8 @@ import Link from '@mui/material/Link';
 import HomeIcon from '@mui/icons-material/Home';
 import { useNavigate } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux';
+import { useEffect, useState } from 'react';
+import { getCourseByID } from '~/store/slices/Course/action';
 
 
 function handleClick(event) {
@@ -17,8 +19,22 @@ export default function Breadcrumb({ courseId, moduleIndex, itemTitle }) {
     const user = useSelector(state => state.auth.user)
     const role = user?.role || 'student';
     const navigate = useNavigate();
-    const {currentCourse} = useSelector(state => state.course)
-
+    const dispatch = useDispatch();
+    const { currentCourse } = useSelector((state) => state.course)
+    const [course, setCourse] = useState(currentCourse);
+    //const [loadCourse, setLoadCourse] = useState(false);
+    // useEffect(() => {
+    //     if (courseId) {
+    //         const fetchData = async () => {
+    //             await dispatch(getCourseByID(courseId));
+    //             if (currentCourse) {
+    //                 console.log('currentCourse', currentCourse);
+    //                 setCourse(currentCourse);
+    //             }
+    //         };
+    //         fetchData();
+    //     }
+    // }, [courseId, dispatch, getCourseByID]);
 
     const handleClick = (path) => {
         let navigatePath = '';
@@ -67,7 +83,7 @@ export default function Breadcrumb({ courseId, moduleIndex, itemTitle }) {
                         onClick={() => handleClick('course')}
                         sx={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}
                     >
-                        {currentCourse?.data.title}
+                        {currentCourse?.data?.title}
                     </Link>
                 )}
 

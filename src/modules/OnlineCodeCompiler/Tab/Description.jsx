@@ -5,18 +5,23 @@ import { Chip, Typography, Box, Card, CardContent } from "@mui/material";
 import { Star, Clock, Code, ArrowUpRight } from 'lucide-react';
 import { useEffect, useState } from "react";
 import { getSubmission } from "~/store/slices/Compile/action";
+import { useParams } from "react-router-dom";
 
 const Description = () => {
+    const { problemId } = useParams();
     const { problem, loading, error, submissions, submission } = useSelector((state) => state.compile);
     const dispatch = useDispatch();
     const [submissionData, setSubmissonData] = useState(submissions.stats);
     useEffect(() => {
         const fetchData = async (req, res, next) => {
-            await dispatch(getSubmission({ problemId: problem?._id }));
-            setSubmissonData(submissions.stats);
+            await dispatch(getSubmission({ problemId: problemId }));
+
         }
         fetchData();
-    }, [submission])
+    }, [submission, problemId])
+    useEffect(() => {
+        setSubmissonData(submissions.stats);
+    }, [submissions])
     console.log("submissionData: ", submissionData);
     //console.log("problem", problem);
     const sanitizedContent = problem?.content

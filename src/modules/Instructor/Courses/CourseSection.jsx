@@ -102,6 +102,7 @@ const CourseSection = ({ state }) => {
             if (state === 'edit' && courseId && mounted) {
                 setIsLoading(true);
                 try {
+                    console.log('courseId:', courseId);
                     await dispatch(getCourseByID(courseId));
 
                 } catch (error) {
@@ -337,7 +338,7 @@ const CourseSection = ({ state }) => {
             <header>
                 <HeaderCourse />
                 <Breadcrumb
-                    courseId={currentCourse?.data?.courseId}
+                    courseId={currentCourse?.data?._id}
                 />
             </header>
 

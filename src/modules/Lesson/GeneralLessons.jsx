@@ -17,8 +17,8 @@ const GeneralLessons = () => {
     const moduleID = localStorage.getItem('moduleId');
     const [isSubmitted, setIsSubmitted] = useState(false);
 
-    console.log('module', moduleID);
-    console.log('course', courseID);
+    //console.log('module', moduleID);
+    //console.log('course', courseID);
     const onQuizSubmit = (result) => {
         setIsSubmitted(result || false);
     }
@@ -74,7 +74,7 @@ const GeneralLessons = () => {
                         <CustomScrollbar className=''>
 
                             <div className="bg-white overflow-y-scroll  h-[calc(100vh-150px)] pt-3 pl-3 pr-3">
-                                <Outlet context={{onQuizSubmit}}/>
+                                <Outlet context={{ onQuizSubmit }} />
                             </div>
                         </CustomScrollbar>
                     </Grid>

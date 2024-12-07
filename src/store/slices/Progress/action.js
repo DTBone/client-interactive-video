@@ -39,7 +39,7 @@ export const updateProgrammingProgress = createAsyncThunk(
     'programming/updateProgrammingProgress',
     async ({ moduleItemId, moduleId, data }, { rejectWithValue }) => {
         try {
-            console.log('data programming', data, moduleItemId, moduleId);
+            //console.log('data programming', data, moduleItemId, moduleId);
             const res = await axiosInstance.put(`/progress/${moduleItemId}/programming`, {
                 progressProgramming: data,
                 moduleId: moduleId,
@@ -72,6 +72,22 @@ export const getProgress = createAsyncThunk(
             const res = await api.get(`/progress`, {
                 params: {
                     courseId
+                }
+            });
+            return res.data;
+        } catch (error) {
+            return rejectWithValue(error || 'Get progress failed');
+        }
+    }
+);
+export const getGradeProgress = createAsyncThunk(
+    'progress/getGradeProgress',
+    async ({ courseId, ids = [] }, { rejectWithValue }) => {
+        try {
+            console.log('ids', ids);
+            const res = await axiosInstance.get(`/progress/${courseId}/grade`, {
+                params: {
+                    ids
                 }
             });
             return res.data;
