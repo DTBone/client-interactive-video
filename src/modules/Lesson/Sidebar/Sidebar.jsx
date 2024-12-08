@@ -1,3 +1,4 @@
+/* eslint-disable react/prop-types */
 import ExpandBtn from "../Button/ExpandBtn"
 import HideBtn from "../Button/HideBtn"
 import { Button, Typography } from "@mui/material";
@@ -11,7 +12,7 @@ import { useLocation } from "react-router-dom";
 
 
 
-const Sidebar = ({ handleSidebarButtonClick, isExpanded, isSubmitted }) => {
+const Sidebar = ({ handleSidebarButtonClick, isExpanded, isSubmitted = false }) => {
     //const { itemId } = useParams();
     // const pathSegments = window.location.pathname.split('/');
     // const itemId = pathSegments[pathSegments.length - 1];
@@ -50,6 +51,7 @@ const Sidebar = ({ handleSidebarButtonClick, isExpanded, isSubmitted }) => {
     }
     useEffect(() => {
         getModuleByModuleId()
+        console.log("render", isSubmitted)
     }, [isExpanded, isSubmitted]);
 
     // if (loading || !currentModule) {

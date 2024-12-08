@@ -20,6 +20,7 @@ const GeneralLessons = () => {
     //console.log('module', moduleID);
     //console.log('course', courseID);
     const onQuizSubmit = (result) => {
+        console.log('result', result);
         setIsSubmitted(result || false);
     }
     const [isExpanded, setIsExpanded] = useState(true);
@@ -33,7 +34,8 @@ const GeneralLessons = () => {
         // if (!currentCourse) {
         //     //dispatch(getCourseById({ courseId: courseId }));
         // }
-    }, [])
+        console.log('submit', isSubmitted)
+    }, [isSubmitted])
     return (
         <div className="h-screen flex flex-col overflow-hidden">
             <header className=' '>
@@ -73,7 +75,7 @@ const GeneralLessons = () => {
                         </section>
                         <CustomScrollbar className=''>
 
-                            <div className="bg-white overflow-y-scroll  h-[calc(100vh-150px)] pt-3 pl-3 pr-3">
+                            <div className="bg-white overflow-y-scroll  h-[calc(100vh-150px)] pt-3 pl-3 pr-3 flex justify-center">
                                 <Outlet context={{ onQuizSubmit }} />
                             </div>
                         </CustomScrollbar>
