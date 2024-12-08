@@ -1,7 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit"
 import { getModuleById } from "../Module/action";
 
-import { getProgrammingProgressByProblemId, updateProgrammingProgress, getProgress, getGradeProgress } from "./action";
+import { getProgrammingProgressByProblemId, updateProgrammingProgress, getProgress, getGradeProgress, getCheckProgress } from "./action";
 
 const progressSlice = createSlice({
     name: 'progress-slice',
@@ -13,6 +13,7 @@ const progressSlice = createSlice({
         moduleProgress: null,
         moduleItemProgress: null,
         grade: {},
+        checkProgress: false,
     },
     reducers: {
         clearProgress: (state) => {
@@ -95,6 +96,19 @@ const progressSlice = createSlice({
                 state.error = null;
             })
             .addCase(getGradeProgress.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
+            .addCase(getCheckProgress.pending, (state, action) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(getCheckProgress.fulfilled, (state, action) => {
+                state.loading = false;
+                state.checkProgress = action.payload.isAllCompleted;
+                state.error = null;
+            })
+            .addCase(getCheckProgress.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload;
             })

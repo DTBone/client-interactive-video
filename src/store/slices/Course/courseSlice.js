@@ -1,4 +1,4 @@
-import { approveCourse, createCourse, getAllCourse, getCourseByID, getCourseByInstructor, updateCourse } from "./action";
+import { approveCourse, createCourse, getAllCourse, getCertificateByCourseId, getCourseByID, getCourseByInstructor, updateCourse } from "./action";
 import { createSlice } from '@reduxjs/toolkit';
 const courseSlice = createSlice({
     name: 'course',
@@ -7,6 +7,7 @@ const courseSlice = createSlice({
         currentCourse: null,
         loading: false,
         error: null,
+        certificate: null,
     },
     reducers: {
         clearCurrentCourse: (state) => {
@@ -99,6 +100,18 @@ const courseSlice = createSlice({
                 state.loading = false;
                 state.error = action.payload;
             })
+            .addCase(getCertificateByCourseId.pending, (state, action) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(getCertificateByCourseId.fulfilled, (state, action) => {
+                state.loading = false;
+                state.certificate = action.payload;
+            })
+            .addCase(getCertificateByCourseId.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            });
     },
 });
 export const { clearCurrentCourse, clearError } = courseSlice.actions;

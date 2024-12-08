@@ -85,9 +85,9 @@ function HomeUser({ user, search }) {
             <Typography variant='h2'>
                 Welcome {user.profile?.fullname || 'Guest'}
             </Typography>
-            <Typography variant='h4'>
+            {/* <Typography variant='h4'>
                 Your email is {user.email || 'Not provided'}
-            </Typography>
+            </Typography> */}
 
             <CourseList
                 title={search ? `Search results for "${search}"` : 'Recent courses'}

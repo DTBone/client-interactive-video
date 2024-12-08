@@ -84,12 +84,13 @@ const Grades = () => {
     }, [grade]);
 
 
-    const getResults = (id) => {
-        if (gradeList) {
+   const getResults = (id) => {
+    if (Array.isArray(gradeList)) {
+        return gradeList.find(item => item.moduleItemId === id);
+    }
+    return undefined; // Trả về undefined nếu gradeList không phải là mảng
+};
 
-            return gradeList.find(item => item.moduleItemId === id);
-        }
-    };
 
     return (
         <div className="pb-6 mb-6">

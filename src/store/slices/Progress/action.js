@@ -97,3 +97,15 @@ export const getGradeProgress = createAsyncThunk(
     }
 );
 
+export const getCheckProgress = createAsyncThunk(
+    'progress/getCheckProgress',
+    async ({ courseId }, { rejectWithValue }) => {
+        try {
+            const res = await axiosInstance.get(`/progress/${courseId}`);
+            return res.data;
+        } catch (error) {
+            return rejectWithValue(error || 'Get progress failed');
+        }
+    }
+)
+
