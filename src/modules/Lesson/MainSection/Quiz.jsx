@@ -78,7 +78,7 @@ const Quiz = () => {
 
     const [isLoading, setIsLoading] = useState(false);
     const location = useLocation();
-    const quizId = location.state.item.quiz;
+    const quizId = location?.state?.item?.quiz || '';
 
     useEffect(() => {
         setIsStarted(false);
@@ -275,8 +275,8 @@ const Quiz = () => {
 
     const question = quiz.questions[currentQuestion];
     const selectedAnswer = selectedAnswers[currentQuestion];
-    const isLastQuestion = currentQuestion === quiz.questions.length - 1;
-    const progress = ((currentQuestion + 1) / quiz.questions.length) * 100;
+    const isLastQuestion = currentQuestion === quiz?.questions?.length - 1;
+    const progress = ((currentQuestion + 1) / quiz?.questions?.length) * 100;
 
     if (isLoading) {
         return (

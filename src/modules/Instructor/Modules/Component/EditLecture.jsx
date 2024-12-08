@@ -218,7 +218,7 @@ const EditLecture = ({ moduleItem }) => {
 
     return (
         <div>
-            <Paper elevation={0} className=" space-y-6">
+            <Paper elevation={0} className=" space-y-6 mb-6 pb-6">
                 <TextField
                     fullWidth
                     label="Title"
