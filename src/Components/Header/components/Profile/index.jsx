@@ -28,7 +28,7 @@ export default function AccountMenu({ user }) {
   const socket = socketService.connect('http://localhost:3000')
   const [notificationAnchorEl, setNotificationAnchorEl] = React.useState(null);
   const notificationOpen = Boolean(notificationAnchorEl);
-  
+
 
   const handleNotificationClick = (event) => {
     setNotificationAnchorEl(event.currentTarget);
@@ -77,7 +77,7 @@ export default function AccountMenu({ user }) {
       const response = await authService.logout();
       if (response.status === 'success') {
         // dispatch(logout());
-        navigate('/home');
+        navigate('/signin');
       }
     }
     catch (error) {

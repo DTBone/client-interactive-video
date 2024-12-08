@@ -19,7 +19,7 @@ import {
 } from '@mui/material';
 import { TimerOutlined, CheckCircle, Cancel } from '@mui/icons-material';
 import { useDispatch } from "react-redux";
-import {getQuizById, submitQuiz} from "~/store/slices/Quiz/action.js";
+import { getQuizById, submitQuiz } from "~/store/slices/Quiz/action.js";
 import { useLocation } from 'react-router-dom';
 import { useOutletContext } from 'react-router-dom';
 
@@ -64,7 +64,7 @@ const Quiz = () => {
     });
     const [isLoading, setIsLoading] = useState(false);
     const location = useLocation();
-    const quizId = location.state.item.quiz;
+    const quizId = location?.state?.item?.quiz || '';
 
     useEffect(() => {
         setCurrentQuestion(0);
@@ -128,7 +128,7 @@ const Quiz = () => {
                         ...prev,
                         [currentQuestion]: prev[currentQuestion].filter((answer) => answer !== event.target.value)
                     };
-                } else { 
+                } else {
                     return {
                         ...prev,
                         [currentQuestion]: [...currentAnswers, event.target.value]
@@ -141,14 +141,14 @@ const Quiz = () => {
                 };
             }
         });
-    
-            
+
+
     };
 
     const handleSubmit = async () => {
         setIsLoading(true);
-        const result = await dispatch(submitQuiz({answers: Object.entries(selectedAnswers).map(([, value]) => value), timeSpent:quiz.duration - timeLeft , quizId}));
-        if(result.payload.success){
+        const result = await dispatch(submitQuiz({ answers: Object.entries(selectedAnswers).map(([, value]) => value), timeSpent: quiz.duration - timeLeft, quizId }));
+        if (result.payload.success) {
             setScore(result.payload.data.score);
             setIsPassed(result.payload.data.passed);
             setIsSubmitted(true);
@@ -164,10 +164,10 @@ const Quiz = () => {
         setIsLoading(false);
     };
 
-    const question = quiz.questions[currentQuestion];
+    const question = quiz?.questions ? [currentQuestion] : null;
     const selectedAnswer = selectedAnswers[currentQuestion];
-    const isLastQuestion = currentQuestion === quiz.questions.length - 1;
-    const progress = ((currentQuestion + 1) / quiz.questions.length) * 100;
+    const isLastQuestion = currentQuestion === quiz?.questions?.length - 1;
+    const progress = ((currentQuestion + 1) / quiz?.questions?.length) * 100;
 
     return (
         <Container maxWidth="md" sx={{ py: 4 }}>
@@ -227,37 +227,37 @@ const Quiz = () => {
                     ) : (
                         <Stack spacing={3}>
                             <Typography variant="h6">
-                                Question {currentQuestion + 1} of {quiz.questions.length}
+                                Question {currentQuestion + 1} of {quiz?.questions?.length}
                             </Typography>
                             <Typography variant="body1" sx={{
                                 color: 'text.secondary',
                                 fontStyle: 'italic'
                             }}>
-                            {question.type === 'multiple-choice' && '(Select all that apply)'}
-                            {question.type === 'only-choice' && '(Select one)'}
-                            {question.type === 'true-false' && '(True or False)'}
+                                {question?.type === 'multiple-choice' && '(Select all that apply)'}
+                                {question?.type === 'only-choice' && '(Select one)'}
+                                {question?.type === 'true-false' && '(True or False)'}
                             </Typography>
                             <Typography variant="body1">
-                                {question.content} 
+                                {question?.content}
                             </Typography>
-                            {(question.type === 'only-choice' || question.type === 'true-false') && (
+                            {(question?.type === 'only-choice' || question?.type === 'true-false') && (
                                 <RadioGroup
-                                value={selectedAnswer || ''}
-                                onChange={handleAnswerSelect}
-                            >
-                                <Stack spacing={2}>
-                                    {question.answers.map((answer) => (
-                                        <FormControlLabel
-                                            key={answer._id}
-                                            value={answer._id}
-                                            control={<Radio />}
-                                            label={answer.content}
-                                        />
-                                    ))}
-                                </Stack>
-                            </RadioGroup>
+                                    value={selectedAnswer || ''}
+                                    onChange={handleAnswerSelect}
+                                >
+                                    <Stack spacing={2}>
+                                        {question.answers.map((answer) => (
+                                            <FormControlLabel
+                                                key={answer._id}
+                                                value={answer._id}
+                                                control={<Radio />}
+                                                label={answer.content}
+                                            />
+                                        ))}
+                                    </Stack>
+                                </RadioGroup>
                             )}
-                            {question.type === 'multiple-choice' && (
+                            {question?.type === 'multiple-choice' && (
                                 <Stack spacing={2}>
                                     {question.answers.map((answer) => (
                                         <FormControlLabel
@@ -279,7 +279,7 @@ const Quiz = () => {
                 </CardContent>
 
                 <CardActions sx={{ justifyContent: 'space-between', p: 2 }}>
-                    { (
+                    {(
                         <>
                             <Button
                                 variant="outlined"
@@ -301,7 +301,7 @@ const Quiz = () => {
                                 <Button
                                     variant="contained"
                                     onClick={() => setCurrentQuestion(prev => prev + 1)}
-                                    disabled={!selectedAnswer || currentQuestion === quiz.questions.length - 1}  
+                                    disabled={!selectedAnswer || currentQuestion === quiz.questions.length - 1}
                                     color="primary"
                                 >
                                     Next

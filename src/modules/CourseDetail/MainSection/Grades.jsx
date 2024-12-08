@@ -18,11 +18,11 @@ const Grades = () => {
 
     const navigate = useNavigate();
     const dispatch = useDispatch();
-    const handleQuizClick = (assignmentId, moduleID) => {
-        navigate(`/learn/${courseID}/programming/${moduleID.toLowerCase().replace(/\s+/g, '/')}/${assignmentId.toLowerCase().replace(/\s+/g, '-')}`);
+    const handleQuizClick = (moduleID) => {
+        navigate(`/learns/lessons/quiz/${moduleID.toLowerCase().replace(/\s+/g, '/')}`);
     };
     const handleProgrammingClick = (problemId) => {
-        navigate(`/learn/${courseId}/programming/${problemId}`);
+        navigate(`/learns/lessons/programming/${problemId.toLowerCase().replace(/\s+/g, '/')}`);
     }
 
 
@@ -84,12 +84,12 @@ const Grades = () => {
     }, [grade]);
 
 
-   const getResults = (id) => {
-    if (Array.isArray(gradeList)) {
-        return gradeList.find(item => item.moduleItemId === id);
-    }
-    return undefined; // Trả về undefined nếu gradeList không phải là mảng
-};
+    const getResults = (id) => {
+        if (Array.isArray(gradeList)) {
+            return gradeList.find(item => item.moduleItemId === id);
+        }
+        return undefined; // Trả về undefined nếu gradeList không phải là mảng
+    };
 
 
     return (
@@ -123,8 +123,8 @@ const Grades = () => {
                                                 <div
                                                     onClick={() =>
                                                         item.type === 'quiz'
-                                                            ? handleQuizClick(item.title, item.module)
-                                                            : handleProgrammingClick(item.title)
+                                                            ? handleQuizClick(item._id)
+                                                            : handleProgrammingClick(item._id)
                                                     }
                                                     className="text-blue-600 font-medium hover:underline"
                                                 >

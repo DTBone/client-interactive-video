@@ -1,10 +1,11 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { List, ListItem, ListItemText, ListItemIcon, styled } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { Home, Message } from "@mui/icons-material"; // Import các icon từ MUI
 import SettingsIcon from '@mui/icons-material/Settings';
 import FolderSharedIcon from '@mui/icons-material/FolderShared';
 import LogoutIcon from '@mui/icons-material/Logout';
+import Person3Icon from '@mui/icons-material/Person3';
 
 const StyledList = styled(List)(({ theme }) => ({
     // width: "250px", // Tăng chiều rộng
@@ -44,8 +45,8 @@ const MenuList = () => {
     const menuItems = [
         { id: "course", label: "Course Management", path: "/instructor/course-management", icon: <Home /> },
         { id: "messages", label: "Messages", path: "/chat", icon: <Message /> },
-        { id: "settings", label: "Settings", path: "/instructor/settings", icon: < SettingsIcon /> },
-        { id: "profile", label: "Profile", path: "/instructor/profile", iocn: <FolderSharedIcon /> },
+        { id: "profile", label: "Profile", path: "/instructor/settings", icon: < Person3Icon /> },
+        // { id: "profile", label: "Profile", path: "/instructor/profile", iocn: <Person3Icon /> },
         { id: "logout", label: "Logout", path: "/logout", icon: <LogoutIcon /> },
     ];
 
