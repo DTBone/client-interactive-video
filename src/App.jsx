@@ -43,6 +43,7 @@ import { clearState } from './store/slices/Auth/authSlice';
 import ListStudent from './modules/Instructor/Statistical/ListStudent';
 import ModuleSection from './modules/Instructor/Modules/ModuleSection';
 import Module from './modules/CourseDetail/MainSection/Modules/Module';
+
 import EditModule from './modules/Instructor/Modules/MainSection/EditModule';
 import EditModuleItem from './modules/Instructor/Modules/MainSection/EditModuleItem';
 import NewModule from './modules/Instructor/Modules/MainSection/NewModule';
@@ -54,6 +55,7 @@ import MainSection from './modules/Instructor/Modules/MainSection/MainSection';
 import Blogs from "~/modules/User/Blogs/index.jsx";
 import HomeIntructor from './modules/Instructor/HomeIntructor';
 import HTMLEditor from './testFile';
+import CourseCertificate from './modules/CourseDetail/CourseCertificate ';
 function App() {
   const dispatch = useDispatch();
   // const navigate = useNavigate();
@@ -292,7 +294,15 @@ function App() {
         {/* Catch all route */}
         <Route path="*" element={<Navigate to="/error" replace />} />
         <Route path='/test' element={<HTMLEditor />} />
+
+        <Route path="/certificate/:courseId" element={
+          <ProtectedRoute allowedRoles={['student']}>
+            <CourseCertificate />
+          </ProtectedRoute>
+        } />
       </Routes>
+
+
 
     </div>
   );

@@ -112,3 +112,15 @@ export const enrollCourse = createAsyncThunk(
         }
     }
 )
+
+export const getCertificateByCourseId = createAsyncThunk(
+    'course/getCertificateByCourseId',
+    async ({ courseId }, { rejectWithValue }) => {
+        try {
+            const { data } = await api.get(`/learns/${courseId}/certificate`);
+            return data;
+        } catch (error) {
+            return rejectWithValue(error.message);
+        }
+    }
+)
