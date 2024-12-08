@@ -175,12 +175,11 @@ const SideBar = () => {
     const [modules, setModules] = useState(useSelector(state => state.module.modules) || []);
     const { courseId, moduleId } = useParams();
     const [moduleDatas, setModuleDatas] = useState([]);
-    console.log('local', courseId, moduleId);
     localStorage.setItem('courseId', courseId)
     localStorage.setItem('moduleId', moduleId)
     const fetchProgress = async () => {
         try {
-            const rep = await dispatch(getProgress(course._id))
+            const rep = await dispatch(getProgress(courseId))
             console.log(rep.payload)
             if (rep.payload.success) {
                 setModuleDatas(rep.payload.data)
@@ -204,6 +203,7 @@ const SideBar = () => {
                 console.log(e)
             }
         }
+        console.log(courseId)
         if (courseId) {
             fetchData()
             fetchProgress()
