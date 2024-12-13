@@ -56,7 +56,8 @@ const DrawerHeader = styled('div')(({ theme }) => ({
 }));
 
 const AppBar = styled(MuiAppBar, {
-  shouldForwardProp: (prop) => prop !== 'open',})(({ theme }) => ({
+  shouldForwardProp: (prop) => prop !== 'open',
+})(({ theme }) => ({
   zIndex: theme.zIndex.drawer + 1,
   transition: theme.transitions.create(['width', 'margin'], {
     easing: theme.transitions.easing.sharp,
@@ -96,14 +97,14 @@ export default function MiniDrawer({ children }) {
     console.log(localUser);
     user = localUser ? JSON.parse(localUser) : null;
   }
-  
+
   // Re-run if `userId` changes
   useEffect(() => {
     const fetchUser = async () => {
       try {
         const data = await userService.getUserById(userId, token);
-        localStorage.setItem('user', JSON.stringify(data)); 
-         // Set the user data
+        localStorage.setItem('user', JSON.stringify(data));
+        // Set the user data
       } catch (err) {
         setError(err.message);
       }
@@ -120,14 +121,14 @@ export default function MiniDrawer({ children }) {
   // };
   return (
     <Box sx={{ display: 'flex' }}>
-      <ErrorModal error={error}/>
+      <ErrorModal error={error} />
       <CssBaseline />
-      <AppBar position="fixed" open={open} 
-      sx={{
-        backgroundColor: '#C5FFFF',
-        boxShadow: 'none',
-        backgroundSize: 'cover',
-      }}
+      <AppBar position="fixed" open={open}
+        sx={{
+          backgroundColor: '#C5FFFF',
+          boxShadow: 'none',
+          backgroundSize: 'cover',
+        }}
       >
         <Toolbar sx={
           {
@@ -136,7 +137,7 @@ export default function MiniDrawer({ children }) {
             alignItems: 'center',
             padding: '0 0px',
             height: '80px',
-            backgroundColor: '#C2E4F0',
+            backgroundColor: '#fffffa',
             boxShadow: 'none',
           }
         }>
@@ -147,7 +148,7 @@ export default function MiniDrawer({ children }) {
             edge="start"
             sx={{
               marginRight: 2,
-              
+
             }}
           >
             {!open ? <MenuIcon sx={{
@@ -155,7 +156,7 @@ export default function MiniDrawer({ children }) {
             }} fontSize="large" /> : <MenuOpenIcon sx={{
               color: 'rgba(0, 0, 0, 0.54)',
             }}
-             fontSize="large" />}
+              fontSize="large" />}
           </IconButton>
           <Header className='h-4' isLogin={true} user={user} setSearch={setSearch} />
         </Toolbar>
@@ -173,15 +174,15 @@ export default function MiniDrawer({ children }) {
       }}>
         <DrawerHeader />
         <div
-        style={{
-          // height: 'calc(100vh - 130px)',
-          height: 'auto',
-          width: '100%',
-          transform: open == true ? 'translateX(0)' : 'translateX(0)',
-          transition: 'all 0.5s',
-        }}
+          style={{
+            // height: 'calc(100vh - 130px)',
+            height: 'auto',
+            width: '100%',
+            transform: open == true ? 'translateX(0)' : 'translateX(0)',
+            transition: 'all 0.5s',
+          }}
         >
-        {React.cloneElement(children, { user, search } )}
+          {React.cloneElement(children, { user, search })}
         </div>
       </Box>
     </Box>

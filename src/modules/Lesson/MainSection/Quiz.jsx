@@ -164,7 +164,7 @@ const Quiz = () => {
         if (result.payload.success) {
             setQuizProgress(result.payload.data.moduleItemProgress);
             setScore(result.payload.data.currentScore);
-            setIsPassed(result.payload.data.moduleItemProgress.result.quiz.score >= quiz.passingScore);
+            setIsPassed(result.payload.data.moduleItemProgress?.result.quiz.score >= quiz.passingScore);
             setIsSubmitted(true);
             if (onQuizSubmit) {
                 console.log('onQuizSubmit', onQuizSubmit);
@@ -301,50 +301,50 @@ const Quiz = () => {
                     boxShadow: 3
 
                 }}>
-                <QuizOutlined sx={{ fontSize: 100, color: 'primary.main', m: 2 }} />
-                <Typography>Start Quiz</Typography>
-                <Box>
-                    <Typography variant="h5" gutterBottom>
-                        This quiz contains {quiz.totalQuestions} questions.
-                    </Typography>
-                    <Typography variant="h5" gutterBottom>
-                        Time limit: {formatTime(quiz.duration)}
-                    </Typography>
-                    <Typography variant="h5">
-                        Passing score: {quiz.passingScore}%
-                    </Typography>
-                    {quizProgress?.status === 'completed' && (
-                        <Typography variant="h5" color='success' sx={{ mt: 2 }} gminBottom>
-                            Your highest score: {quizProgress?.result.quiz.score.toFixed(1) || '0'}%
+                    <QuizOutlined sx={{ fontSize: 100, color: 'primary.main', m: 2 }} />
+                    <Typography>Start Quiz</Typography>
+                    <Box>
+                        <Typography variant="h5" gutterBottom>
+                            This quiz contains {quiz.totalQuestions} questions.
                         </Typography>
-                    )}
-                </Box>
-                <Box>
-                    
-                    {(quizProgress?.status === 'completed' || quizProgress?.status === 'in-progress') ? (
-                        <Box sx={{
-                            display: 'flex',
-                            gap: 2,
-                        }}>
-                        <Button onClick={handleRemakeQuiz} variant="outlined" color="primary">
-                            Remake Quiz
-                        </Button>
-                        <Button onClick={() => {
-                            setIsReviewing(true)
-                            setIsButton(true)
-                            handleStartQuiz()
-                        }} variant="contained" color="primary">
-                            Review Quiz
-                        </Button>
+                        <Typography variant="h5" gutterBottom>
+                            Time limit: {formatTime(quiz.duration)}
+                        </Typography>
+                        <Typography variant="h5">
+                            Passing score: {quiz.passingScore}%
+                        </Typography>
+                        {quizProgress?.status === 'completed' && (
+                            <Typography variant="h5" color='success' sx={{ mt: 2 }} gminBottom>
+                                Your highest score: {quizProgress?.result.quiz.score.toFixed(1) || '0'}%
+                            </Typography>
+                        )}
                     </Box>
-                    ): (
-                        <Button onClick={handleStartQuiz} variant="contained" color="primary">
-                        Start Quiz
-                        </Button>
-                    )}
+                    <Box>
 
+                        {(quizProgress?.status === 'completed' || quizProgress?.status === 'in-progress') ? (
+                            <Box sx={{
+                                display: 'flex',
+                                gap: 2,
+                            }}>
+                                <Button onClick={handleRemakeQuiz} variant="outlined" color="primary">
+                                    Remake Quiz
+                                </Button>
+                                <Button onClick={() => {
+                                    setIsReviewing(true)
+                                    setIsButton(true)
+                                    handleStartQuiz()
+                                }} variant="contained" color="primary">
+                                    Review Quiz
+                                </Button>
+                            </Box>
+                        ) : (
+                            <Button onClick={handleStartQuiz} variant="contained" color="primary">
+                                Start Quiz
+                            </Button>
+                        )}
+
+                    </Box>
                 </Box>
-            </Box>
             )}
 
             {isStarted && (
@@ -418,8 +418,8 @@ const Quiz = () => {
                                         renderQuestion()
                                     )}
                                 </CardContent>
-                                    {isButton && (
-                                        <CardActions sx={{ justifyContent: 'space-between', p: 2 }}>
+                                {isButton && (
+                                    <CardActions sx={{ justifyContent: 'space-between', p: 2 }}>
                                         <Button
                                             variant="outlined"
                                             onClick={() => setCurrentQuestion(prev => prev - 1)}
@@ -447,8 +447,8 @@ const Quiz = () => {
                                             </Button>
                                         )}
                                     </CardActions>
-                                    )}
-                                
+                                )}
+
                             </Card>
                         </Grid>
                         {/* Overview */}
@@ -463,19 +463,19 @@ const Quiz = () => {
                                         flexDirection: 'row',
                                         justifyContent: 'space-between',
                                     }}>
-                                    <Button
-                                        variant="contained"
-                                        onClick={() => handleRemakeQuiz()}
-                                        sx={{ mb: 2 }}
-                                    >
-                                        Remake Quiz 
-                                    </Button>
-                                    <Typography variant="subtitle1" gutterBottom>
-                                        Last score: {quizProgress?.result.quiz.score.toFixed(1) || '0'}%
-                                    </Typography>
+                                        <Button
+                                            variant="contained"
+                                            onClick={() => handleRemakeQuiz()}
+                                            sx={{ mb: 2 }}
+                                        >
+                                            Remake Quiz
+                                        </Button>
+                                        <Typography variant="subtitle1" gutterBottom>
+                                            Last score: {quizProgress?.result.quiz.score.toFixed(1) || '0'}%
+                                        </Typography>
                                     </Box>
                                 )}
-                                
+
 
                                 <List>
                                     {quiz.questions.map((q, index) => (
