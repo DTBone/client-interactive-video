@@ -6,9 +6,10 @@ import RouteIcon from '@mui/icons-material/Route';
 import MailIcon from '@mui/icons-material/Mail';
 import RateReviewIcon from '@mui/icons-material/RateReview';
 import List from '@mui/material/List';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import HomeIcon from '@mui/icons-material/Home';
 import { useNavigate } from 'react-router-dom';
+import { Search } from '@mui/icons-material';
 function ListButton() {
     const navigate = useNavigate();
     const user = localStorage.getItem('user');
@@ -40,7 +41,7 @@ function ListButton() {
       },
       {
         text: 'Blogs',
-        icon: <RateReviewIcon key={0} fontSize='large' color='primary'/>,
+        icon: <Search key={0} fontSize='large' color='primary'/>,
         url: '/blogs'
       }
     ]
@@ -61,6 +62,10 @@ function ListButton() {
         }
 
     }
+    useEffect(() => {
+        setOpened(list.find(e => e.url == url) ? list.findIndex(e => e.url == url) : 0);
+    }, [url]);
+
     return ( 
         <List>
           {list.map((text, index) => (

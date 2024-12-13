@@ -39,7 +39,8 @@ function ForgetPassword() {
             }   
         }
         catch (error) {
-            setError(error.message + Date.now().toString().slice(-4));
+            console.log(error);
+            setError(error.response.data.error + ' ' + Date.now().toString().slice(-4));
             setLoading(false);
         }
         

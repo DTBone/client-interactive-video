@@ -6,7 +6,9 @@ import AvatarProfile from './components/Profile';
 import logo from '../../assets/logo_codechef.png';
 import { SearchIcon } from 'lucide-react';
 import { TextField, InputAdornment } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
 function Header({isLogin, user, setSearch }) {
+    const navigate = useNavigate();
     if (!isLogin) {
         isLogin = false;
     }
@@ -24,6 +26,7 @@ function Header({isLogin, user, setSearch }) {
 
       const handleSearchChange = (value) => {
           setSearch(value);
+          navigate('/blogs');
       }
       
       const handleClick = () => {
@@ -46,6 +49,8 @@ function Header({isLogin, user, setSearch }) {
                             (e) => {
                                 if (e.key === 'Enter') {
                                     handleSearchChange(e.target.value);
+                                    e.target.value = '';
+                                    e.target.blur();
                                 }
                             }
                         }

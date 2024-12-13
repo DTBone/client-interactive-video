@@ -27,7 +27,7 @@ function Illustration() {
     const [loading, setLoading] = useState(false);
     const { problem, compile, error } = useSelector(state => state.compile);
     const [errorState, setErrorState] = useState(null);
-    const codeExecute = problem.codeFormat.find(format => format.language === userLang).codeExecute;
+    const codeExecute = problem.codeFormat.find(format => format.language === userLang)?.codeExecute;
 
     const generateChartCode = async () => {
         setLoading(true);

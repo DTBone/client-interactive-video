@@ -99,6 +99,7 @@ function RoadmapForm({ onGenerateRoadmap, isLoading }) {
         timeCommitment: '',
         additionalInfo: ''
     });
+    const [error, setError] = useState(null);
 
     const handleChange = (event) => {
         const { name, value } = event.target;
@@ -123,9 +124,34 @@ function RoadmapForm({ onGenerateRoadmap, isLoading }) {
             }));
         }
     };
+    const validateForm = () => {
+        if (!formData.learningGoal) {
+            setError('Please select your learning goal');
+            return false;
+        }
+
+        if (!formData.timeCommitment) {
+            setError('Please enter your time commitment');
+            return false;
+        }
+        if (isNaN(formData.timeCommitment)) {
+            setError('Time commitment must be a number');
+            return false;
+        }
+        // time commitment must be between 1 and 168 hours
+        if (formData.timeCommitment < 1 || formData.timeCommitment > 168) {
+            setError('Time commitment must be between 1 and 168 hours');
+            return false;
+        }
+        return true
+
+    }
 
     const handleSubmit = (event) => {
         event.preventDefault();
+        if (!validateForm()) {
+            return;
+        }
         onGenerateRoadmap(formData);
     };
 
@@ -281,7 +307,7 @@ function RoadmapForm({ onGenerateRoadmap, isLoading }) {
                     {/* Time Commitment Section */}
                     <Box>
                         <Typography variant="h6" gutterBottom sx={{ color: '#333' }}>
-                            Time Commitment
+                            Time Commitment (hours/week)
                             <Chip label="Required" sx={{
                                 ml: 1,
                             }} color="error" size="small" />
@@ -326,7 +352,13 @@ function RoadmapForm({ onGenerateRoadmap, isLoading }) {
                             }}
                         />
                     </Box>
-
+                    
+                        {/* Error Message */}
+                        {error && (
+                            <Typography variant="body2" sx={{ color: 'error.main' }}>
+                                {error}
+                            </Typography>
+                        )}
                     <Button
                         type="submit"
                         variant="contained"

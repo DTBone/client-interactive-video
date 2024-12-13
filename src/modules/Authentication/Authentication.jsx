@@ -54,6 +54,16 @@ function Login() {
             setMessage('Please fill in all fields');
             return false;
         }
+        // Check fullname have no number and special character
+        if ((/[^a-zA-Z\s]/).test(fullname)) {
+            setMessage('Full name must not contain numbers or special characters');
+            return false;
+        }
+        // Check username have no space
+        if ((/\s/).test(formData.username)) {
+            setMessage('Username must not contain space');
+            return false;
+        }
         if (!(/^[^\s@]+@[^\s@]+\.[^\s@]+$/).test(email)) {
             setMessage('Invalid email');
             return false;
