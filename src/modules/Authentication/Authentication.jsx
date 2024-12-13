@@ -33,7 +33,19 @@ function Login() {
         password: '',
         confirmPassword: '',
     });
+    const [messages, setMessages] = useState({
+        fullname: '',
+        email: '',
+        password: '',
+        confirmPassword: '',
+    });
     const [captchaToken, setCaptchaToken] = useState(null);
+
+    const handleSignup = () => {
+        setIsLogin(!isLogin);
+        clearForm();
+        console.log('handleSignup', formData);
+    }
 
     const handleInputChange = (e) => {
         setFormData({
@@ -50,43 +62,67 @@ function Login() {
     const validationRegister = () => {
         const { fullname, email, password, confirmPassword } = formData;
 
-        if (!fullname || !email || !password || !confirmPassword) {
-            setMessage('Please fill in all fields');
+        // Kiểm tra và cập nhật các message tương ứng
+        if (!isLogin) {
+            if (!fullname) {
+                setMessages({ ...messages, fullname: 'Please enter your full name' });
+                return false;
+            }
+            if (password !== confirmPassword) {
+                setMessages({ ...messages, confirmPassword: 'Password and Confirm Password do not match' });
+                return false;
+            }
+        }
+
+        if (!isValidEmail(email)) {
+            setMessages({ ...messages, email: 'Invalid email' });
             return false;
         }
-        // Check fullname have no number and special character
-        if ((/[^a-zA-Z\s]/).test(fullname)) {
-            setMessage('Full name must not contain numbers or special characters');
-            return false;
-        }
-        // Check username have no space
-        if ((/\s/).test(formData.username)) {
-            setMessage('Username must not contain space');
-            return false;
-        }
-        if (!(/^[^\s@]+@[^\s@]+\.[^\s@]+$/).test(email)) {
-            setMessage('Invalid email');
-            return false;
-        }
+
         if (password.length < 8) {
-            setMessage('Password must be at least 8 characters');
+            setMessages({ ...messages, password: 'Password must be at least 8 characters' });
             return false;
         }
-        if (!(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>])[a-zA-Z\d!@#$%^&*(),.?":{}|<>]{8,}$/).test(password)) {
-            setMessage('Password must contain at least one uppercase letter, one lowercase letter, one special letter and one number');
+
+        if (!isStrongPassword(password)) {
+            setMessages({ ...messages, password: 'Password must contain at least one uppercase letter, one lowercase letter, one special letter and one number' });
             return false;
         }
-        if (password !== confirmPassword) {
-            setMessage('Password and Confirm Password do not match');
-            return false;
-        }
+
+
+
         return true;
     };
+    const isValidEmail = (email) => {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(email);
+    };
+
+    const isStrongPassword = (password) => {
+        const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>])[a-zA-Z\d!@#$%^&*(),.?":{}|<>]{8,}$/;
+        return passwordRegex.test(password);
+    };
+    const clearForm = () => {
+        setFormData({
+            fullname: '',
+            username: '',
+            email: '',
+            password: '',
+            confirmPassword: ''
+        });
+    };
+
 
     const handleLogin = async (e) => {
         e.preventDefault();
         setMessage(null);
         setLoad(true);
+        if (!validationRegister()) {
+            setMessage('Please enter a valid data')
+            setLoad(false);
+            console.log('Please enter a valid data', messages);
+            return;
+        }
         if (isLogin) {
             try {
                 const credentials = {
@@ -220,11 +256,14 @@ function Login() {
                     <h1 className="font-bold text-3xl text-blue-700 uppercase">
                         {title} to CodeChef
                     </h1>
-                    <form onSubmit={handleLogin} className="w-4/5 h-auto p-5 flex flex-col items-center gap-2 bg-gradient-to-r from-blue-500 to-teal-400 rounded-lg">
+                    {/* <form
+                        onSubmit={handleLogin}
+                        className="w-4/5 h-auto p-5 flex flex-col items-center gap-2 bg-gradient-to-r from-blue-500 to-teal-400 rounded-lg"
+                    >
                         {!isLogin && (
                             <>
                                 <TextField
-                                    required
+                                    // required
                                     name="fullname"
                                     autoComplete="off"
                                     variant="filled"
@@ -259,7 +298,7 @@ function Login() {
                             autoComplete="off"
                             variant="filled"
                             label="Email"
-                            type="email"
+                            // type="email"
                             placeholder="johndoe@gmail.com"
                             onChange={handleInputChange}
                             sx={{
@@ -267,6 +306,8 @@ function Login() {
                                 backgroundColor: 'white',
                                 borderRadius: '5px',
                             }}
+                            helperText={message && 'Invalid email'}
+                            error={!!message}
                         />
                         <TextField
                             required
@@ -296,6 +337,128 @@ function Login() {
                                     backgroundColor: 'white',
                                     borderRadius: '5px',
                                 }}
+                            />
+                        )}
+                        {(message || error) && (
+                            <Typography variant="subtitle1" color="error">
+                                {message || error}
+                            </Typography>
+                        )}
+                        {!isLogin && (
+                            <ReCAPTCHA
+                                sitekey="6Lf2jFcqAAAAAF3yHodwcNcSRXkqWSt0C4bFGnB4"
+                                onChange={setCaptchaToken}
+                            />
+                        )}
+                        <Button
+                            type="submit"
+                            ref={submitBtn}
+                            className="w-full"
+                            variant="contained"
+                            color="secondary"
+                            disabled={load}
+                            sx={{ backgroundColor: 'white', color: 'black' }}
+                        >
+                            {load ? 'Processing...' : title}
+                        </Button>
+                        {isLogin && (
+                            <div className="groupButton self-start text-white">
+                                <Link to="/forgot-password">Forgot Password?</Link>
+                            </div>
+                        )}
+                    </form> */}
+                    <form
+                        onSubmit={handleLogin}
+                        className="w-4/5 h-auto p-5 flex flex-col items-center gap-2 bg-gradient-to-r from-blue-500 to-teal-400 rounded-lg"
+                    >
+                        {!isLogin && (
+                            <>
+                                <TextField
+                                    // required
+                                    name="fullname"
+                                    autoComplete="off"
+                                    variant="filled"
+                                    label="Full name"
+                                    placeholder="John Doe"
+                                    value={formData.fullname}
+                                    onChange={handleInputChange}
+                                    sx={{
+                                        width: '100%',
+                                        backgroundColor: 'white',
+                                        borderRadius: '5px',
+                                    }}
+                                // helperText={message && 'Please enter your full name'}
+                                // error={!!message}
+                                />
+                                <TextField
+                                    // required
+                                    name="username"
+                                    autoComplete="off"
+                                    variant="filled"
+                                    label="User name"
+                                    placeholder="johndoe123"
+                                    value={formData.username}
+                                    onChange={handleInputChange}
+                                    sx={{
+                                        width: '100%',
+                                        backgroundColor: 'white',
+                                        borderRadius: '5px',
+                                    }}
+                                // helperText={message && 'Please enter a valid username'}
+                                // error={!!message}
+                                />
+                            </>
+                        )}
+                        <TextField
+                            // required
+                            name="email"
+                            autoComplete="off"
+                            variant="filled"
+                            label="Email"
+                            placeholder="johndoe@gmail.com"
+                            value={formData.email}
+                            onChange={handleInputChange}
+                            sx={{
+                                width: '100%',
+                                backgroundColor: 'white',
+                                borderRadius: '5px',
+                            }}
+                        // helperText={message && 'Invalid email'}
+                        // error={!!message}
+                        />
+                        <TextField
+                            // required
+                            name="password"
+                            autoComplete="off"
+                            variant="filled"
+                            label="Password"
+                            value={formData.password}
+                            onChange={handleInputChange}
+                            sx={{
+                                width: '100%',
+                                backgroundColor: 'white',
+                                borderRadius: '5px',
+                            }}
+                        // helperText={message}
+                        // error={!!message}
+                        />
+                        {!isLogin && (
+                            <TextField
+                                // required
+                                name="confirmPassword"
+                                variant="filled"
+                                autoComplete="off"
+                                label="Confirm Password"
+
+                                value={formData.confirmPassword}
+                                onChange={handleInputChange}
+                                sx={{
+                                    width: '100%',
+                                    backgroundColor: 'white',
+                                    borderRadius: '5px',
+                                }}
+                            // helperText={message && 'Passwords do not match'}
+                            // error={!!message}
                             />
                         )}
                         {(message || error) && (
@@ -362,7 +525,7 @@ function Login() {
                     <div className="ask">{ask}</div>
                     <div className="switch w-4/5 flex flex-col px-5 py-2 items-center bg-gradient-to-r from-blue-500 to-teal-400 rounded-lg">
                         <Button
-                            onClick={() => setIsLogin(!isLogin)}
+                            onClick={() => handleSignup()}
                             className="w-full"
                             variant="contained"
                             color="secondary"

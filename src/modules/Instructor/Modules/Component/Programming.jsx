@@ -318,12 +318,12 @@ const Programming = () => {
 
         try {
             // Validate the problemData object
-            // await programProblemSchema.validate(problemData, { abortEarly: false });
-            // dispatch(createModuleItemProgramming({ courseId, moduleId, formData: problemData }));
-            // // Submit programming problem
-            // dispatch(toggleRefresh());
-            // showNotice('success', 'Successfully created programming problem');
-            // navigate(`/course-management/${courseId}/module/${moduleId}`);
+            await programProblemSchema.validate(problemData, { abortEarly: false });
+            dispatch(createModuleItemProgramming({ courseId, moduleId, formData: problemData }));
+            // Submit programming problem
+            dispatch(toggleRefresh());
+            showNotice('success', 'Successfully created programming problem');
+            navigate(`/course-management/${courseId}/module/${moduleId}`);
             console.log("Programming problem data:", problemData);
         } catch (error) {
             if (error instanceof Yup.ValidationError) {
