@@ -1,9 +1,9 @@
 /* eslint-disable react/prop-types */
-import { Button, Typography } from '@mui/material';
+import { Button, Divider, Typography } from '@mui/material';
 import { useEffect, useState } from 'react';
 import Course from '~/components/SliderCourses/components/Course';
 
-const CourseList = ({ title, initialCourses, handleClick, hasMore, loading }) => {
+const CourseList = ({ title, initialCourses, handleClick, hasMore = false, loading }) => {
     const [visibleCourses, setVisibleCourses] = useState([]);
     const COURSES_PER_PAGE = 4;
     console.log(initialCourses);
@@ -57,7 +57,7 @@ const CourseList = ({ title, initialCourses, handleClick, hasMore, loading }) =>
                 ))}
             </div>
 
-            {(visibleCourses.length >= COURSES_PER_PAGE) && (
+            {(visibleCourses.length >= COURSES_PER_PAGE && hasMore) && (
                 <div className='flex justify-center mt-4'>
                     <Button
                         variant='contained'
@@ -77,6 +77,11 @@ const CourseList = ({ title, initialCourses, handleClick, hasMore, loading }) =>
                     </Button>
                 </div>
             )}
+            <Divider sx={{
+                width: '100%',
+                marginTop: '20px',
+                marginBottom: '20px'
+            }}/>
         </div>
     );
 };

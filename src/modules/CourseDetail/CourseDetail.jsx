@@ -1,19 +1,21 @@
 import Grid from '@mui/material/Grid';
 import HeaderCourse from '~/Components/Common/Header/HeaderCourse'
 import SideBar from './SideBar/SideBar';
-import { Button, Divider } from '@mui/material';
+import { Button, Divider, Typography } from '@mui/material';
 import { Outlet, useParams } from 'react-router-dom';
 import CustomScrollbar from '~/Components/Common/CustomScrollbar';
 import Breadcrumb from '~/Components/Common/Breadcrumbs/Breadcrumb';
 import { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { getCourseByID } from '~/store/slices/Course/action';
+import { User } from 'lucide-react';
 
 const CourseDetail = () => {
     const courseID = localStorage.getItem('courseId');
     const { courseId } = useParams();
     const dispatch = useDispatch();
     console.log("courseID ", courseId);
+    const user = JSON.parse(localStorage.getItem('user'));
     useEffect(() => {
         if (courseId) {
             const fetchData = async () => {
@@ -23,6 +25,15 @@ const CourseDetail = () => {
             fetchData();
         }
     }, [courseId, dispatch]);
+
+    if (user.enrolled_courses && !user.enrolled_courses.includes(courseId)) {
+        return (
+            <Typography variant='h3' className='text-center mt-5'>
+                You have already enrolled in this course
+            </Typography>
+        )
+
+    }
 
 
     return (

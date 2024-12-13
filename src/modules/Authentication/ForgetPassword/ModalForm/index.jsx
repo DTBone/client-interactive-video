@@ -64,7 +64,7 @@ export default function ModalForm() {
       }
     }
     catch (error) {
-      setError(error.message + Date.now().toString().slice(-4));
+      setError(error.response.data.error + ' ' + Date.now().toString().slice(-4));
     }
   };
 
