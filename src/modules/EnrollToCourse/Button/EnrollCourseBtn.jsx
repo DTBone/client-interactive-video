@@ -26,6 +26,9 @@ const EnrollCourseBtn = ({ course, submitCourse }) => {
         submitCourse(open);
         handleClose();
     }
+    const convertPrice = (price) => {
+        return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    }
 
 
     return (
@@ -34,7 +37,7 @@ const EnrollCourseBtn = ({ course, submitCourse }) => {
                 variant='contained'
                 onClick={handleOpen}
                 sx={{ width: "18rem", height: "4rem", background: "#0048b0" }}>
-                {course.price > 0 ? `Enroll with ${course.price} VND` : 'Enroll For Free Trial '}
+                {course.price > 0 ? `Enroll with ${convertPrice(course.price)} VND` : 'Enroll For Free Trial '}
             </Button>
 
             <Modal

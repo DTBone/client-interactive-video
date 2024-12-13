@@ -10,7 +10,9 @@ export const getAllCourse = createAsyncThunk(
                 params: {
                     page: filter?.page,
                     limit: filter?.limit,
-                    search: filter?.search,
+                    search: filter?.search || '',
+                    level: filter?.level || 'all',
+                    tags: filter?.tags  || [],
                 }
             });
             return data;

@@ -92,7 +92,7 @@ const Lecture = () => {
     };
 
     return (
-        <Paper elevation={3} sx={{ m: 2,
+        <Paper elevation={3} sx={{ m: 2, width: '100%',
             borderRadius: 5, }}>
             <Box sx={{ width: '100%', typography: 'body1' }}>
                 <Typography variant="h5" sx={{ p: 2, fontWeight: 'bold' }}>

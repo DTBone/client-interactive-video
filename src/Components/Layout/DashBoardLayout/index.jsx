@@ -136,7 +136,7 @@ export default function MiniDrawer({ children }) {
             alignItems: 'center',
             padding: '0 0px',
             height: '80px',
-            backgroundColor: '#C2E4F0',
+            backgroundColor: '#F2F6Fd',
             boxShadow: 'none',
           }
         }>

@@ -30,19 +30,20 @@ function PaymentStatus() {
       }
       const navigate = useNavigate();
       const handleClick =async () =>{
-          try{
-              const result = await dispatch(getAllCourse({limit:100}));
-              if(getAllCourse.fulfilled.match(result)){
-                  const courses = result.payload;
-                  const course = courses.find(course => course._id === courseId);
-                  navigate(`/course/${course.courseId}`)
-              }
+        navigate(`/course/${courseId}`)
+        //   try{
+        //       const result = await dispatch(getAllCourse({limit:100}));
+        //       if(result.meta.requestStatus === 'fulfilled'){
+        //           const courses = result.payload.data;
+        //           const course = courses.find(course => course._id === courseId);
+        //           navigate(`/course/${course.courseId}`)
+        //       }
               
-          }
-          catch(e){
-              console.log(e);
-              return;
-          }
+        //   }
+        //   catch(e){
+        //       console.log(e);
+        //       return;
+        //   }
       }
   useEffect(() => {
     const queryParams = new URLSearchParams(location.search);

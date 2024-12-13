@@ -1,5 +1,6 @@
+/* eslint-disable react/prop-types */
 import { useEffect, useState } from "react";
-import { Avatar, Button, TextField, Box, Rating, Paper, Pagination } from "@mui/material";
+import { Avatar, Button, TextField, Box, Rating, Paper, Pagination, Popover, Tooltip } from "@mui/material";
 import Typography from "@mui/material/Typography";
 import { SendSharp, StarOutline } from "@mui/icons-material";
 import moment from 'moment';
@@ -17,7 +18,6 @@ const Reviews = ({ course }) => {
     const [ratingStats, setRatingStats] = useState({ ovg: 0, numReviews: 0 });
     const limit = 5;
     const user = JSON.parse(localStorage.getItem('user'));
-
     useEffect(() => {
         const fetchReviews = async () => {
             try {
@@ -41,7 +41,7 @@ const Reviews = ({ course }) => {
         };
 
         fetchReviews();
-    }, [course._id, page]);
+    }, [course._id, page, dispatch]);
 
     const handleSubmitReview = async () => {
         if (!comment.trim()) return;
@@ -87,10 +87,10 @@ const Reviews = ({ course }) => {
             >
                 <Box sx={{ textAlign: 'center' }}>
                     <Typography variant="h4" sx={{ color: '#CA122C', fontWeight: 'bold' }}>
-                        {course.averageRating && course.averageRating.toFixed(1)}
+                        {ratingStats?.ovg && ratingStats?.ovg.toFixed(1)}
                     </Typography>
                     <Rating
-                        value={course.averageRating}
+                        value={ratingStats?.ovg}
                         readOnly
                         precision={0.1}
                         sx={{ mb: 1 }}
@@ -133,20 +133,27 @@ const Reviews = ({ course }) => {
                             value={rating}
                             onChange={(_, newValue) => setRating(newValue)}
                         />
-                        <Button
-                            variant='contained'
-                            size='small'
-                            onClick={handleSubmitReview}
-                            sx={{
-                                backgroundColor: '#CA122C',
-                                '&:hover': {
-                                    backgroundColor: '#a50f24',
-                                },
-                                height: '35px'
-                            }}
-                        >
-                            <SendSharp />
-                        </Button>
+                        <Tooltip title={(!user.enrolled_courses.includes(course._id)) ? 'You must enroll in course' : 'Submit Review'}placement='top'>
+                            <div >
+                            <Button
+                                variant='contained'
+                                size='small'
+                                disabled={!user.enrolled_courses.includes(course._id) || !comment.trim()}
+                                onClick={handleSubmitReview}
+                                sx={{
+                                    backgroundColor: '#CA122C',
+                                    '&:hover': {
+                                        backgroundColor: '#a50f24',
+                                    },
+                                    height: '35px',
+                                    width: '100%'
+                                }}
+                            >
+                                <SendSharp />
+                                
+                            </Button>
+                            </div>
+                        </Tooltip>
                     </Box>
                 </Box>
             </Box>
