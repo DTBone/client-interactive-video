@@ -108,10 +108,8 @@ function PayChart() {
             }
         };
     
-        if (!payments || payments.length === 0) {
-            fetchPayments();
-        }
-    }, [from, to, dispatch, payments]);
+        fetchPayments();
+    }, [from, to, dispatch]);
     const columns = [
         { field: '_id', headerName: 'ID', width: 200 },
         { field: 'userId', headerName: 'User ID', width: 150 },
@@ -194,7 +192,7 @@ function PayChart() {
                             data: pieData ? pieData : [],
                             highlightScope: { fade: 'global', highlight: 'item' },
                             faded: { innerRadius: 30, additionalRadius: -30, color: 'gray' },
-                            arcLabel: (item) => `${item.value / payments.length * 100}%`,
+                            arcLabel: (item) => `${(item.value / payments.length * 100).toFixed(2)}%`,
                         },
                     ]}
                     height={300}

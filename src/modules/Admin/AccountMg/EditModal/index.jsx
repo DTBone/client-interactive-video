@@ -5,7 +5,7 @@ import {
     Modal, 
     Box, 
     Typography,
-    Grid2 as Grid,
+    Grid,
     TextField,
     Avatar,
     Button,

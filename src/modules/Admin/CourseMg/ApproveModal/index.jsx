@@ -7,7 +7,7 @@ import {
     Typography,
     Button,
     Divider,
-    Grid2 as Grid,
+    Grid,
     Chip,
     List,
     ListItem,

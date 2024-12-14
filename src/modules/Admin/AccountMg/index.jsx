@@ -147,6 +147,7 @@ function AccountManager() {
   };
 
   useEffect(() => {
+    console.log('Fetching users...');
     const getUsers = async () =>{
         const result = await dispatch(getAllAccount(userId));
         if (getAllAccount.fulfilled.match(result)) {
@@ -155,10 +156,8 @@ function AccountManager() {
         else
         	console.log(result.payload.message)
     }
-    if(!users || users.length === 0) {
-        getUsers();
-    }
-    }, [userId, dispatch, openModal, users])
+    getUsers()
+    }, [userId, dispatch, openModal])
 
   return (
     <Box sx={{ height: 600, width: '100%' }}>
