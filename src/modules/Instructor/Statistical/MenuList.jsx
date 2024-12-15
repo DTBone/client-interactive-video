@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { List, ListItem, ListItemText, ListItemIcon, styled } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { Home, Message } from "@mui/icons-material"; // Import các icon từ MUI
@@ -40,20 +40,22 @@ const StyledListItem = styled(ListItem)(({ theme, isActive, isHovered }) => ({
 }));
 
 const MenuList = () => {
-    const [activeButton, setActiveButton] = useState("course");
     const [hoveredButton, setHoveredButton] = useState(null);
     const navigate = useNavigate();
-    console.log("activeButton", activeButton);
-
-    const menuItems = [
-        { id: "course", label: "Course Management", path: "/instructor/course-management", icon: <Home /> },
-        { id: "student", label: "Student Management", path: "/instructor/student-management", icon: < GroupsIcon /> },
-        { id: "messages", label: "Messages", path: "/chat", icon: <Message /> },
-        { id: "profile", label: "Profile", path: "/instructor/settings", icon: < Person3Icon /> },
-        // { id: "profile", label: "Profile", path: "/instructor/profile", iocn: <Person3Icon /> },
-        { id: "logout", label: "Logout", path: "/logout", icon: <LogoutIcon /> },
-    ];
-
+    const course = useSelector((state) => state.course.courses);
+    console.log("course", course);
+    const menuItems = course.map(courseItem => ({
+        id: courseItem._id,
+        label: courseItem.title,
+        path: `course/${courseItem._id}`
+    }));
+    const [activeButton, setActiveButton] = useState(menuItems[0]?.id);
+    useEffect(() => {
+        if (menuItems.length > 0) {
+            const firstItem = menuItems[0];
+            handleItemClick(firstItem);
+        }
+    }, [course])
     const handleItemClick = (item) => {
         setActiveButton(item.id);
         navigate(item.path);

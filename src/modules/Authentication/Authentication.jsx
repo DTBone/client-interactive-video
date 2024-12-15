@@ -432,6 +432,8 @@ function Login() {
                             autoComplete="off"
                             variant="filled"
                             label="Password"
+                            type='password'
+
                             value={formData.password}
                             onChange={handleInputChange}
                             sx={{

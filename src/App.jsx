@@ -56,6 +56,7 @@ import Blogs from "~/modules/User/Blogs/index.jsx";
 import HomeIntructor from './modules/Instructor/HomeIntructor';
 import HTMLEditor from './testFile';
 import CourseCertificate from './modules/CourseDetail/CourseCertificate ';
+import DetailedStatistic from './modules/Instructor/Statistical/DetailedStatistic';
 function App() {
   const dispatch = useDispatch();
   // const navigate = useNavigate();
@@ -224,6 +225,14 @@ function App() {
             <CourseSection state={'edit'} />
           </ProtectedRoute>
         } />
+        <Route path="/instructor/student-management" element={
+          <ProtectedRoute allowedRoles={['instructor', 'admin']}>
+            <ListStudent />
+
+          </ProtectedRoute>
+        } >
+          <Route path="course/:courseId" element={<DetailedStatistic />} />
+        </Route>
         <Route path="/course-management/new-course" element={
           <ProtectedRoute allowedRoles={['instructor', 'admin']}>
             <CourseSection state={'new'} />

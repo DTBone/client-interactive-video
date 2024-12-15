@@ -15,7 +15,7 @@ function handleClick(event) {
 
 }
 
-export default function Breadcrumb({ courseId, moduleIndex, itemTitle }) {
+export default function Breadcrumb({ courseId, moduleIndex, itemTitle, studentManager }) {
     const user = useSelector(state => state.auth.user)
     const role = user?.role || 'student';
     const navigate = useNavigate();
@@ -57,6 +57,9 @@ export default function Breadcrumb({ courseId, moduleIndex, itemTitle }) {
                 navigatePath = role === 'student'
                     ? `/learns/${courseId}/module/${moduleIndex}/${itemTitle}`
                     : `/course-management/${courseId}/module/${moduleIndex}/${itemTitle}`;
+                break;
+            case 'studentManager':
+                navigatePath = '/instructor/student-management';
                 break;
             default:
                 navigatePath = path;
@@ -105,6 +108,17 @@ export default function Breadcrumb({ courseId, moduleIndex, itemTitle }) {
                         {itemTitle}
                     </Typography>
                 )}
+                {
+                    studentManager && (
+                        <Link
+                            color="inherit"
+                            onClick={() => handleClick('studentManager')}
+                            sx={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}
+                        >
+                            Student Management
+                        </Link>
+                    )
+                }
             </Breadcrumbs>
         </div>
     );
