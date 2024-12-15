@@ -7,7 +7,7 @@ import moduleSlice from './slices/Module/moduleSlice';
 import progressSlice from './slices/Progress/progressSlice';
 import moduleItemSlice from './slices/ModuleItem/moduleItemSlice';
 import compileSlice from './slices/Compile/compileSlice';
-
+import studentSlice from './slices/StudentEnrollCourse/StudentSlice';
 
 const appReducer = combineReducers({
     course: courseSlice,
@@ -18,6 +18,7 @@ const appReducer = combineReducers({
     moduleItem: moduleItemSlice,
     progress: progressSlice,
     compile: compileSlice,
+    student: studentSlice
 });
 
 const rootReducer = (state, action) => {
