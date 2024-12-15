@@ -1,5 +1,5 @@
 /* eslint-disable react/prop-types */
-import { Typography } from '@mui/material';
+import { Divider, Typography } from '@mui/material';
 import { Box } from 'lucide-react';
 import { useEffect, useState, useCallback } from 'react';
 import '~/index.css';
@@ -7,7 +7,7 @@ import CourseList from './components/CourseList';
 import { getAllCourse } from "~/store/slices/Course/action.js";
 import { useDispatch, useSelector } from 'react-redux';
 
-function HomeUser({ user, search }) {
+function HomeUser({ user }) {
     const dispatch = useDispatch();
     const [loading, setLoading] = useState(false);
     const [page, setPage] = useState(1);
@@ -16,6 +16,10 @@ function HomeUser({ user, search }) {
     const LOAD_MORE_LIMIT = 4; // Load 4 more courses each time
 
     const [recentCourses, setRecentCourses] = useState([]);
+    const [machineLearningCourses, setMachineLearningCourses] = useState([]);
+    const [javaCourses, setJavaCourses] = useState([]);
+    const [pythonCourses, setPythonCourses] = useState([]);
+    const [webDevelopmentCourses, setWebDevelopmentCourses] = useState([]);
     const countAllCourses = useSelector(state => state.course?.count) || 0;
     if (!user) {
         user = {};
@@ -27,7 +31,6 @@ function HomeUser({ user, search }) {
             const param = {
                 limit,
                 page,
-                search: search ? search : ''
             }
             const result = await dispatch(getAllCourse(param));
 
@@ -42,7 +45,7 @@ function HomeUser({ user, search }) {
         } finally {
             setLoading(false);
         }
-    }, [dispatch, search]);
+    }, [dispatch]);
 
     // Initial load
     useEffect(() => {
@@ -54,9 +57,55 @@ function HomeUser({ user, search }) {
             setRecentCourses(initialCourses);
             setHasMore(initialCourses.length >= INITIAL_LIMIT);
         };
-
         initializeCourses();
-    }, [fetchRecentCourses, search]);
+    }, [fetchRecentCourses]);
+
+    useEffect(() => {
+        const initializeMachineLearningCourses = async () => {
+            const machineLearningCourses = await getCoursesBySearch('Machine Learning'); // Replace 'Machine Learning' with the actual search term for machine learning courses
+            setMachineLearningCourses(machineLearningCourses);
+        }
+        const initializeJavaCourses = async () => {
+            const javaCourses = await getCoursesBySearch('Java '); // Replace 'Java' with the actual search term for Java courses
+            setJavaCourses(javaCourses);
+        }
+        const initializePythonCourses = async () => {
+            const pythonCourses = await getCoursesBySearch('Python'); // Replace 'Python' with the actual search term for Python courses
+            setPythonCourses(pythonCourses);
+        }
+        const initializeWebDevelopmentCourses = async () => {
+            const webDevelopmentCourses = await getCoursesBySearch('Web Development'); // Replace 'Web Development' with the actual search term for Web Development courses
+            setWebDevelopmentCourses(webDevelopmentCourses);
+        }
+
+        initializeJavaCourses();
+        initializePythonCourses();
+        initializeWebDevelopmentCourses();
+        initializeMachineLearningCourses();
+    }, []);
+
+    const getCoursesBySearch = async (search) => {
+        try {
+            setLoading(true);
+            const param = {
+                limit: 4,
+                page: 1,
+                search: search
+            }
+            const result = await dispatch(getAllCourse(param));
+
+            if (getAllCourse.fulfilled.match(result)) {
+                const newCourses = result.payload.data;
+                return newCourses;
+            }
+            return [];
+        } catch (error) {
+            console.error("Error fetching courses:", error);
+            return [];
+        } finally {
+            setLoading(false);
+        }
+    }
 
     const handleLoadMore = async () => {
         if (loading || !hasMore) return;
@@ -90,12 +139,40 @@ function HomeUser({ user, search }) {
             </Typography> */}
 
             <CourseList
-                title={search ? `Search results for "${search}"` : 'Recent courses'}
+                title={'Popular Courses'}
                 initialCourses={recentCourses}
                 handleClick={handleLoadMore}
                 hasMore={hasMore}
                 loading={loading}
             />
+            
+            <CourseList
+                title="Machine Learning"
+                initialCourses={machineLearningCourses}
+                // handleClick={handleLoadMore}
+                loading={loading}
+            />
+            <CourseList
+                title="Java"
+                initialCourses={javaCourses}
+                // handleClick={handleLoadMore}
+                loading={loading}
+            />
+            <CourseList
+                title="Python"
+                initialCourses={pythonCourses}
+                // handleClick={handleLoadMore}
+                loading={loading}
+            />
+            <CourseList
+                title="Web Development"
+                initialCourses={webDevelopmentCourses}
+                // handleClick={handleLoadMore}
+                loading={loading}
+            />
+
+
+
         </div>
     );
 }

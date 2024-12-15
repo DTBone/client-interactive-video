@@ -1,4 +1,5 @@
-﻿import React, { useState } from 'react';
+﻿/* eslint-disable react/prop-types */
+import React, { useEffect, useState } from 'react';
 import {
   Box,
   Card,
@@ -66,26 +67,33 @@ const suggestedTags = [
     'Game Development', 'Mobile Development', 'Desktop Development'
 ];
 
-const CourseDisplay = () => {
-    const dispatch = useDispatch();
-  const [searchTerm, setSearchTerm] = useState('');
+const CourseDisplay = ({search}) => {
+  console.log(search);
+  const dispatch = useDispatch();
+  const [searchTerm, setSearchTerm] = useState(search);
   const [selectedLevel, setSelectedLevel] = useState('all');
   const [currentTag, setCurrentTag] = useState(null);
   const [selectedTags, setSelectedTags] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [courses, setCourses] = useState(coursesExam);
+  const [courses, setCourses] = useState([]);
   const [page, setPage] = useState(1);
   const [error, setError] = useState(null);
   const [inputValue, setInputValue] = useState('');
 
-  const getCourseByFilter = async (limit, page) => {
+  const getCourseByFilter = async (limit, page, search) => {
+    if (search === '' && selectedTags.length === 0) {
+      return;
+    }
     try {
         setLoading(true);
         const param = {
             limit,
             page,
-            search: searchTerm ? searchTerm : ''
+            search: search,
+            level: selectedLevel,
+            tags: selectedTags.join(',')
         }
+        console.log(param);
         const result = await dispatch(getAllCourse(param));
 
         if (getAllCourse.fulfilled.match(result)) {
@@ -103,6 +111,18 @@ const CourseDisplay = () => {
         setLoading(false);
     }
   }
+  useEffect(() => {
+    if (searchTerm === '') {
+      return;
+    }
+    getCourseByFilter(10, 1, searchTerm);
+  }, []);
+
+  useEffect(() => {
+    setSearchTerm(search);
+    getCourseByFilter(10, 1, search);
+  }, [search]);
+
 
   const handleTagChange = (event, newValue) => {
     if (newValue && !selectedTags.includes(newValue)) {
@@ -127,11 +147,11 @@ const handleDeleteTag = (tagToDelete) => {
           size="small"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && getCourseByFilter(10, 1)}
+          onKeyDown={(e) => e.key === 'Enter' && getCourseByFilter(10, 1, searchTerm)}
           InputProps={{
             endAdornment: (
             <>
-              <IconButton onClick={() => getCourseByFilter(10, 1)}>
+              <IconButton onClick={() => getCourseByFilter(10, 1, searchTerm)}>
                 <SearchIcon />
               </IconButton>
               {selectedTags.map((tag, index) => {
