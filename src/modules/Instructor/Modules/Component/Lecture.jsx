@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
     TextField,
     Button,
@@ -41,8 +41,21 @@ const Lecture = () => {
         }
     });
 
-    // State để lưu URL preview video
     const [videoPreview, setVideoPreview] = useState('');
+    const [videoKey, setVideoKey] = useState(0);
+
+    useEffect(() => {
+        console.log('videoPreview: ', videoPreview)
+        // Cleanup URL khi component unmount hoặc file thay đổi
+        return () => {
+            if (videoPreview) {
+                URL.revokeObjectURL(videoPreview);
+            }
+        };
+
+    }, [videoPreview]);
+
+    // State để lưu URL preview video
 
     const handleInputChange = (field) => (event) => {
         setFormData(prev => ({
@@ -96,13 +109,25 @@ const Lecture = () => {
             fileData.append('file', file);
 
             // Tạo URL để preview video
+
+            if (videoPreview) {
+                URL.revokeObjectURL(videoPreview);
+            }
+
             const videoURL = URL.createObjectURL(file);
-            console.log('video URL: ', videoURL)
             setVideoPreview(videoURL);
+            setVideoKey(prevKey => prevKey + 1);
+
 
             setFormData(prev => ({
                 ...prev,
                 file: file
+            }));
+        } else {
+            setVideoPreview(null);
+            setFormData(prev => ({
+                ...prev,
+                file: null,
             }));
         }
     };
@@ -211,6 +236,7 @@ const Lecture = () => {
                 <div>
                     <Box className="mt-4">
                         <video
+                            key={videoKey}
                             ref={videoRef}
                             className="w-full max-h-[400px]"
                             controls

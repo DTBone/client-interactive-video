@@ -51,9 +51,10 @@ const DetailedStatistic = () => {
 
 
     const totalStudents = students?.length;
-    const completedStudents = students?.filter(
-        student => student?.progress.status === 'completed'
-    ).length;
+    const completedStudents = students
+        ?.filter(student =>
+            student?.progress && student.progress.status === 'completed'
+        )?.length || 0;
     const completionPercentage = Math.round(
         (completedStudents / totalStudents) * 100
     );
@@ -119,7 +120,7 @@ const DetailedStatistic = () => {
                                 </TableCell>
                                 <TableCell>{student.user.email}</TableCell>
                                 <TableCell>
-                                    {student.progress.status === 'completed' ? (
+                                    {student?.progress?.status === 'completed' ? (
                                         <Chip
                                             label="Completed"
                                             color="success"
