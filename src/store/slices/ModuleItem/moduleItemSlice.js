@@ -1,5 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { createModuleItemLecture, createModuleItemProgramming, createModuleItemQuiz, createModuleItemSupplement, getModuleItemById } from "./action";
+import { createModuleItemLecture, createModuleItemProgramming, createModuleItemQuiz, createModuleItemSupplement, editLectureByItemId, editProgrammingByItemId, editQuizByItemId, editSupplementByItemId, getModuleItemById } from "./action";
 
 const moduleItemSlice = createSlice({
     name: 'module-item-slice',
@@ -38,6 +38,8 @@ const moduleItemSlice = createSlice({
                 state.loading = false;
                 state.error = action.payload || 'An error occurred';
             })
+
+
             .addCase(createModuleItemLecture.pending, (state) => {
                 state.loading = true;
                 state.error = null;
@@ -51,6 +53,8 @@ const moduleItemSlice = createSlice({
                 state.loading = false;
                 state.error = action.payload;
             })
+
+
             .addCase(createModuleItemQuiz.pending, (state) => {
                 state.loading = true;
                 state.error = null;
@@ -64,6 +68,8 @@ const moduleItemSlice = createSlice({
                 state.loading = false;
                 state.error = action.payload;
             })
+
+
             .addCase(createModuleItemProgramming.pending, (state) => {
                 state.loading = true;
                 state.error = null;
@@ -77,6 +83,8 @@ const moduleItemSlice = createSlice({
                 state.loading = false;
                 state.error = action.payload;
             })
+
+
             //get current module item by id
             .addCase(getModuleItemById.pending, (state) => {
                 state.loading = true;
@@ -88,6 +96,67 @@ const moduleItemSlice = createSlice({
                 state.error = null;
             })
             .addCase(getModuleItemById.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
+
+
+            .addCase(editSupplementByItemId.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(editSupplementByItemId.fulfilled, (state, action) => {
+                state.loading = false;
+                state.currentItem = action.payload;
+                state.error = null;
+            })
+            .addCase(editSupplementByItemId.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
+
+
+            .addCase(editLectureByItemId.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(editLectureByItemId.fulfilled, (state, action) => {
+                state.loading = false;
+                console.log("action: ", action.payload.data);
+                state.currentItem = action.payload.data;
+                state.error = null;
+            })
+            .addCase(editLectureByItemId.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
+
+
+            .addCase(editQuizByItemId.pending, (state, action) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(editQuizByItemId.fulfilled, (state, action) => {
+                state.loading = false;
+                state.currentItem = action.payload;
+                state.error = null;
+            })
+            .addCase(editQuizByItemId.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
+
+
+            .addCase(editProgrammingByItemId.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(editProgrammingByItemId.fulfilled, (state, action) => {
+                state.loading = false;
+                state.currentItem = action.payload;
+                state.error = null;
+            })
+            .addCase(editProgrammingByItemId.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload;
             })

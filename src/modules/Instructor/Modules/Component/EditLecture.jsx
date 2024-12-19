@@ -9,8 +9,8 @@ import { useNavigate, useParams } from 'react-router-dom';
 import FileUpload from './FileUpload';
 import { useNotification } from '~/hooks/useNotification';
 import QuizQuestionForm from './QuizQuestionForm';
-import { createModuleItemLecture } from '~/store/slices/ModuleItem/action';
-import { useDispatch } from 'react-redux';
+import { createModuleItemLecture, editLectureByItemId } from '~/store/slices/ModuleItem/action';
+import { useDispatch, useSelector } from 'react-redux';
 import { toggleRefresh } from '~/store/slices/Module/moduleSlice';
 
 const EditLecture = ({ moduleItem }) => {
@@ -198,17 +198,16 @@ const EditLecture = ({ moduleItem }) => {
                 console.log(`${key}:`, value instanceof File ? value.name : value);
             }
 
-            const res = await dispatch(createModuleItemLecture({
-                courseId,
-                moduleId,
+            const res = await dispatch(editLectureByItemId({
+                itemId: moduleItem._id,
                 formData: submitFormData
             }));
             if (res.error) {
                 showNotice('error', res.error.message);
             } else {
-                showNotice('success', 'Lecture created successfully');
+                showNotice('success', 'Lecture edit successfully');
                 dispatch(toggleRefresh())
-                //navigate(-1);
+                navigate(`/course-management/${courseId}/module/${moduleId}`);
             }
         } catch (error) {
             showNotice('error', error.message || 'Failed to create lecture');
@@ -293,7 +292,7 @@ const EditLecture = ({ moduleItem }) => {
                         onClick={handleSubmit}
                         className="px-6"
                     >
-                        Update Module Item
+                        Edit Lecture
                     </Button>
                 </div>
             </Paper>

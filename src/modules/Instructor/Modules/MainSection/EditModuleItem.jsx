@@ -14,6 +14,7 @@ const EditModuleItem = () => {
     const { currentItem, loading, error } = useSelector((state) => state.moduleItem);
     const [moduleItem, setModuleItem] = useState('');
 
+    console.log('Current Item:', currentItem);
     const moduleItemId = useParams();
     useEffect(() => {
         if (moduleItemId) {

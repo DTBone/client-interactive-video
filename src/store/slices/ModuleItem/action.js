@@ -96,3 +96,84 @@ export const getModuleItemById = createAsyncThunk(
     }
 );
 
+
+export const editSupplementByItemId = createAsyncThunk(
+    'module/moduleItem/editSupplement',
+    async ({ itemId, formData }, { rejectWithValue }) => {
+        try {
+
+            if (!(formData instanceof FormData)) {
+                throw new Error('Invalid form data');
+            }
+
+            const config = {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            };
+
+            const { data } = await axiosInstance.put(
+                `/moduleitem/supplement/${itemId}`,
+                formData,
+                config
+            );
+            //console.log('Response data:', data);
+            return data;
+        } catch (error) {
+            if (error.response && error.response.data) {
+                return rejectWithValue(error.response.data);
+            }
+            return rejectWithValue(error.message);
+        }
+    }
+)
+export const editLectureByItemId = createAsyncThunk(
+    'module/moduleItem/editLecture',
+    async ({ itemId, formData }, { rejectWithValue }) => {
+        try {
+            if (!(formData instanceof FormData)) {
+                throw new Error('Invalid form data');
+            }
+
+            const config = {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            };
+            const { data } = await axiosInstance.put(
+                `/moduleitem/lecture/${itemId}`,
+                formData,
+                config
+            );
+            return data;
+        } catch (error) {
+            if (error.response && error.response.data) {
+                return rejectWithValue(error.response.data);
+            }
+            return rejectWithValue(error.message);
+        }
+    }
+)
+
+export const editQuizByItemId = createAsyncThunk(
+    'module/moduleItem/editQuiz',
+    async ({ itemId, quizData }, { rejectWithValue }) => {
+        try {
+            const { data } = await axiosInstance.put(`/moduleitem/quiz/${itemId}`, quizData);
+            return data;
+        } catch (error) {
+            return rejectWithValue(error.message);
+        }
+    }
+)
+export const editProgrammingByItemId = createAsyncThunk(
+    'module/moduleItem/editProgramming',
+    async ({ itemId, formData }, { rejectWithValue }) => {
+        try {
+            const { data } = await axiosInstance.put(`/moduleitem/programming/${itemId}`, formData);
+            return data;
+        } catch (error) {
+            return rejectWithValue(error.message);
+        }
+    }
+)

@@ -5,7 +5,7 @@ import {
     Button,
     Paper
 } from '@mui/material';
-import { createModuleItemSupplement } from '~/store/slices/ModuleItem/action';
+import { createModuleItemSupplement, editSupplementByItemId } from '~/store/slices/ModuleItem/action';
 import { useDispatch } from 'react-redux';
 import { toggleRefresh } from '~/store/slices/Module/moduleSlice';
 import { useNotification } from '~/hooks/useNotification';
@@ -13,7 +13,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import FileUpload from './FileUpload';
 
 const EditSupplement = ({ moduleItem }) => {
-    //console.log('module item compoennt:', moduleItem)
+    console.log('module item component:', moduleItem)
     const navigate = useNavigate();
     const { courseId, moduleId, moduleItemId } = useParams();
     const dispatch = useDispatch();
@@ -105,14 +105,13 @@ const EditSupplement = ({ moduleItem }) => {
                 console.log(`${key}:`, value instanceof File ? value.name : value);
             }
 
-            const resultAction = await dispatch(createModuleItemSupplement({
-                courseId,
-                moduleId,
+            const resultAction = await dispatch(editSupplementByItemId({
+                itemId: moduleItemId,
                 formData: submitFormData
             }));
 
             if (createModuleItemSupplement.fulfilled.match(resultAction)) {
-                showNotice('success', 'Successfully created module item');
+                showNotice('success', 'Successfully edit module item');
                 dispatch(toggleRefresh());
                 navigate(`/course-management/${courseId}/module/${moduleId}`);;
             } else if (createModuleItemSupplement.rejected.match(resultAction)) {
@@ -179,16 +178,16 @@ const EditSupplement = ({ moduleItem }) => {
                     onClick={handleSubmit}
                     className="px-6"
                 >
-                    Save
+                    Edit Supplement
                 </Button>
-                <Button
+                {/* <Button
                     variant="contained"
                     color="primary"
                     onClick={() => handleDeleteItem}
                     className="px-6"
                 >
                     Delete
-                </Button>
+                </Button> */}
             </div>
         </Paper>
     );
