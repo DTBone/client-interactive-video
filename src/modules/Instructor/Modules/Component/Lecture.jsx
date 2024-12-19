@@ -143,6 +143,22 @@ const Lecture = () => {
         }
     };
 
+    const formatDuration = (totalSeconds) => {
+        if (totalSeconds <= 0) return '0 seconds';
+
+        const hours = Math.floor(totalSeconds / 3600);
+        const minutes = Math.floor((totalSeconds % 3600) / 60);
+        const seconds = Math.floor(totalSeconds % 60);
+
+        const parts = [];
+
+        if (hours > 0) parts.push(`${hours} hours`);
+        if (minutes > 0) parts.push(`${minutes} minutes `);
+        if (seconds > 0 || parts.length === 0) parts.push(`${seconds} seconds`);
+
+        return parts.join(' ');
+    };
+
     const onUpdate = (updatedQuestions) => {
         setFormData((prevFormData) => ({
             ...prevFormData,
@@ -245,14 +261,14 @@ const Lecture = () => {
                             <source src={videoPreview} type="video/mp4" />
                             Your browser does not support the video tag.
                         </video>
-                        {formData?.video?.duration > 0 && (
+                        {formData?.duration > 0 && (
                             <div className="mt-2 text-gray-600">
-                                Video Duration: {Math.floor(formData?.video?.duration)} seconds
+                                Video Duration: {formatDuration(formData?.duration)}
                             </div>
                         )}
                     </Box>
                     <Box className="mt-4">
-                        <QuizQuestionForm onUpdate={onUpdate} />
+                        <QuizQuestionForm onUpdate={onUpdate} duration={formData?.duration} />
                     </Box>
                 </div>
             )}

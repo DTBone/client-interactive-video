@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
     Table,
     TableBody,
@@ -27,8 +27,24 @@ import {
     PlayCircleOutline as VideoIcon,
     MenuBook as ReadingIcon
 } from '@mui/icons-material';
+import { useDispatch, useSelector } from 'react-redux';
+import { getModuleItemById } from '~/store/slices/ModuleItem/action';
 
 const ModuleItemProgress = ({ item }) => {
+    const dispatch = useDispatch();
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                await dispatch(getModuleItemById(item.moduleItemId));
+            } catch (error) {
+                console.error('Error fetching module item:', error);
+            }
+        };
+        fetchData();
+    }, [item, dispatch]);
+
+    const { currentItem } = useSelector((state) => state.moduleItem);
+    console.log("currentItem:", currentItem);
     const getStatusColor = (status) => {
         switch (status) {
             case 'completed': return 'success';
@@ -37,6 +53,16 @@ const ModuleItemProgress = ({ item }) => {
             default: return 'default';
         }
     };
+
+    const getIcon = (status) => {
+        switch (status) {
+            case 'code': return <CodeIcon fontSize="small" />;
+            case 'quiz': return <QuizIcon fontSize="small" />;
+            case 'video': return <VideoIcon fontSize="small" />;
+            case 'reading': return <ReadingIcon fontSize="small" />;
+            default: return <CloseIcon />;
+        }
+    }
 
     const renderItemDetails = () => {
         if (item.result?.quiz) {
@@ -95,13 +121,13 @@ const ModuleItemProgress = ({ item }) => {
                 className="bg-gray-100"
             >
                 <div className="flex items-center space-x-2 w-full">
-                    {item.result?.quiz && <QuizIcon fontSize="small" />}
+                    {/* {item.result?.quiz && <QuizIcon fontSize="small" />}
                     {item.result?.programming && <CodeIcon fontSize="small" />}
                     {item.result?.video && <VideoIcon fontSize="small" />}
-                    {item.result?.reading && <ReadingIcon fontSize="small" />}
-
+                    {item.result?.reading && <ReadingIcon fontSize="small" />} */}
+                    {getIcon(currentItem?.data?.icon)}
                     <Typography variant="body2">
-                        Module Item: {item.moduleItemId}
+                        Title: {currentItem.data?.title}
                     </Typography>
                     <Chip
                         label={item.status.replace('-', ' ').toUpperCase()}

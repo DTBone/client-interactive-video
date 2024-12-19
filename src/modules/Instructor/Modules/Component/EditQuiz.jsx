@@ -19,7 +19,7 @@ import { useNotification } from '~/hooks/useNotification';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { toggleRefresh } from '~/store/slices/Module/moduleSlice';
-import { createModuleItemQuiz } from '~/store/slices/ModuleItem/action';
+import { createModuleItemQuiz, editQuizByItemId } from '~/store/slices/ModuleItem/action';
 
 const EditQuiz = ({ moduleItem }) => {
     const navigate = useNavigate();
@@ -56,7 +56,7 @@ const EditQuiz = ({ moduleItem }) => {
                 type: moduleItem.type,
                 contentType: moduleItem.contentType,
                 icon: moduleItem.icon,
-                duration: moduleItem.quiz.duration,
+                duration: moduleItem.quiz.duration ? moduleItem.quiz.duration : 1200,
                 passingScore: moduleItem.quiz.passingScore,
                 isGrade: moduleItem.isGrade,
                 questions: moduleItem.quiz.questions
@@ -192,9 +192,12 @@ const EditQuiz = ({ moduleItem }) => {
                 showNotice('error', 'Please enter passing score');
                 return;
             }
-            await dispatch(createModuleItemQuiz({ courseId, moduleId, quizData }));
+            await dispatch(editQuizByItemId({
+                itemId: moduleItem._id,
+                quizData
+            }));
             dispatch(toggleRefresh());
-            showNotice('success', 'Successfully created quiz');
+            showNotice('success', 'Successfully edit quiz');
             navigate(`/course-management/${courseId}/module/${moduleId}`)
         }
         catch {
@@ -253,7 +256,7 @@ const EditQuiz = ({ moduleItem }) => {
             </Card>
 
             {/* Questions */}
-            {quizData.questions.map((question, questionIndex) => (
+            {quizData?.questions.map((question, questionIndex) => (
                 <Card key={questionIndex} className="p-4">
                     <CardContent>
                         <div className="flex justify-between items-center mb-4">
@@ -364,7 +367,7 @@ const EditQuiz = ({ moduleItem }) => {
                     color="primary"
                     onClick={handleSubmit}
                 >
-                    Create Quiz
+                    Edit Quiz
                 </Button>
             </div>
         </div>

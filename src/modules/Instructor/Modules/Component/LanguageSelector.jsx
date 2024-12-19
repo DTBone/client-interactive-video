@@ -2,9 +2,10 @@ import React, { useState } from 'react';
 import { Button, Menu, MenuItem, MenuList, Typography } from '@mui/material';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 
-const LanguageSelector = ({ onLanguageChange }) => {
+const LanguageSelector = ({ setLanguage, onLanguageChange }) => {
     // Default language is now passed via prop or defaulted to 'python'
-    const [userLang, setUserLang] = useState('');
+    console.log('Default language: ', setLanguage);
+    const [userLang, setUserLang] = useState(setLanguage || '');
 
     const [anchorEl, setAnchorEl] = useState(null);
     const open = Boolean(anchorEl);

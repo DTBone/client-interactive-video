@@ -15,7 +15,7 @@ import {
 } from '@mui/material';
 import { Add as AddIcon, Delete as DeleteIcon } from '@mui/icons-material';
 
-const QuizQuestionForm = ({ questions, onUpdate }) => {
+const QuizQuestionForm = ({ questions, onUpdate, duration }) => {
     const [quizData, setQuizData] = useState([
         {
             index: 1,
@@ -109,6 +109,8 @@ const QuizQuestionForm = ({ questions, onUpdate }) => {
         setQuizData(updatedQuestions);
         onUpdate(updatedQuestions);
     };
+
+
 
     return (
         <div className=''>

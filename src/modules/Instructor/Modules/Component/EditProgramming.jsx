@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
     TextField,
     Button,
@@ -23,7 +23,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useNotification } from '~/hooks/useNotification';
 import * as Yup from 'yup';
 import { useDispatch } from 'react-redux';
-import { createModuleItemProgramming } from '~/store/slices/ModuleItem/action';
+import { createModuleItemProgramming, editProgrammingByItemId } from '~/store/slices/ModuleItem/action';
 import { toggleRefresh } from '~/store/slices/Module/moduleSlice';
 import LanguageSelector from './LanguageSelector';
 
@@ -88,7 +88,7 @@ const programProblemSchema = Yup.object().shape({
 });
 const EditProgramming = ({ moduleItem }) => {
 
-
+    //console.log("moduleItem:", moduleItem);
     const navigate = useNavigate();
     const dispatch = useDispatch();
     const { showNotice } = useNotification();
@@ -141,6 +141,36 @@ const EditProgramming = ({ moduleItem }) => {
 
     };
 
+    useEffect(() => {
+        if (moduleItem) {
+            setProblemData({
+                title: moduleItem.title,
+                description: moduleItem.description,
+                type: moduleItem.type,
+                contentType: moduleItem.contentType,
+                icon: moduleItem.icon,
+                isGrade: moduleItem.isGrade,
+                problemName: moduleItem.programming.problemName ? moduleItem.programming.problemName : '',
+                content: moduleItem.programming.content,
+                difficulty: moduleItem.programming.difficulty,
+                tags: moduleItem.programming.tags,
+                constraints: moduleItem.programming.constraints,
+                inputFormat: moduleItem.programming.inputFormat,
+                outputFormat: moduleItem.programming.outputFormat,
+                codeFormat: moduleItem.programming.codeFormat,
+                sampleInput: moduleItem.programming.sampleInput,
+                sampleOutput: moduleItem.programming.sampleOutput,
+                explanation: moduleItem.programming.explanation,
+                editorial: moduleItem.programming.editorial,
+                baseScore: moduleItem.programming.baseScore,
+                timeBonus: moduleItem.programming.timeBonus,
+                memoryBonus: moduleItem.programming.memoryBonus,
+                testcases: moduleItem.programming.testcases
+            })
+            //console.log("problemData.codeFormat:", problemData.codeFormat)
+            console.log("ModuleItem:", moduleItem)
+        }
+    }, [moduleItem]);
 
 
 
@@ -273,10 +303,11 @@ const EditProgramming = ({ moduleItem }) => {
             codeFormat: updatedCode
         });
     }
-    const [selectedLanguage, setSelectedLanguage] = useState('python');
+    const [selectedLanguage, setSelectedLanguage] = useState();
 
     const handleLanguageChange = (language) => {
         setSelectedLanguage(language);
+
 
     };
 
@@ -320,13 +351,50 @@ const EditProgramming = ({ moduleItem }) => {
 
         try {
             // Validate the problemData object
+            const dataSubmit = {
+                // Basic fields at root level
+                title: problemData.title,
+                description: problemData.description,
+                type: problemData.type,
+                contentType: problemData.contentType,
+                icon: problemData.icon,
+                isGrade: problemData.isGrade,
+
+                // Programming specific fields in programming object
+                programming: {
+                    problemName: problemData.problemName,
+                    content: problemData.content,
+                    difficulty: problemData.difficulty,
+                    tags: problemData.tags,
+                    constraints: problemData.constraints,
+                    inputFormat: problemData.inputFormat,
+                    outputFormat: problemData.outputFormat,
+                    codeFormat: problemData.codeFormat,
+                    sampleInput: problemData.sampleInput,
+                    sampleOutput: problemData.sampleOutput,
+                    explanation: problemData.explanation,
+                    editorial: problemData.editorial,
+                    baseScore: problemData.baseScore,
+                    timeBonus: problemData.timeBonus,
+                    memoryBonus: problemData.memoryBonus,
+                    testcases: problemData.testcases,
+                    // // Additional fields that were in original moduleItem.programming
+                    // acceptedCount: 0,
+                    // totalSubmissions: 0,
+                    // submissions: []
+                }
+            };
+            console.log("dataSubmit:", dataSubmit);
             await programProblemSchema.validate(problemData, { abortEarly: false });
-            dispatch(createModuleItemProgramming({ courseId, moduleId, formData: problemData }));
+            dispatch(editProgrammingByItemId({
+                itemId: moduleItem._id,
+                formData: dataSubmit
+            }));
             // Submit programming problem
             dispatch(toggleRefresh());
-            showNotice('success', 'Successfully created programming problem');
+            showNotice('success', 'Successfully edit programming problem');
             navigate(`/course-management/${courseId}/module/${moduleId}`);
-            console.log("Programming problem data:", problemData);
+            // console.log("Programming problem data:", problemData);
         } catch (error) {
             if (error instanceof Yup.ValidationError) {
                 // Display validation errors
@@ -395,7 +463,7 @@ const EditProgramming = ({ moduleItem }) => {
                         <div className="py-4 ">
                             <JoditEditor
                                 ref={editor}
-                                value={editorContent}
+                                value={problemData.content}
                                 config={config}
                                 onBlur={newContent => handleEditorChange(newContent)}
                                 onChange={newContent => { }}
@@ -542,6 +610,7 @@ const EditProgramming = ({ moduleItem }) => {
                             <div className="flex justify-between items-center mb-4">
 
                                 <LanguageSelector
+                                    setLanguage={moduleItem ? code.language : selectedLanguage}
                                     onLanguageChange={handleLanguageChange}
                                 />
 
@@ -561,7 +630,8 @@ const EditProgramming = ({ moduleItem }) => {
                                         height="100%"
                                         width="100%"
                                         theme="vs-light"
-                                        language={selectedLanguage}
+                                        language={code.language ? code.language : selectedLanguage}
+                                        value={code.codeDefault}
                                         defaultValue="# Enter your code here"
                                         onChange={(newValue) => handleCodeDefaultChange(index, newValue, selectedLanguage)}
                                         loading={<div>Loading Editor...</div>}
@@ -576,6 +646,7 @@ const EditProgramming = ({ moduleItem }) => {
                                         width="100%"
                                         theme="vs-light"
                                         language={selectedLanguage}
+                                        value={code.codeExecute}
                                         defaultValue="# Enter your code here"
                                         onChange={(newValue) => handleCodeExecuteChange(index, newValue, selectedLanguage)}
                                     />
@@ -697,7 +768,7 @@ const EditProgramming = ({ moduleItem }) => {
                     color="primary"
                     onClick={handleSubmit}
                 >
-                    Create Programming Problem
+                    Edit Programming Problem
                 </Button>
             </div>
         </div>
