@@ -62,7 +62,7 @@ function HomeUser({ user }) {
 
     useEffect(() => {
         const initializeMachineLearningCourses = async () => {
-            const machineLearningCourses = await getCoursesBySearch('Machine Learning'); // Replace 'Machine Learning' with the actual search term for machine learning courses
+            const machineLearningCourses = await getCoursesBySearch('AI'); // Replace 'Machine Learning' with the actual search term for machine learning courses
             setMachineLearningCourses(machineLearningCourses);
         }
         const initializeJavaCourses = async () => {

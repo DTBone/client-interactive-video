@@ -17,6 +17,7 @@ function PaymentStatus() {
     const [courseId, setCourseId] = useState('')
     const [amount, setAmount] = useState('');
     const [transactionNo, setTransactionNo] = useState('');
+    const user = localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')) : {};
     const dispatch = useDispatch();
     function addThousandSeparator(number) {
         // Chuyển đổi số thành chuỗi và tách phần nguyên và phần thập phân (nếu có)
@@ -47,6 +48,10 @@ function PaymentStatus() {
       }
   useEffect(() => {
     const queryParams = new URLSearchParams(location.search);
+    if (queryParams.get('status') === 'success') {
+       user.enrolled_courses.push(queryParams.get('courseId'));
+        localStorage.setItem('user', JSON.stringify(user));
+    }
     setStatus(queryParams.get('status'));
     setOrderId(queryParams.get('orderId'));
     setAmount(queryParams.get('amount'));

@@ -21,6 +21,7 @@ import {
 import SearchIcon from '@mui/icons-material/Search';
 import PeopleIcon from '@mui/icons-material/People';
 import { useDispatch } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import { getAllCourse } from '~/store/slices/Course/action.js';
 
 // Sample data
@@ -68,7 +69,7 @@ const suggestedTags = [
 ];
 
 const CourseDisplay = ({search}) => {
-  console.log(search);
+  const navigate = useNavigate();
   const dispatch = useDispatch();
   const [searchTerm, setSearchTerm] = useState(search);
   const [selectedLevel, setSelectedLevel] = useState('all');
@@ -79,6 +80,10 @@ const CourseDisplay = ({search}) => {
   const [page, setPage] = useState(1);
   const [error, setError] = useState(null);
   const [inputValue, setInputValue] = useState('');
+
+  const handleClick = (course) => {
+    navigate(`/course/${course._id}`);
+  }
 
   const getCourseByFilter = async (limit, page, search) => {
     if (search === '' && selectedTags.length === 0) {
@@ -231,7 +236,9 @@ const handleDeleteTag = (tagToDelete) => {
       <Grid container spacing={3}>
         {courses.map((course) => (
           <Grid item xs={12} sm={6} md={4} key={course._id}>
-            <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+            <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}
+              onClick={() => handleClick(course)}
+            >
               <CardMedia
                 component="img"
                 height="140"

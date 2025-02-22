@@ -18,6 +18,7 @@ import { useNavigate } from 'react-router-dom';
 const FreeTrial = ({ onClose, onSubmit, course }) => {
     const userId = JSON.parse(localStorage.getItem('user'))._id;
     const navigate = useNavigate();
+    const user = JSON.parse(localStorage.getItem('user'));
     const onPayment = () => {
         navigate(`/payment/${userId}`, { state: { course: course } });
     }
@@ -63,7 +64,11 @@ const FreeTrial = ({ onClose, onSubmit, course }) => {
                 ))}
             </List>
             <Box sx={{ mt: 2 }}>
-                <Button variant="contained" color="primary" fullWidth onClick={onSubmit}>
+                <Button variant="contained" color="primary" fullWidth onClick={() => {
+                    onSubmit();
+                    user.enrolled_courses.push(course._id);
+                    localStorage.setItem('user', JSON.stringify(user));
+                }}>
                     Start Free
                 </Button>
                 {course.price > 0 && (
