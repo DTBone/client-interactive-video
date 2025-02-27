@@ -34,11 +34,11 @@ function ListButton() {
         icon: <RouteIcon key={0} fontSize='large' color='primary'/>,
         url: '/roadmap'
       },
-      {
-        text: 'Message',
-        icon: <MailIcon key={0} fontSize='large' color='primary'/>,
-        url: '/chat'
-      },
+      // {
+      //   text: 'Message',
+      //   icon: <MailIcon key={0} fontSize='large' color='primary'/>,
+      //   url: '/chat'
+      // },
       {
         text: 'Blogs',
         icon: <Search key={0} fontSize='large' color='primary'/>,
