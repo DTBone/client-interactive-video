@@ -26,58 +26,103 @@ const ConversationList = ({ onSelectConversation, activeConversation, socket }) 
   const searchDebounce = useDebounce(searchQuery, 500);
   const [anchorEl, setAnchorEl] = useState(null);
   const [isSearching, setIsSearching] = useState(false);
+
+  const getConversations = async () => {
+    const res = await api.get(`/conversations?userId=${userId}`);
+    console.log(res);
+    if(res?.data?.success === true)
+    {
+      setConversations(res.data.data);
+    }
+    else {
+      console.error(res.meta.requestStatus);
+    }
+  };
+  useEffect(() => {
+    getConversations();
+  }, []);
   useEffect(() => {
     if (!socket) return;
-
-    // Lắng nghe tin nhắn mới để cập nhật lastMessage
-    socket.on('message:new', ({message}) => {
-      setConversations(prevConversations =>
+    socket.on('conversation:unread_message', (message) => {
+      console.log('conversation:unread_message', message);
+      if(message.conversationId !== activeConversation?._id) {
+        setConversations(prevConversations => 
           prevConversations.map(conv => {
             if (conv._id === message.conversationId) {
               return {
                 ...conv,
-                lastMessage: message
+                lastMessage: message,
+                unReadCounts: conv.unReadCounts ? conv.unReadCounts + 1 : 1,
               };
             }
             return conv;
           })
-      );
-    });
-    socket.on('conversation:list', (conversations) => {
-      setConversations(conversations);
+        );
+        setConversations(prevConversations => prevConversations.sort((a, b) => {
+          if (!a.lastMessage) return 1;
+          if (!b.lastMessage) return -1;
+          return new Date(b.lastMessage.createdAt) - new Date(a.lastMessage.createdAt);
+        }));
+      }
     })
-    socket.on('conversation:update', (conversation) => {
-      setConversations(prevConversations =>
-      prevConversations.map(conv => {
-          if (conv._id === conversation._id) {
-            return conversation;
-          }
-          return conv;
-        }))
-      console.log('conversation:update', conversation);
-    })
-    // socket.on('notification:new', (notification) => {
-    //   console.log('New notification1', notification);
-    //   setNotifications(prev => [notification, ...prev]);
-    //   setConversations(prevConversations => 
-    //     prevConversations.map(conv => {
-    //       if (conv._id === notification.conversationId) {
-    //         return {
-    //           ...conv,
-    //           unreadCount: conv.unreadCount ? conv.unreadCount + 1 : 1,
-    //           lastMessage: notification.message.content
-    //         };
-    //       }
-    //       return conv;
-    //     })
-    //   );
-  //
-  // });
-  return () => {
-    socket.off('message:new');
-    socket.off('conversation:list');
-  };
-}, [socket]);
+
+    return () => {
+      socket.off('conversation:unread_message');
+      socket.off('conversation:new_message');
+    }
+  }, [socket, conversations, activeConversation]);
+//   useEffect(() => {
+//     if (!socket) return;
+
+//     // Lắng nghe tin nhắn mới để cập nhật lastMessage
+//     socket.on('message:new', ({message}) => {
+//       setConversations(prevConversations =>
+//           prevConversations.map(conv => {
+//             if (conv._id === message.conversationId) {
+//               return {
+//                 ...conv,
+//                 lastMessage: message
+//               };
+//             }
+//             return conv;
+//           })
+//       );
+//     });
+//     socket.on('conversation:list', (conversations) => {
+//       setConversations(conversations);
+//     })
+//     socket.on('conversation:update', (conversation) => {
+//       setConversations(prevConversations =>
+//       prevConversations.map(conv => {
+//           if (conv._id === conversation._id) {
+//             return conversation;
+//           }
+//           return conv;
+//         }))
+//       console.log('conversation:update', conversation);
+//     })
+//     // socket.on('notification:new', (notification) => {
+//     //   console.log('New notification1', notification);
+//     //   setNotifications(prev => [notification, ...prev]);
+//     //   setConversations(prevConversations => 
+//     //     prevConversations.map(conv => {
+//     //       if (conv._id === notification.conversationId) {
+//     //         return {
+//     //           ...conv,
+//     //           unreadCount: conv.unreadCount ? conv.unreadCount + 1 : 1,
+//     //           lastMessage: notification.message.content
+//     //         };
+//     //       }
+//     //       return conv;
+//     //     })
+//     //   );
+//   //
+//   // });
+//   return () => {
+//     socket.off('message:new');
+//     socket.off('conversation:list');
+//   };
+// }, [socket]);
   // Hàm tìm kiếm
   useEffect(() => {
     if (!searchDebounce) {
@@ -142,12 +187,25 @@ const ConversationList = ({ onSelectConversation, activeConversation, socket }) 
         <ListItem
           key={index}
           button
-          selected={activeConversation?.id === conversation.id}
+          sx={{
+            backgroundColor: `${activeConversation?._id === conversation._id ? 'rgba(0,0,0,0.1)' : 'white'}`,
+          }}
           onClick={() => {
             onSelectConversation(conversation);
+            setConversations((prev) => {
+              return prev.map((conv) => {
+                if (conv._id === conversation._id) {
+                  return {
+                    ...conv,
+                    unReadCounts: 0,
+                  };
+                }
+                return conv;
+              });
+            });
           }}
           className={`hover:bg-gray-100 ${
-            conversation.unreadCount > 0 ? 'bg-blue-50' : ''
+            conversation.unReadCountss > 0 ? 'bg-blue-50' : ''
           }`}
         >
           <ListItemAvatar>
@@ -176,23 +234,23 @@ const ConversationList = ({ onSelectConversation, activeConversation, socket }) 
           <ListItemText
             primary={
               <Typography noWrap className="font-medium">
-                {getConversationTitleAndImage(conversation)?.profile?.full_name || getConversationTitleAndImage(conversation)?.profile?.fullname}
+                {getConversationTitleAndImage(conversation)?.profile?.full_name || getConversationTitleAndImage(conversation)?.profile?.fullname + ' - ' + conversation.courseId.title}
               </Typography>
             }
             secondary={
               <Typography noWrap variant="body2"
               sx={{
-                fontWeight: `${conversation.unreadCount > 0 ? '700' : '400'}`,
-                color: `${conversation.unreadCount > 0 ? 'black' : 'gray'}`,
+                fontWeight: `${conversation.unReadCounts > 0 ? '700' : '400'}`,
+                color: `${conversation.unReadCounts > 0 ? 'black' : 'gray'}`,
               }}>
                 {conversation.lastMessage ? conversation.lastMessage.senderId === userId ? 'You: ' + conversation.lastMessage?.content : conversation.lastMessage?.content : 'No messages'}
               </Typography>
             }
           />
 
-          {conversation.unreadCount > 0 && (
+          {conversation?.unReadCounts > 0 && (
             <Badge
-              badgeContent={conversation.unreadCount}
+              badgeContent={conversation.unReadCounts}
               color="primary"
               className="ml-2"
             />

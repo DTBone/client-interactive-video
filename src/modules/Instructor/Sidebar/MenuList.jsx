@@ -48,7 +48,7 @@ const MenuList = () => {
     const menuItems = [
         { id: "course", label: "Course Management", path: "/instructor/course-management", icon: <Home /> },
         { id: "student", label: "Student Management", path: "/instructor/student-management", icon: < GroupsIcon /> },
-        { id: "messages", label: "Messages", path: "/chat", icon: <Message /> },
+        { id: "messages", label: "Messages", path: "/instructor/instructor-chat", icon: <Message /> },
         { id: "profile", label: "Profile", path: "/instructor/settings", icon: < Person3Icon /> },
         // { id: "profile", label: "Profile", path: "/instructor/profile", iocn: <Person3Icon /> },
         { id: "logout", label: "Logout", path: "/logout", icon: <LogoutIcon /> },

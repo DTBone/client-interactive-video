@@ -1,11 +1,14 @@
 /* eslint-disable react/prop-types */
-import { Divider, Typography } from '@mui/material';
+import { Divider, Paper, Typography } from '@mui/material';
 import { Box } from 'lucide-react';
 import { useEffect, useState, useCallback } from 'react';
 import '~/index.css';
 import CourseList from './components/CourseList';
 import { getAllCourse } from "~/store/slices/Course/action.js";
 import { useDispatch, useSelector } from 'react-redux';
+import banner from '~/assets/Banner_welcome.png';
+import background from '~/assets/backgroundDefault.jpg';
+import Banner from './components/Banner';
 
 function HomeUser({ user }) {
     const dispatch = useDispatch();
@@ -130,13 +133,7 @@ function HomeUser({ user }) {
 
     return (
         <div className='h-full w-full flex flex-col items-center pl-5 pr-5'>
-            <Box size='100' />
-            <Typography variant='h2'>
-                Welcome {user.profile?.fullname || 'Guest'}
-            </Typography>
-            {/* <Typography variant='h4'>
-                Your email is {user.email || 'Not provided'}
-            </Typography> */}
+            <Banner banners={[banner, background, banner, background]} interval={5000} />
 
             <CourseList
                 title={'Popular Courses'}
