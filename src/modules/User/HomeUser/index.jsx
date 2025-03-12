@@ -131,9 +131,9 @@ function HomeUser({ user }) {
     return (
         <div className='h-full w-full flex flex-col items-center pl-5 pr-5'>
             <Box size='100' />
-            <Typography variant='h2'>
+            {/* <Typography variant='h2'>
                 Welcome {user.profile?.fullname || 'Guest'}
-            </Typography>
+            </Typography> */}
             {/* <Typography variant='h4'>
                 Your email is {user.email || 'Not provided'}
             </Typography> */}
@@ -145,7 +145,7 @@ function HomeUser({ user }) {
                 hasMore={hasMore}
                 loading={loading}
             />
-            
+
             <CourseList
                 title="Machine Learning"
                 initialCourses={machineLearningCourses}

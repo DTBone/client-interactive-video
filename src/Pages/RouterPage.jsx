@@ -27,6 +27,7 @@ import PaymentStatus from '~/modules/EnrollToCourse/Payment/PaymentStatus'
 import LiveStream from '~/modules/LiveStream'
 import InstructorSection from '~/modules/Instructor/InstructorSection'
 import CourseSection from '~/modules/Instructor/Courses/CourseSection'
+import MyLearning from '~/modules/User/MyLearning/MyLearning'
 
 
 const HomePage = () => {
@@ -50,11 +51,12 @@ const HomePage = () => {
                 <Route path="/login" element={<Login isLoginForm={true} />}></Route>
                 <Route path="/signup" element={<Login isLoginForm={false} />}></Route>
                 <Route path="/homeuser" element={<DashboardLayout><HomeUser /></DashboardLayout>}></Route>
+                <Route path="/my-learning" element={<DashboardLayout><MyLearning /></DashboardLayout>}></Route>
                 <Route path="/roadmap" element={<DashboardLayout><RoadMap /></DashboardLayout>}></Route>
 
                 <Route path="/course/:id" element={<EnrollToCourse />}></Route>
-                <Route path="/payment/:userid" element={<DefaultLayoutV2><Payment/></DefaultLayoutV2>}></Route>
-                <Route path="/vnpay_return" element={<PaymentStatus/>}></Route>
+                <Route path="/payment/:userid" element={<DefaultLayoutV2><Payment /></DefaultLayoutV2>}></Route>
+                <Route path="/vnpay_return" element={<PaymentStatus />}></Route>
                 <Route path="/learns/:courseId/" element={<CourseDetail />}>
                     <Route path="welcome" element={<Overview />} />
                     <Route index element={<Overview />} />
@@ -63,7 +65,7 @@ const HomePage = () => {
                     <Route path="info" element={<CourseInfo />}></Route>
                 </Route>
 
-                <Route path="livestream/:id" element={<LiveStream/>}/>
+                <Route path="livestream/:id" element={<LiveStream />} />
 
                 <Route path="learns/:courseId/lessons" element={<GeneralLessons />}>
                     <Route index element={<Supplement />} />

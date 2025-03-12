@@ -57,6 +57,10 @@ import HomeIntructor from './modules/Instructor/HomeIntructor';
 import HTMLEditor from './testFile';
 import CourseCertificate from './modules/CourseDetail/CourseCertificate ';
 import DetailedStatistic from './modules/Instructor/Statistical/DetailedStatistic';
+import MyLearning from './modules/User/MyLearning/MyLearning';
+import SearchPage from './modules/User/SearchPage/SearchPage';
+// import Certificate from './modules/User/Certificate/Certificate';
+
 function App() {
   const dispatch = useDispatch();
   // const navigate = useNavigate();
@@ -139,6 +143,13 @@ function App() {
             </DashboardLayout>
           </ProtectedRoute>
         } />
+        <Route path="/my-learning" element={
+          <ProtectedRoute allowedRoles={['student', 'instructor', 'admin']}>
+            <DashboardLayout>
+              <MyLearning />
+            </DashboardLayout>
+          </ProtectedRoute>
+        } />
         <Route path="/roadmap" element={
           <ProtectedRoute allowedRoles={['student', 'instructor', 'admin']}>
             <DashboardLayout>
@@ -150,6 +161,14 @@ function App() {
           <ProtectedRoute allowedRoles={['student', 'instructor', 'admin']}>
             <DashboardLayout>
               <Blogs />
+            </DashboardLayout>
+          </ProtectedRoute>
+        } />
+
+        <Route path="/search" element={
+          <ProtectedRoute allowedRoles={['student', 'instructor', 'admin']}>
+            <DashboardLayout>
+              <SearchPage />
             </DashboardLayout>
           </ProtectedRoute>
         } />
@@ -299,6 +318,11 @@ function App() {
             <VideoCall />
           </ProtectedRoute>
         } />
+        {/* <Route path="/test" element={
+
+          // <Certificate />
+
+        } /> */}
 
         {/* Catch all route */}
         <Route path="*" element={<Navigate to="/error" replace />} />
