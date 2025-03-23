@@ -1,7 +1,7 @@
 import { configureStore } from '@reduxjs/toolkit';
 import rootReducer from './rootReducer';
 import logger from 'redux-logger';
-import searchCourseAPI from './slices/SearchCourseForUser/action';
+import searchCourseAPI from './slices/SearchCourseForUser/searchCourseAPI';
 import { setupListeners } from '@reduxjs/toolkit/query';
 
 const store = configureStore({

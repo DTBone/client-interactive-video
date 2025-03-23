@@ -5,9 +5,9 @@ const initialState = {
     filters: {
         categories: [],
         levels: [],
-        priceRange: [0, 1000000],
+        priceRange: [0, Number.MAX_VALUE],
         rating: 0,
-        sortBy: 'relevance'
+        sortBy: '',
     },
     currentPage: 1,
     isFilterApplied: false

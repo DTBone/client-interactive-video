@@ -12,7 +12,8 @@ import {
     resetFilters,
     setAllFilters
 } from '~/store/slices/SearchCourseForUser/searchSlice';
-import { useGetCategoriesQuery, useGetLevelsQuery, useLazySearchCoursesQuery, useSearchCoursesQuery } from '~/store/slices/SearchCourseForUser/action';
+import { useGetCategoriesQuery, useGetLevelsQuery, useLazySearchCoursesQuery, useSearchCoursesQuery } from '~/store/slices/SearchCourseForUser/searchCourseAPI';
+import CourseCard from '../HomeUser/components/CourseCard/CourseCard';
 const SearchPage = () => {
     const dispatch = useDispatch();
     const searchState = useSelector(state => state.search);
@@ -61,6 +62,12 @@ const SearchPage = () => {
     });
 
 
+    useEffect(() => {
+
+        if (query) {
+            searchCourses(query);
+        }
+    }, [query, searchCourses]);
 
 
     useEffect(() => {
@@ -169,6 +176,7 @@ const SearchPage = () => {
 
     const handleApplyFilters = () => {
         updateFilters();
+        searchCourses(query);
     };
 
     const handleResetFilters = () => {
@@ -376,27 +384,56 @@ const SearchPage = () => {
                 {/* Placeholder for course results - replace with actual course cards */}
                 {isLoading && <p>Loading...</p>}
                 {error && <p>Error: {error.message}</p>}
-                {data && data.length === 0 && <p>No courses found {data}</p>}
-                {data && (
+                {/* {data && data.courses === 0 && <p>No courses found {data}</p>} */}
+                {data &&
+                    <div>
+                        {data.courses.length === 0 ?
+                            (
+                                <p>No courses found</p>
+                            ) : (
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        <div>
-                            <p>Tìm thấy {data.totalCount} khóa học</p>
-                        </div>
-                        {[1, 2, 3, 4, 5, 6].map(index => (
-                            <div key={index} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
-                                <div className="w-full h-40 bg-gray-200 rounded-md mb-3"></div>
-                                <div className="h-6 bg-gray-200 w-3/4 rounded mb-2"></div>
-                                <div className="h-4 bg-gray-200 w-1/2 rounded mb-2"></div>
-                                <div className="flex items-center mb-2">
-                                    <div className="flex text-yellow-400">★★★★☆</div>
-                                    <div className="h-4 bg-gray-200 w-16 rounded ml-2"></div>
+                                    {data.courses.map(course => (
+                                        <CourseCard key={course._id} course={course} />
+                                        // <div key={course._id} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
+                                        //     <div className="w-full h-30 bg-gray-100 rounded-md mb-3 flex items-center justify-center overflow-hidden">
+                                        //         {course.photo ? (
+                                        //             <img
+                                        //                 src={course.photo}
+                                        //                 alt={course.title}
+                                        //                 className="w-full h-full object-cover rounded-md"
+                                        //             />
+                                        //         ) : (
+                                        //             <div className="text-gray-400 text-2xl font-bold">{course.title.charAt(0)}</div>
+                                        //         )}
+                                        //     </div>
+                                        //     <h3 className="font-semibold text-lg mb-1 line-clamp-1">{course.title}</h3>
+                                        //     <p className="text-gray-600 text-sm mb-2 line-clamp-2">{course.description}</p>
+                                        //     <div className="flex items-center mb-2">
+                                        //         <div className="flex text-yellow-400">
+                                        //             {[1, 2, 3, 4, 5].map((star) => (
+                                        //                 <span key={star}>
+                                        //                     {course.rating && star <= Math.floor(course.rating) ? "★" : "☆"}
+                                        //                 </span>
+                                        //             ))}
+                                        //         </div>
+                                        //         <span className="text-sm text-gray-500 ml-2">
+                                        //             {course.rating ? `${course.rating.toFixed(1)} (${course.reviews || 0})` : 'No ratings'}
+                                        //         </span>
+                                        //     </div>
+                                        //     <div className="flex justify-between items-center">
+                                        //         <span className="font-bold text-indigo-600">
+                                        //             {course.price === 0 ? 'Free' : `$${course.price.toFixed(2)}`}
+                                        //         </span>
+                                        //         <span className="text-xs px-2 py-1 bg-gray-100 rounded-full text-gray-700">
+                                        //             {course.level.charAt(0).toUpperCase() + course.level.slice(1)}
+                                        //         </span>
+                                        //     </div>
+                                        // </div>
+                                    ))}
                                 </div>
-                                <div className="h-6 bg-gray-200 w-1/4 rounded"></div>
-                            </div>
-                        ))}
-                    </div>
-                )}
+                            )}
+                    </div>}
             </section>
         </div>
     )

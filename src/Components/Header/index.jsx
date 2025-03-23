@@ -13,7 +13,7 @@ import { useState } from 'react';
 
 import { useDispatch } from 'react-redux';
 import { setSearchQuery } from '~/store/slices/SearchCourseForUser/searchSlice';
-import { useLazySearchCoursesQuery } from '~/store/slices/SearchCourseForUser/action';
+import { useLazySearchCoursesQuery } from '~/store/slices/SearchCourseForUser/searchCourseAPI';
 
 function Header({ isLogin, user, setSearch }) {
     const navigate = useNavigate();
@@ -35,11 +35,6 @@ function Header({ isLogin, user, setSearch }) {
         }
     }
 
-    const handleSearchChange = (value) => {
-        dispatch(setSearchQuery(value));
-        navigate(`/search?q=${encodeURIComponent(value)}`);
-
-    }
 
     const handleClick = () => {
         window.location.href = '/homeuser';
@@ -47,122 +42,113 @@ function Header({ isLogin, user, setSearch }) {
 
     const [value, setValue] = useState('');
 
-    const handleSubmit = () => {
-
-
+    const handleSubmit = async () => {
         if (value.trim()) {
-            handleSearchChange(value);
-            //searchCourses(value);
+            try {
+                // Lưu giá trị tìm kiếm
+                const searchValue = value;
+
+                // Thực hiện tìm kiếm trước khi chuyển hướng
+                // const result = await searchCourses(searchValue).unwrap();
+
+                // Sau khi có kết quả, mới cập nhật Redux và chuyển hướng
+                dispatch(setSearchQuery(searchValue));
+
+                // Xóa giá trị input
+                setValue('');
+
+                // Chuyển hướng sau cùng
+                navigate(`/search?q=${encodeURIComponent(searchValue)}`);
+            } catch (error) {
+                console.error("Lỗi tìm kiếm:", error);
+            }
         }
-        setValue('');
     };
     return (
-        <div className={styles.wrapper}>
-            <div className={styles.container}>
-                {/* <div className={styles.background}></div> */}
-                <div className={styles.header}>
-                    <div className={styles.logo} onClick={() => handleClick()}>
-                        <img src={logo} alt="logo" />
-                    </div>
-                    {!isLogin ? <Navbar /> :
-                        // <TextField
-                        //     id="input-with-icon-textfield"
-                        //     label="Search"
-                        //     size="small"
-                        //     onKeyDown={
-                        //         (e) => {
-                        //             if (e.key === 'Enter') {
-                        //                 handleSearchChange(e.target.value);
-                        //                 e.target.value = '';
-                        //                 e.target.blur();
-                        //             }
-                        //         }
-                        //     }
-                        //     sx={{
-                        //         width: '400px',
-                        //     }}
-                        //     slotProps={{
-                        //         input: {
-                        //             startAdornment: (
-                        //                 <InputAdornment position="start">
-                        //                     <SearchIcon />
-                        //                 </InputAdornment>
-                        //             ),
-                        //         },
-                        //     }}
-                        //     variant="filled"
-                        // />
-                        <TextField
-                            id="search-field"
-                            placeholder="What do you want to learn?"
-                            value={value}
-                            onChange={(e) => setValue(e.target.value)}
-                            onKeyDown={(e) => {
-                                if (e.key === 'Enter') {
-                                    handleSubmit();
-                                    e.target.blur();
-                                }
-                            }}
-                            sx={{
-                                width: '100%',
-                                maxWidth: '560px',
-                                backgroundColor: 'white',
-                                borderRadius: '28px',
-                                '& .MuiOutlinedInput-root': {
-                                    borderRadius: '28px',
-                                    height: '56px',
-                                    paddingRight: '8px',
-                                    '& fieldset': {
-                                        borderColor: '#e0e0e0',
-                                    },
-                                    '&:hover fieldset': {
-                                        borderColor: '#bdbdbd',
-                                    },
-                                    '&.Mui-focused fieldset': {
-                                        borderColor: '#bdbdbd',
-                                    },
-                                },
-                            }}
-                            InputProps={{
-                                startAdornment: (
-                                    <InputAdornment position="start" sx={{ ml: 1 }}>
-                                        <SearchIcon color="action" />
-                                    </InputAdornment>
-                                ),
-                                endAdornment: (
-                                    <InputAdornment position="end">
-                                        <IconButton
-                                            onClick={handleSubmit}
-                                            sx={{
-                                                backgroundColor: '#1a73e8',
-                                                color: 'white',
-                                                borderRadius: '50%',
-                                                width: '40px',
-                                                height: '40px',
-                                                '&:hover': {
-                                                    backgroundColor: '#1565c0',
-                                                },
-                                            }}
-                                        >
-                                            <SearchIcon />
-                                        </IconButton>
-                                    </InputAdornment>
-                                ),
-                            }}
-                            variant="outlined"
-                        />
-                    }
-                    {!isLogin && <div className={styles.groupButton}>
+        <div className="flex flex-row items-center justify-between w-full h-full bg-[#fffffa] gap-8 p-6">
 
-                        <Link to='/signin' className={styles.logIn} >Log In</Link>
-                        <Link to='/signup' className={styles.signUp}>Sign Up</Link>
-                    </div>}
-                    {isLogin && <div className={styles.groupButton}>
-                        <AvatarProfile user={user} />
-                    </div>}
-                </div>
+            <div className="w-10 h-10" onClick={() => handleClick()}>
+                <img src={logo} alt="logo" />
             </div>
+
+            <TextField
+                id="search-field"
+                placeholder="What do you want to learn?"
+                value={value}
+                onChange={(e) => setValue(e.target.value)}
+                onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                        handleSubmit();
+                        e.target.blur();
+                    }
+                }}
+                autoComplete="off"
+                sx={{
+                    width: '100%',
+                    maxWidth: '560px',
+                    backgroundColor: 'white',
+                    overflow: 'hidden',
+                    borderRadius: '28px',
+
+                    '& .MuiOutlinedInput-root': {
+                        borderRadius: '28px',
+                        height: '46px',
+                        paddingRight: '8px',
+                        '& fieldset': {
+                            borderColor: '#e0e0e0',
+                        },
+                        '&:hover fieldset': {
+                            borderColor: '#bdbdbd',
+                        },
+                        '&.Mui-focused fieldset': {
+                            borderColor: '#bdbdbd',
+                        },
+                    },
+                    '& input:-webkit-autofill': {
+                        //backgroundColor: 'white !important', // Giữ màu nền trắng
+                        WebkitBoxShadow: '0 0 0px 1000px white inset', // Chặn màu nền autofill
+                        transition: 'background-color 5000s ease-in-out 0s', // Giữ màu nền không đổi
+                    }
+                }}
+                InputProps={{
+                    startAdornment: (
+                        <InputAdornment position="start" sx={{ ml: 1 }}>
+                            <SearchIcon color="action" />
+                        </InputAdornment>
+                    ),
+                    endAdornment: (
+                        <InputAdornment position="end">
+                            <IconButton
+                                onClick={handleSubmit}
+                                sx={{
+                                    backgroundColor: '#1a73e8',
+                                    color: 'white',
+                                    borderRadius: '50%',
+                                    width: '30px',
+                                    height: '30px',
+                                    '&:hover': {
+                                        backgroundColor: '#1565c0',
+                                    },
+                                }}
+                            >
+                                <SearchIcon />
+                            </IconButton>
+                        </InputAdornment>
+                    ),
+                }}
+                variant="outlined"
+            />
+
+            {!isLogin && <div className={styles.groupButton}>
+
+                <Link to='/signin' className={styles.logIn} >Log In</Link>
+                <Link to='/signup' className={styles.signUp}>Sign Up</Link>
+            </div>}
+            {isLogin && <div className={styles.groupButton}>
+                <AvatarProfile user={user} />
+            </div>}
         </div>
+
     );
 }
 

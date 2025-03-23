@@ -30,15 +30,18 @@ export const searchCourseAPI = createApi({
     endpoints: (builder) => ({
         searchCourses: builder.query({
             query: (params) => {
+                const queryParams = new URLSearchParams();
                 if (typeof params === 'string') {
+                    queryParams.append('q', params);
+                    queryParams.append('page', 1);
+                    queryParams.append('limit', 12);
                     return {
-                        url: `/search/${params}`,
+                        url: `/search?${queryParams.toString()}`,
                         method: 'GET',
                     };
                 }
 
                 if (params && typeof params === 'object') {
-                    const queryParams = new URLSearchParams();
 
                     if (params.query) {
                         queryParams.append('q', params.query);

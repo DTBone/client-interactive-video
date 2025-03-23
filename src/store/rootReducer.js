@@ -10,7 +10,7 @@ import compileSlice from './slices/Compile/compileSlice';
 import studentSlice from './slices/StudentEnrollCourse/StudentSlice';
 import searchSlice from './slices/SearchCourseForUser/searchSlice';
 import userSlice from "./slices/User/userSlice";
-import searchCourseAPI from './slices/SearchCourseForUser/action';
+import searchCourseAPI from './slices/SearchCourseForUser/searchCourseAPI';
 
 const appReducer = combineReducers({
     course: courseSlice,
