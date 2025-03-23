@@ -54,6 +54,8 @@ export default {
       "8": "80px",
       "9": "96px",
       "10": "112px",
+      "11": "128px",
+      "12": "144px",
     },
     fontSize: {
       xs: '.75rem',

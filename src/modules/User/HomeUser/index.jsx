@@ -1,35 +1,31 @@
 /* eslint-disable react/prop-types */
-
-import { Divider, Paper, Typography,Container } from '@mui/material';
-
-import { Box } from 'lucide-react';
+import { Box, Divider, Paper, Typography } from '@mui/material';
 import { useEffect, useState, useCallback } from 'react';
 import '~/index.css';
 import CourseList from './components/CourseList';
 import { getAllCourse } from "~/store/slices/Course/action.js";
 import { useDispatch, useSelector } from 'react-redux';
-
-import HeroSection from './components/HeroSection';
-import ContinueLearningSection from './components/ContinueLearningSection';
-import RecommendedCoursesSection from './components/RecommendedCoursesSection';
-import NewCoursesSection from './components/NewCoursesSection';
-import CoursesByCategorySection from './components/CoursesByCategorySection';
-import PopularCoursesSection from './components/PopularCoursesSection';
-
-
+import banner from '~/assets/Banner.png';
+import Banner from './components/Banner';
+import Categories from './components/Categories';
+import imageAbout from '~/assets/banner_about.webp';
+import roadmap from '~/assets/roadmap.png';
+import { Map } from '@mui/icons-material';
+import you from '~/assets/you.png';
 function HomeUser({ user }) {
     const dispatch = useDispatch();
     const [loading, setLoading] = useState(false);
     const [page, setPage] = useState(1);
     const [hasMore, setHasMore] = useState(true);
-    const INITIAL_LIMIT = 4; // Load 4 courses initially
-    const LOAD_MORE_LIMIT = 4; // Load 4 more courses each time
+    const INITIAL_LIMIT = 6; // Load 4 courses initially
+    const LOAD_MORE_LIMIT = 3; // Load 4 more courses each time
 
     const [recentCourses, setRecentCourses] = useState([]);
     const [machineLearningCourses, setMachineLearningCourses] = useState([]);
     const [javaCourses, setJavaCourses] = useState([]);
     const [pythonCourses, setPythonCourses] = useState([]);
     const [webDevelopmentCourses, setWebDevelopmentCourses] = useState([]);
+    const [newCourses, setNewCourses] = useState([]);
     const countAllCourses = useSelector(state => state.course?.count) || 0;
     if (!user) {
         user = {};
@@ -87,20 +83,25 @@ function HomeUser({ user }) {
             const webDevelopmentCourses = await getCoursesBySearch('Web Development'); // Replace 'Web Development' with the actual search term for Web Development courses
             setWebDevelopmentCourses(webDevelopmentCourses);
         }
-
+        const initializeNewCourses = async () => {
+            const newCourse = await getCoursesBySearch( '', 'newest'); // Replace 'Web Development' with the actual search term for Web Development courses
+            setNewCourses(newCourse);
+        }
+        initializeNewCourses();
         initializeJavaCourses();
         initializePythonCourses();
         initializeWebDevelopmentCourses();
         initializeMachineLearningCourses();
     }, []);
 
-    const getCoursesBySearch = async (search) => {
+    const getCoursesBySearch = async (search, orderBy) => {
         try {
             setLoading(true);
             const param = {
-                limit: 4,
+                limit: 6,
                 page: 1,
-                search: search
+                search: search,
+                orderBy: orderBy,
             }
             const result = await dispatch(getAllCourse(param));
 
@@ -139,31 +140,85 @@ function HomeUser({ user }) {
     };
 
     return (
+        <>
+            <Banner image={banner} />
+        <div className='h-full w-full flex flex-col items-center'>
+            {/* Categories */}
+            <Categories />
+            <section className='w-full flex flex-col items-center'>
+                <CourseList
+                    title={'Recent Courses'}
+                    initialCourses={recentCourses}
+                    handleClick={handleLoadMore}
+                    hasMore={hasMore}
+                    loading={loading}
+                />
+            </section>
+            <section className='w-full flex flex-col items-center bg-green-100'>
+            <CourseList
+                title={'Newest Courses'}
+                initialCourses={newCourses}
+            />
+            </section>
+            {/* About me */}
+            <section className='w-full flex flex-col items-center'>
+                <Paper elevation={0} sx={{ width: '100%', backgroundColor: 'transparent' }}
+                className='px-12 py-6'>
+                    <div className="w-10 h-[0.3rem] bg-green-700 opacity-80 rounded-lg">
+                    </div>
+                    <Box sx={{ marginBottom: '1rem', display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
+                    
+                        <img src={imageAbout} alt='About us' className='w-1/2 h-full object-cover' />
+                        <Box sx={{ marginLeft: '1rem' }}>
+                            <Typography variant="h4" style={{ marginBottom: '1rem', textTransform: 'uppercase', fontWeight: 'bold' }}>Why CodeChef</Typography>
+                            <Divider style={{ marginBottom: '1rem' }} />
+                            <Typography variant='body1' style={{ marginBottom: '1rem' }}>
+                                CodeChef is a platform which supports over 50 programming languages and has a large community.
+                            </Typography>
+                            <Typography variant='body1' style={{ marginBottom: '1rem' }}>
+                                CodeChef was created as a platform to help programmers make it big in the world of algorithms, computer programming, and programming contests. It hosts three featured contests every month (Long Challenge, Cook-Off, Lunchtime) and gives away prizes and goodies to the winners as encouragement.
+                            </Typography>
+                            <Typography variant='body1' style={{ marginBottom: '1rem' }}>
+                                CodeChef for Schools aims to provide a fun and interactive platform for students to learn programming. It is a non-commercial initiative and is open to students from all schools across the globe.
+                            </Typography>
+                            <Typography variant='body1' style={{ marginBottom: '1rem' }}>
+                                CodeChef was created as a platform to help programmers make it big in the world of algorithms, computer programming, and programming contests. It hosts three featured contests every month (Long Challenge, Cook-Off, Lunchtime) and gives away prizes and goodies to the winners as encouragement.
+                            </Typography>
+                        </Box>
+                        
+                    </Box>
 
-        <div className='h-full w-full flex flex-col items-start justify-between px-4 gap-6'>
+                </Paper>
+            </section>
+            {/* Aim to your goals */}
+            <section className='w-full flex flex-col items-center bg-green-100'>
+                <Paper elevation={0} sx={{ width: '100%', backgroundColor: 'transparent' }}
+                className='px-12 py-6'>
+                    <div className="w-10 h-[0.3rem] bg-green-700 opacity-80 rounded-lg"></div>
+                    <Typography variant="h4" style={{ marginBottom: '1rem', textTransform: 'uppercase', fontWeight: 'bold' }}>Follow your goals</Typography>
+                    <Divider style={{ marginBottom: '1rem' }} />
+                    <Box sx={{ marginBottom: '1rem', display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
+                    
+                        <Box sx={{ marginLeft: '1rem' }}>
+                            <img src={you} alt='Goals' className='w-1/2 object-cover' />
+                            <Typography variant='body1' style={{ marginBottom: '1rem' }}>
+                                CodeChef provides a roadmap to help you achieve your goals. 
+                            </Typography>
+                            <Typography variant='body1' style={{ marginBottom: '1rem' }}>
+                                The roadmap is a step-by-step guide to help you learn programming and algorithms.
+                            </Typography>
+                            <Typography variant='body1' style={{ marginBottom: '1rem' }}>
+                                The roadmap is divided into levels, each level containing a list of topics to learn.
+                            </Typography>
+                        </Box>
+                        <img src={roadmap} alt='Goals' className='w-1/2 h-full object-cover' />
+                        
+                    </Box>
 
-            {/* Hero Section */}
-            <HeroSection />
-
-            {/* Tiếp tục học */}
-            <ContinueLearningSection />
-
-            {/* Khóa học đề xuất */}
-            <RecommendedCoursesSection />
-
-            {/* Khóa học mới */}
-            <NewCoursesSection />
-
-            {/* Khóa học theo danh mục */}
-            <CoursesByCategorySection />
-
-            {/* Khóa học phổ biến */}
-            <PopularCoursesSection />
-
-
-
-        </div >
-
+                </Paper>
+            </section>
+        </div>
+        </>
     );
 }
 

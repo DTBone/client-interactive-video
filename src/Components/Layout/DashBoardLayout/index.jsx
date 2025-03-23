@@ -18,7 +18,8 @@ import ListButton from './ListButton';
 import userService from '~/services/api/userService';
 import ErrorModal from '~/pages/ErrorModal';
 import ListButtonAdmin from './ListButtonAdmin';
-import backgroundGif from '~/assets/backgroundBlind.jpg';
+import backgroundGif from '~/assets/bg.jpg';
+import Footer from '~/components/Footer';
 
 
 
@@ -80,9 +81,8 @@ export default function MainDrawer({ children }) {
 
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', marginBottom: "20px" }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
       <ErrorModal error={error} />
-      <CssBaseline />
       <AppBar position="fixed" open={open}
         sx={{
           backgroundColor: '#C5FFFF',
@@ -110,16 +110,42 @@ export default function MainDrawer({ children }) {
         </NavBar>
         <Divider sx={{ marginTop: 0 }} />
       </AppBar>
-
-      <Box component="main" sx={{
+      <Box
+      component="main"
+      sx={{
         flexGrow: 1,
-        padding: "0 5%",
-        backgroundColor: 'rgba(255, 255, 245 , 0.5)',
-        marginTop: '140px',
-      }}>
-        {React.cloneElement(children, { user, search })}
+        position: "relative", // Để định vị overlay
+        minHeight: "100vh",
+        overflow: "hidden",
 
+        "&::before": {
+          content: '""',
+          position: "absolute",
+          top: 0,
+          left: 0,
+          width: "100%",
+          height: "100%",
+          backgroundImage: `url(${backgroundGif})`,
+          backgroundSize: "300px",
+          backgroundPosition: "center",
+          opacity: 0.1, // Điều chỉnh độ mờ (0.1 - 1)
+        },
+      }}
+    >
+        <DrawerHeader />
+        <div
+          style={{
+            // height: 'calc(100vh - 130px)',
+            height: 'auto',
+            width: '100%',
+            transform: open == true ? 'translateX(0)' : 'translateX(0)',
+            transition: 'all 0.5s',
+          }}
+        >
+          {React.cloneElement(children, { user, search })}
+        </div>
       </Box>
+      <Footer />
     </Box>
   );
 }
