@@ -19,48 +19,99 @@ import {
   Person,
   Videocam
 } from '@mui/icons-material';
+import { api } from '~/Config/api';
+import TypingIndicatorWithDots from '../TypingDot';
+import { Clock } from 'lucide-react';
 
 const ChatWindow = ({ conversation, socket, userId }) => {
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
   const [anchorEl, setAnchorEl] = useState(null);
+  const [limit, setLimit] = useState(50);
+  const [page, setPage] = useState(1);
   const messagesEndRef = useRef(null);
+  const [isTyping, setIsTyping] = useState(false);
+
+  const getMessages = async () => {
+    const response = await api.get(`/messages?conversationId=${conversation._id}&limit=${limit || 10}&page=${page || 1}`);
+    if (response.data.success) {
+      setMessages(response.data.data);
+      setTimeout(scrollToBottom, 100);
+    }
+  };
+
+  useEffect(() => {
+    if (!conversation) return;
+    socket.emit('conversation:join',  
+      conversation._id
+    );
+    console.log('Join conversation', conversation._id);
+    getMessages();
+  }, [conversation._id]);
 
   useEffect(() => {
     if (!socket || !conversation) return;
-
-    // Join conversation và lấy tin nhắn từ server
-    socket.emit('conversation:join', { 
-      conversationId: conversation._id
-    });
-    console.log('Join conversation', conversation._id);
-    // Lắng nghe khi join thành công để lấy lịch sử tin nhắn
-    socket.on('message:list', (messages) => {
-      setMessages(messages || []);
-      setTimeout(scrollToBottom, 100);
-    });
-
-    // Lắng nghe tin nhắn mới
-    socket.on('message:new', ({ message }) => {
+    socket.on('conversation:new_message', (message) => {
       setMessages(prev => [...prev, message]);
       setTimeout(scrollToBottom, 100);
     });
 
+    socket.on('conversation:typing', (data) => {
+      console.log('User is typing', data);
+      if(data.userId !== userId) {
+        setIsTyping(true);
+      }
+    });
+    socket.on('conversation:stop_typing', (data) => {
+      console.log('User stop typing', data);
+      if(data.userId !== userId) {
+        setIsTyping(false);
+      }
+    });
+
     return () => {
-      socket.off('conversation:joined');
-      socket.emit('conversation:out', {
-        conversationId: conversation._id
-      })
-      socket.off('message:new');
+      socket.off('conversation:new_message');
+      socket.off('conversation:typing');
+      socket.off('conversation:stop_typing');
+      socket.emit('conversation:leave', conversation._id);
+      setMessages([]);
     };
-  }, [socket, conversation]);
+  }, [conversation]);
+
+  // useEffect(() => {
+  //   if (!socket || !conversation) return;
+
+  //   // Join conversation và lấy tin nhắn từ server
+  //   socket.emit('conversation:join', { 
+  //     conversationId: conversation._id
+  //   });
+  //   console.log('Join conversation', conversation._id);
+  //   // Lắng nghe khi join thành công để lấy lịch sử tin nhắn
+  //   socket.on('message:list', (messages) => {
+  //     setMessages(messages || []);
+  //     setTimeout(scrollToBottom, 100);
+  //   });
+
+  //   // Lắng nghe tin nhắn mới
+  //   socket.on('message:new', ({ message }) => {
+  //     setMessages(prev => [...prev, message]);
+  //     setTimeout(scrollToBottom, 100);
+  //   });
+
+  //   return () => {
+  //     socket.off('conversation:joined');
+  //     socket.emit('conversation:out', {
+  //       conversationId: conversation._id
+  //     })
+  //     socket.off('message:new');
+  //   };
+  // }, [socket, conversation]);
 
   const handleSend = () => {
     if (!newMessage.trim()) return;
-    socket.emit('message:send', {
+    socket.emit('conversation:send_message', {
       conversationId: conversation._id,
       content: newMessage,
-      type: 'text'
     });
     setNewMessage('');
   };
@@ -91,7 +142,21 @@ const ChatWindow = ({ conversation, socket, userId }) => {
       alert("Please allow pop-ups to start a video call.");
     }
   };
-
+  const onTyping = () => {
+    socket.emit('conversation:typing', conversation._id );
+}
+const onStopTyping = () => {
+    socket.emit('conversation:stop_typing', conversation._id );
+}
+  const formatTimestamp = (timestamp) => {
+    const date = new Date(timestamp);
+    return date.toLocaleString('en-US', {
+        hour: '2-digit',
+        minute: '2-digit',
+        month: 'short',
+        day: 'numeric'
+    });
+};
 
   const getConversationTitleAndImage = (conversation) => {
     console.log('conversations', conversation);
@@ -105,7 +170,7 @@ const ChatWindow = ({ conversation, socket, userId }) => {
   };
 
   return (
-    <Box className="h-full flex flex-col" >
+    <Box className="h-full flex flex-col max-h-screen" >
       <AppBar position="static" color="default" elevation={1} sx={{
         zIndex: 1,
       }}>
@@ -121,7 +186,7 @@ const ChatWindow = ({ conversation, socket, userId }) => {
                 )}
           
           <Typography variant="h6" className="flex-grow">
-            {getConversationTitleAndImage(conversation).profile.fullname ? getConversationTitleAndImage(conversation).profile.fullname: 'Unknown'}
+            {getConversationTitleAndImage(conversation).profile.fullname  + ' - ' + conversation.courseId.title}
           </Typography>
 
           <IconButton onClick={handleVideoCall}>
@@ -134,45 +199,42 @@ const ChatWindow = ({ conversation, socket, userId }) => {
         </Toolbar>
       </AppBar>
 
-      <Box className="flex-grow p-4"
-      sx={{
-        overflowY: 'auto',
-        maxHeight: 'calc(100vh - 340px)',
-      }}
-      >
-        {messages.map((message, index) => (
-          <Box
-            key={index}
-            className={`flex mb-4 ${
-              message.senderId === userId ? 'justify-end' : 'justify-start'
-            }`}
-          >
-            {message.senderId !== userId && (
-              <Avatar
-                src={conversation.participants.find(p => p._id === message.senderId)?.profile.picture}
-                className="mr-2 w-8 h-8"
-              />
-            )}
-            
-            <Box
-              className={`max-w-[70%] p-3 rounded-lg ${
-                message.senderId === userId
-                  ? 'bg-blue-500 text-white'
-                  : 'bg-gray-100'
-              }`}
-            >
-              <Typography variant="body1">{message.content}</Typography>
-              <Typography
-                variant="caption"
-                className="mt-1 opacity-70"
-              >
-                {new Date(message.createdAt).toLocaleTimeString()}
-              </Typography>
-            </Box>
-          </Box>
-        ))}
-        <div ref={messagesEndRef} />
-      </Box>
+      {/* Messages List */}
+      <div className="flex-grow overflow-y-auto p-4 space-y-4 text-lg">
+                {messages.map((message) => (
+                    <div
+                        key={message?._id}
+                        className={`flex ${message?.senderId._id === userId
+                            ? 'justify-end'
+                            : 'justify-start'
+                            }`}
+                    >
+                        <div
+                            className={`max-w-[70%] p-3 rounded-lg ${message?.senderId._id === userId
+                                ? 'bg-blue-100 text-blue-800'
+                                : 'bg-gray-100 text-gray-800'
+                                }`}
+                        >
+                            <div className="flex justify-between items-center mb-1">
+                                <span className="font-semibold text-sm">
+                                    {message?.senderId._id === userId ? 'You' : message?.senderId?.profile?.fullname}
+                                </span>
+                                <span className="text-xs text-gray-500 flex items-center">
+                                    <Clock className="w-3 h-3 mr-1" />
+                                    {formatTimestamp(message?.createdAt)}
+                                </span>
+                            </div>
+                            <p>{message?.content}</p>
+                        </div>
+                    </div>
+                ))}
+                <div ref={messagesEndRef} >
+                    {isTyping &&
+                    (
+                        <TypingIndicatorWithDots />
+                    )}
+                </div>
+            </div>
 
       <Box className="p-4 border-t">
         <Box className="flex gap-2">
@@ -184,6 +246,8 @@ const ChatWindow = ({ conversation, socket, userId }) => {
             onChange={(e) => setNewMessage(e.target.value)}
             onKeyUp={(e) => e.key === 'Enter' && handleSend()}
             size="small"
+            onFocus={onTyping}
+            onBlur={onStopTyping}
           />
           
           <IconButton

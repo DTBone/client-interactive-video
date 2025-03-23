@@ -12,22 +12,23 @@ const ChatContainer = () => {
   let socket = SocketService.connect('http://localhost:3000');
 
   const handleSelecConversation = async (conversation) => {
-    const _id = conversation.username ? conversation._id : conversation.participants.find(p => p !== userId)._id;
-    console.log('Selected conversation:', conversation);
-    const getConversation = await api.get(`/conversations`, {
-        params: {
-            participants: `${_id},${userId}`
-        }
-    });
-    if (getConversation.data.data.length === 0) {
-        const newConversation = await api.post(`/conversations`, {
-            participants: [_id, userId]
-        });
-        setActiveConversation(newConversation.data.data);
-        socket.emit('conversation:recall', {userId});
-    } else {
-        setActiveConversation(conversation);
-    }
+    // const _id = conversation.username ? conversation._id : conversation.participants.find(p => p !== userId)._id;
+    // console.log('Selected conversation:', conversation);
+    // const getConversation = await api.get(`/conversations`, {
+    //     params: {
+    //         participants: `${_id},${userId}`
+    //     }
+    // });
+    // if (getConversation.data.data.length === 0) {
+    //     const newConversation = await api.post(`/conversations`, {
+    //         participants: [_id, userId]
+    //     });
+    //     setActiveConversation(newConversation.data.data);
+    //     socket.emit('conversation:recall', {userId});
+    // } else {
+    //     setActiveConversation(conversation);
+    // }
+    setActiveConversation(conversation);
   }
 
   useEffect(() => {
@@ -36,8 +37,9 @@ const ChatContainer = () => {
     // Đăng nhập socket khi component mount
     socket.emit('user:login', {
       userId,
-      username: JSON.parse(localStorage.getItem('user'))?.profile.full_name || JSON.parse(localStorage.getItem('user'))?.profile.fullname,
-      picture: JSON.parse(localStorage.getItem('user'))?.profile?.picture
+      fullname: JSON.parse(localStorage.getItem('user'))?.profile.full_name || JSON.parse(localStorage.getItem('user'))?.profile.fullname,
+      picture: JSON.parse(localStorage.getItem('user'))?.profile?.picture,
+      role: 'instructor'
     });
     
     
@@ -50,11 +52,12 @@ const ChatContainer = () => {
   
   return (
     <Box className="bg-gray-100" sx={{
-        height: 'calc(100vh - 130px)',
+        maxHeight: 'calc(100vh)',
+        width: '100%',
     }}>
-      <Grid container className="h-full p-4">
-        <Grid item size={2} className="pr-2">
-          <Paper className="h-full">
+      <Grid container className="p-4 h-full">  
+        <Grid item size={3} className="pr-2">
+          <Paper className="h-[calc(100vh-64px)]">
             <ConversationList 
               onSelectConversation={handleSelecConversation}
               activeConversation={activeConversation}
@@ -63,8 +66,8 @@ const ChatContainer = () => {
           </Paper>
         </Grid>
         
-        <Grid item size={8} className="px-2">
-          <Paper className="h-full w-full">
+        <Grid item size={9} className="px-2">
+          <Paper className="h-[calc(100vh-64px)] w-full">
             {activeConversation ? (
               <ChatWindow conversation={activeConversation} socket={socket.socket} userId={userId}/>
             ) : (
@@ -75,11 +78,11 @@ const ChatContainer = () => {
           </Paper>
         </Grid>
 
-        <Grid item size={2} className="pl-2">
+        {/* <Grid item size={2} className="pl-2">
           <Paper className="h-full">
             <UserList socket={socket.socket}/>
           </Paper>
-        </Grid>
+        </Grid> */}
       </Grid>
     </Box>
   );

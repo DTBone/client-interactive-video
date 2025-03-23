@@ -65,7 +65,7 @@ const CourseDetail = () => {
 
                         <CustomScrollbar className=''>
 
-                            <div className="container mx-auto  overflow-y-scroll  h-[calc(100vh-100px)] pt-3 pl-3 pr-3 w-full">
+                            <div className="container mx-auto  overflow-y-scroll  h-[calc(100vh-200px)] pt-3 pl-3 pr-3 w-full">
                                 <Outlet />
                             </div>
                         </CustomScrollbar>

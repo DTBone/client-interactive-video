@@ -58,11 +58,17 @@ export default function AccountMenu({ user }) {
   }
   React.useEffect(() => {
     fetchNotifications();
+    socket.emit('user:login', {
+      userId: user._id,
+      fullname: user.profile.full_name || user.profile.fullname,
+      picture: user.profile.picture,
+      role: 'student'
+    });
     socket.on('notification:new', (data) => {
-      setNotifications([data, ...notifications]);
+      setNotifications((prev) => [data, ...prev]);
       setUnreadNotifications(prevState => prevState + 1);
     })
-  }, []);
+  }, [socket]);
   const handleClick = (event) => {
     setAnchorEl(event.currentTarget);
   };

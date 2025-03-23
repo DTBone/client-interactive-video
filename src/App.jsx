@@ -57,9 +57,11 @@ import HomeIntructor from './modules/Instructor/HomeIntructor';
 import HTMLEditor from './testFile';
 import CourseCertificate from './modules/CourseDetail/CourseCertificate ';
 import DetailedStatistic from './modules/Instructor/Statistical/DetailedStatistic';
+
 import MyLearning from './modules/User/MyLearning/MyLearning';
 import SearchPage from './modules/User/SearchPage/SearchPage';
 // import Certificate from './modules/User/Certificate/Certificate';
+
 
 function App() {
   const dispatch = useDispatch();
@@ -244,12 +246,19 @@ function App() {
             <CourseSection state={'edit'} />
           </ProtectedRoute>
         } />
+        <Route path="instructor/instructor-chat" element={
+          <ProtectedRoute allowedRoles={['instructor', 'admin']}>
+            <Message />
+
+          </ProtectedRoute>
+        } ></Route>
         <Route path="/instructor/student-management" element={
           <ProtectedRoute allowedRoles={['instructor', 'admin']}>
             <ListStudent />
 
           </ProtectedRoute>
         } >
+          
           <Route path="course/:courseId" element={<DetailedStatistic />} />
         </Route>
         <Route path="/course-management/new-course" element={

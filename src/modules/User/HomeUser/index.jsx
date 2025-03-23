@@ -1,17 +1,21 @@
 /* eslint-disable react/prop-types */
-import { Container, Divider, Typography } from '@mui/material';
+
+import { Divider, Paper, Typography,Container } from '@mui/material';
+
 import { Box } from 'lucide-react';
 import { useEffect, useState, useCallback } from 'react';
 import '~/index.css';
 import CourseList from './components/CourseList';
 import { getAllCourse } from "~/store/slices/Course/action.js";
 import { useDispatch, useSelector } from 'react-redux';
+
 import HeroSection from './components/HeroSection';
 import ContinueLearningSection from './components/ContinueLearningSection';
 import RecommendedCoursesSection from './components/RecommendedCoursesSection';
 import NewCoursesSection from './components/NewCoursesSection';
 import CoursesByCategorySection from './components/CoursesByCategorySection';
 import PopularCoursesSection from './components/PopularCoursesSection';
+
 
 function HomeUser({ user }) {
     const dispatch = useDispatch();
@@ -135,6 +139,7 @@ function HomeUser({ user }) {
     };
 
     return (
+
         <div className='h-full w-full flex flex-col items-start justify-between px-4 gap-6'>
 
             {/* Hero Section */}
@@ -158,6 +163,7 @@ function HomeUser({ user }) {
 
 
         </div >
+
     );
 }
 
