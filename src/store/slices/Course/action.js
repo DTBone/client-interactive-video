@@ -127,3 +127,15 @@ export const getCertificateByCourseId = createAsyncThunk(
         }
     }
 )
+
+export const getAllCoursebyUser = createAsyncThunk(
+    'course/getAllCoursebyUser',
+    async (_, { rejectWithValue }) => {
+        try {
+            const { data } = await api.get(`/learns/my-learning/getCourseByUser`);
+            return data;
+        } catch (error) {
+            return rejectWithValue(error.message);
+        }
+    }
+)

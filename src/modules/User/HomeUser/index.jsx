@@ -12,7 +12,6 @@ import imageAbout from '~/assets/banner_about.webp';
 import roadmap from '~/assets/roadmap.png';
 import { Map } from '@mui/icons-material';
 import you from '~/assets/you.png';
-
 function HomeUser({ user }) {
     const dispatch = useDispatch();
     const [loading, setLoading] = useState(false);
