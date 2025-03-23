@@ -12,7 +12,7 @@ export const getAllCourse = createAsyncThunk(
                     limit: filter?.limit,
                     search: filter?.search || '',
                     level: filter?.level || 'all',
-                    tags: filter?.tags  || [],
+                    tags: filter?.tags || [],
                 }
             });
             return data;
@@ -120,6 +120,18 @@ export const getCertificateByCourseId = createAsyncThunk(
     async ({ courseId }, { rejectWithValue }) => {
         try {
             const { data } = await api.get(`/learns/${courseId}/certificate`);
+            return data;
+        } catch (error) {
+            return rejectWithValue(error.message);
+        }
+    }
+)
+
+export const getAllCoursebyUser = createAsyncThunk(
+    'course/getAllCoursebyUser',
+    async (_, { rejectWithValue }) => {
+        try {
+            const { data } = await api.get(`/learns/my-learning/getCourseByUser`);
             return data;
         } catch (error) {
             return rejectWithValue(error.message);

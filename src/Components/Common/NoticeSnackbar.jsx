@@ -6,8 +6,6 @@ import CloseIcon from '@mui/icons-material/Close';
 import { Box, IconButton } from '@mui/material';
 const NoticeSnackbar = ({ open, handleClose, status, content }) => {
 
-
-
     const messageContent = (
         <Box sx={{
             display: 'flex',

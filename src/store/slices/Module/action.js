@@ -1,4 +1,4 @@
-import { asyncThunkCreator, createAsyncThunk } from '@reduxjs/toolkit';
+import { createAsyncThunk } from '@reduxjs/toolkit';
 import axiosInstance from '~/Config/axiosInstance';
 
 export const createModule = createAsyncThunk(
