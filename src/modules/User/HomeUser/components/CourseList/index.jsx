@@ -1,11 +1,11 @@
 /* eslint-disable react/prop-types */
-import { Button, Divider, Typography } from '@mui/material';
+import { Button, Divider, Paper, Typography } from '@mui/material';
 import { useEffect, useState } from 'react';
 import Course from '~/components/SliderCourses/components/Course';
 
 const CourseList = ({ title, initialCourses, handleClick, hasMore = false, loading }) => {
     const [visibleCourses, setVisibleCourses] = useState([]);
-    const COURSES_PER_PAGE = 4;
+    const COURSES_PER_PAGE = 6;
     console.log(initialCourses);
 
     // Reset visible courses when initialCourses changes
@@ -42,15 +42,18 @@ const CourseList = ({ title, initialCourses, handleClick, hasMore = false, loadi
     }
 
     return (
-        <div className='h-full w-full mt-5 flex flex-col'>
-            <Typography variant='h3'>{title}</Typography>
-
+        <Paper elevation={0} sx={{ width: '100%', backgroundColor: 'transparent' }}
+        className='px-12 py-6'
+        >
+            <div className="w-10 h-[0.3rem] bg-green-700 opacity-80 rounded-lg"></div>
+            <Typography variant="h4" style={{ marginBottom: '1rem', textTransform: 'uppercase', fontWeight: 'bold' }}>{title}</Typography>
+            <Divider style={{ marginBottom: '1rem' }} />
             <div className='flex flex-row flex-wrap items-start' style={{ height: 'auto' }}>
                 {visibleCourses.map((course) => (
                     <div
                         key={course.id}
-                        className='w-full sm:w-1/2 md:w-1/3 lg:w-1/4 p-2'
-                        style={{ height: '450px' }}
+                        className='w-full sm:w-full md:w-1/2 lg:w-1/3 p-2'
+                        style={{ height: '500px' }}
                     >
                         <Course course={course} />
                     </div>
@@ -77,12 +80,7 @@ const CourseList = ({ title, initialCourses, handleClick, hasMore = false, loadi
                     </Button>
                 </div>
             )}
-            <Divider sx={{
-                width: '100%',
-                marginTop: '20px',
-                marginBottom: '20px'
-            }}/>
-        </div>
+        </Paper>
     );
 };
 

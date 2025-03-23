@@ -13,6 +13,7 @@ export const getAllCourse = createAsyncThunk(
                     search: filter?.search || '',
                     level: filter?.level || 'all',
                     tags: filter?.tags  || [],
+                    orderBy: filter?.orderBy,
                 }
             });
             return data;

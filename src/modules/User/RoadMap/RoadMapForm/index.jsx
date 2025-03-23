@@ -1,4 +1,4 @@
-﻿// RoadmapForm.js
+﻿/* eslint-disable react/prop-types */
 import { useState } from 'react';
 import {
     Box,
@@ -12,7 +12,16 @@ import {
     Divider,
     Chip,
     IconButton,
-    Tooltip
+    Tooltip,
+    FormControl,
+    FormLabel,
+    FormGroup,
+    Checkbox,
+    FormControlLabel,
+    MenuItem,
+    Select,
+    InputLabel,
+    CircularProgress
 } from '@mui/material';
 import {
     Code as CodeIcon,
@@ -23,8 +32,11 @@ import {
     Web as WebIcon,
     Psychology as AIIcon,
     Token as BlockchainIcon,
-    Help as HelpIcon
+    Help as HelpIcon,
+    Schedule as ScheduleIcon,
+    Language as LanguageIcon
 } from '@mui/icons-material';
+import loading from '~/assets/duckLoading.gif';
 
 const EXPERIENCE_LEVELS = [
     { value: 'Beginner', label: 'Beginner', color: '#4CAF50' },
@@ -91,15 +103,94 @@ const GOALS = [
     }
 ];
 
+// Danh sách ngôn ngữ lập trình theo lĩnh vực
+const PROGRAMMING_LANGUAGES = {
+    web: [
+        { id: 'html', name: 'HTML/CSS', category: 'frontend' },
+        { id: 'javascript', name: 'JavaScript', category: 'frontend' },
+        { id: 'typescript', name: 'TypeScript', category: 'frontend' },
+        { id: 'react', name: 'React', category: 'frontend' },
+        { id: 'vue', name: 'Vue.js', category: 'frontend' },
+        { id: 'angular', name: 'Angular', category: 'frontend' },
+        { id: 'php', name: 'PHP', category: 'backend' },
+        { id: 'nodejs', name: 'Node.js', category: 'backend' },
+        { id: 'python', name: 'Python', category: 'backend' },
+        { id: 'ruby', name: 'Ruby', category: 'backend' },
+        { id: 'java', name: 'Java', category: 'backend' },
+        { id: 'csharp', name: 'C#', category: 'backend' }
+    ],
+    mobile: [
+        { id: 'swift', name: 'Swift', category: 'ios' },
+        { id: 'objectivec', name: 'Objective-C', category: 'ios' },
+        { id: 'java', name: 'Java', category: 'android' },
+        { id: 'kotlin', name: 'Kotlin', category: 'android' },
+        { id: 'reactnative', name: 'React Native', category: 'cross-platform' },
+        { id: 'flutter', name: 'Flutter/Dart', category: 'cross-platform' },
+        { id: 'xamarin', name: 'Xamarin', category: 'cross-platform' }
+    ],
+    data: [
+        { id: 'python', name: 'Python', category: 'analysis' },
+        { id: 'r', name: 'R', category: 'analysis' },
+        { id: 'sql', name: 'SQL', category: 'database' },
+        { id: 'scala', name: 'Scala', category: 'bigdata' },
+        { id: 'julia', name: 'Julia', category: 'scientific' }
+    ],
+    devops: [
+        { id: 'bash', name: 'Bash/Shell', category: 'scripting' },
+        { id: 'python', name: 'Python', category: 'scripting' },
+        { id: 'go', name: 'Go', category: 'tooling' },
+        { id: 'yaml', name: 'YAML', category: 'configuration' },
+        { id: 'terraform', name: 'Terraform', category: 'iac' }
+    ],
+    cloud: [
+        { id: 'python', name: 'Python', category: 'aws' },
+        { id: 'csharp', name: 'C#', category: 'azure' },
+        { id: 'go', name: 'Go', category: 'gcp' },
+        { id: 'typescript', name: 'TypeScript', category: 'serverless' }
+    ],
+    ml: [
+        { id: 'python', name: 'Python', category: 'ml' },
+        { id: 'r', name: 'R', category: 'statistics' },
+        { id: 'cpp', name: 'C++', category: 'performance' },
+        { id: 'julia', name: 'Julia', category: 'scientific' }
+    ],
+    blockchain: [
+        { id: 'solidity', name: 'Solidity', category: 'ethereum' },
+        { id: 'rust', name: 'Rust', category: 'blockchain' },
+        { id: 'go', name: 'Go', category: 'blockchain' },
+        { id: 'javascript', name: 'JavaScript', category: 'web3' }
+    ],
+    security: [
+        { id: 'python', name: 'Python', category: 'scripting' },
+        { id: 'bash', name: 'Bash/Shell', category: 'scripting' },
+        { id: 'c', name: 'C', category: 'lowlevel' },
+        { id: 'go', name: 'Go', category: 'tooling' },
+        { id: 'ruby', name: 'Ruby', category: 'testing' }
+    ]
+};
+
+// Định nghĩa các khoảng thời gian mục tiêu
+const GOAL_TIMEFRAMES = [
+    { id: '1-month', value: 1, unit: 'month', label: '1 month' },
+    { id: '3-months', value: 3, unit: 'months', label: '3 months' },
+    { id: '6-months', value: 6, unit: 'months', label: '6 months' },
+    { id: '1-year', value: 12, unit: 'months', label: '1 year' },
+    { id: '2-years', value: 24, unit: 'months', label: '2 years' },
+    { id: 'custom', value: 'custom', unit: 'custom', label: 'Custom' }
+];
+
 function RoadmapForm({ onGenerateRoadmap, isLoading }) {
     const [formData, setFormData] = useState({
         currentSkills: '',
         experienceLevel: 'Beginner',
         learningGoal: '',
         timeCommitment: '',
-        additionalInfo: ''
+        additionalInfo: '',
+        preferredLanguages: [],
+        goalTimeframe: '6-months'
     });
     const [error, setError] = useState(null);
+    const [showCustomTimeframe, setShowCustomTimeframe] = useState(false);
 
     const handleChange = (event) => {
         const { name, value } = event.target;
@@ -107,12 +198,21 @@ function RoadmapForm({ onGenerateRoadmap, isLoading }) {
             ...prev,
             [name]: value
         }));
+
+        // Nếu chọn timeframe tùy chỉnh, hiển thị trường nhập liệu
+        if (name === 'goalTimeframe' && value === 'custom') {
+            setShowCustomTimeframe(true);
+        } else if (name === 'goalTimeframe') {
+            setShowCustomTimeframe(false);
+        }
     };
 
     const handleGoalsChange = (_, newGoal) => {
         setFormData(prev => ({
             ...prev,
-            learningGoal: newGoal
+            learningGoal: newGoal,
+            // Reset ngôn ngữ ưu tiên khi thay đổi mục tiêu
+            preferredLanguages: []
         }));
     };
 
@@ -124,35 +224,72 @@ function RoadmapForm({ onGenerateRoadmap, isLoading }) {
             }));
         }
     };
+
+    const handleLanguageChange = (event) => {
+        const { value } = event.target;
+        setFormData(prev => ({
+            ...prev,
+            preferredLanguages: value
+        }));
+    };
+
     const validateForm = () => {
         if (!formData.learningGoal) {
-            setError('Please select your learning goal');
+            setError('Vui lòng chọn mục tiêu học tập của bạn');
             return false;
         }
 
         if (!formData.timeCommitment) {
-            setError('Please enter your time commitment');
+            setError('Vui lòng nhập cam kết thời gian của bạn');
             return false;
         }
         if (isNaN(formData.timeCommitment)) {
-            setError('Time commitment must be a number');
+            setError('Cam kết thời gian phải là một số');
             return false;
         }
-        // time commitment must be between 1 and 168 hours
+        // Cam kết thời gian phải từ 1 đến 168 giờ
         if (formData.timeCommitment < 1 || formData.timeCommitment > 168) {
-            setError('Time commitment must be between 1 and 168 hours');
+            setError('Cam kết thời gian phải từ 1 đến 168 giờ');
             return false;
         }
-        return true
 
-    }
+        // Kiểm tra thời gian hoàn thành mục tiêu
+        if (formData.goalTimeframe === 'custom') {
+            if (!formData.customTimeframe) {
+                setError('Vui lòng nhập thời gian hoàn thành mục tiêu');
+                return false;
+            }
+            if (isNaN(formData.customTimeframe) || formData.customTimeframe <= 0) {
+                setError('Thời gian hoàn thành mục tiêu phải là số dương');
+                return false;
+            }
+        }
+
+        return true;
+    };
 
     const handleSubmit = (event) => {
         event.preventDefault();
         if (!validateForm()) {
             return;
         }
-        onGenerateRoadmap(formData);
+
+        // Chuẩn bị dữ liệu để gửi
+        const formDataToSubmit = {
+            ...formData,
+            // Xử lý thời gian hoàn thành mục tiêu nếu là tùy chỉnh
+            timeframeInfo: formData.goalTimeframe === 'custom' 
+                ? { value: formData.customTimeframe, unit: formData.timeframeUnit }
+                : GOAL_TIMEFRAMES.find(tf => tf.id === formData.goalTimeframe)
+        };
+
+        onGenerateRoadmap(formDataToSubmit);
+    };
+
+    // Lấy danh sách ngôn ngữ dựa vào mục tiêu đã chọn
+    const getAvailableLanguages = () => {
+        if (!formData.learningGoal) return [];
+        return PROGRAMMING_LANGUAGES[formData.learningGoal.id] || [];
     };
 
     return (
@@ -160,14 +297,15 @@ function RoadmapForm({ onGenerateRoadmap, isLoading }) {
             elevation={3}
             sx={{
                 p: 4,
-                width: '100%',
+                width: '80%',
                 maxWidth: 1000,
-                mx: 'auto',
                 my: 4,
                 borderRadius: 2,
-                backgroundColor: '#FFFFFF'
+                backgroundColor: '#FFFFFF',
+                alignSelf: 'center'
             }}
         >
+            
             <Typography variant="h4" gutterBottom sx={{
                 fontWeight: 600,
                 color: '#1a237e',
@@ -176,13 +314,33 @@ function RoadmapForm({ onGenerateRoadmap, isLoading }) {
             }}>
                 Create Your Learning Roadmap
             </Typography>
+            <div id='overlay' style={{
+                        display: isLoading ? 'block' : 'none',
+                        position: 'fixed',
+                        top: 0,
+                        left: 0,
+                        width: '100%',
+                        height: '100%',
+                        backgroundColor: 'rgba(73, 72, 72, 0.5)',
+                        zIndex: 2,
+                        cursor: 'pointer'
+                        }}>
+                        <img src={loading} alt="loading" style={{
+                            position: 'absolute',
+                            top: '50%',
+                            left: '50%',
+                            transform: 'translate(-50%, -50%)',
+                            width: '500px',
+                            borderRadius: '10px'
+                        }}/>
+                    </div>
 
             <form onSubmit={handleSubmit}>
                 <Stack spacing={4}>
-                    {/* Current Skills Section */}
+                    {/* Phần Kỹ Năng Hiện Tại */}
                     <Box>
                         <Typography variant="h6" gutterBottom sx={{ color: '#333' }}>
-                            Current Skills <Chip label="Optional" color="success" size="small" />
+                        Current Skills <Chip label="Optional" color="success" size="small" />
                         </Typography>
                         <TextField
                             fullWidth
@@ -201,10 +359,10 @@ function RoadmapForm({ onGenerateRoadmap, isLoading }) {
                         />
                     </Box>
 
-                    {/* Experience Level Section */}
+                    {/* Phần Cấp Độ Kinh Nghiệm */}
                     <Box>
                         <Typography variant="h6" gutterBottom sx={{ color: '#333' }}>
-                            Experience Level <Chip label="Required" color="error" size="small" />
+                        Experience Level <Chip label="Required" color="error" size="small" />
                         </Typography>
                         <ToggleButtonGroup
                             exclusive
@@ -235,7 +393,7 @@ function RoadmapForm({ onGenerateRoadmap, isLoading }) {
                         </ToggleButtonGroup>
                     </Box>
 
-                    {/* Learning Goals Section */}
+                    {/* Phần Mục Tiêu Học Tập */}
                     <Box>
                         <Typography variant="h6" gutterBottom sx={{
                             color: '#333',
@@ -243,8 +401,7 @@ function RoadmapForm({ onGenerateRoadmap, isLoading }) {
                             alignItems: 'center',
                             gap: 1
                         }}>
-                            Learning Goals
-                            <Tooltip title="Select multiple goals you want to achieve">
+                            Learning Goal                            <Tooltip title="Choose the area you want to focus on learning">
                                 <IconButton size="small">
                                     <HelpIcon fontSize="small" />
                                 </IconButton>
@@ -304,7 +461,90 @@ function RoadmapForm({ onGenerateRoadmap, isLoading }) {
                         </Box>
                     </Box>
 
-                    {/* Time Commitment Section */}
+                    {/* Phần Ngôn Ngữ Ưu Tiên (Mới) */}
+                    {formData.learningGoal && (
+                        <Box>
+                            <Typography variant="h6" gutterBottom sx={{
+                                color: '#333',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 1
+                            }}>
+                                <LanguageIcon fontSize="small" sx={{ color: formData.learningGoal.color }} />
+                                Preferred Languages
+                                <Tooltip title="Choose the programming languages you want to learn">
+                                    <IconButton size="small">
+                                        <HelpIcon fontSize="small" />
+                                    </IconButton>
+                                </Tooltip>
+                                <Chip label="Optional" color="success" size="small" />
+                            </Typography>
+                            
+                            <FormControl fullWidth sx={{ mb: 2 }}>
+                                <InputLabel id="preferred-languages-label">Choose the programming languages you want to learn</InputLabel>
+                                <Select
+                                    labelId="preferred-languagess-label"
+                                    id="preferred-languages"
+                                    multiple
+                                    value={formData.preferredLanguages}
+                                    onChange={handleLanguageChange}
+                                    renderValue={(selected) => (
+                                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                                            {selected.map((value) => {
+                                                const language = getAvailableLanguages().find(lang => lang.id === value);
+                                                return (
+                                                    <Chip 
+                                                        key={value} 
+                                                        label={language ? language.name : value} 
+                                                        size="small"
+                                                        sx={{ 
+                                                            backgroundColor: `${formData.learningGoal.color}20`,
+                                                            color: formData.learningGoal.color
+                                                        }}
+                                                    />
+                                                );
+                                            })}
+                                        </Box>
+                                    )}
+                                    sx={{
+                                        borderRadius: 2,
+                                        backgroundColor: '#F5F5F5'
+                                    }}
+                                >
+                                    {getAvailableLanguages().map((language) => (
+                                        <MenuItem key={language.id} value={language.id}>
+                                            <FormControlLabel
+                                                control={
+                                                    <Checkbox 
+                                                        checked={formData.preferredLanguages.indexOf(language.id) > -1}
+                                                        sx={{
+                                                            color: formData.learningGoal.color,
+                                                            '&.Mui-checked': {
+                                                                color: formData.learningGoal.color,
+                                                            }
+                                                        }}
+                                                    />
+                                                }
+                                                label={
+                                                    <Box sx={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
+                                                        <Typography>{language.name}</Typography>
+                                                        <Chip 
+                                                            label={language.category} 
+                                                            size="small" 
+                                                            sx={{ ml: 1, fontSize: '0.7rem' }} 
+                                                        />
+                                                    </Box>
+                                                }
+                                                sx={{ width: '100%', my: 0 }}
+                                            />
+                                        </MenuItem>
+                                    ))}
+                                </Select>
+                            </FormControl>
+                        </Box>
+                    )}
+
+                    {/* Phần Cam Kết Thời Gian */}
                     <Box>
                         <Typography variant="h6" gutterBottom sx={{ color: '#333' }}>
                             Time Commitment (hours/week)
@@ -314,11 +554,11 @@ function RoadmapForm({ onGenerateRoadmap, isLoading }) {
                         </Typography>
                         <TextField
                             fullWidth
-                            required={true}
+                            Required={true}
                             name="timeCommitment"
                             value={formData.timeCommitment}
                             onChange={handleChange}
-                            placeholder="How many hours per week can you dedicate to learning?"
+                            placeholder="How many hours per week can you commit to learning?"
                             sx={{
                                 '& .MuiOutlinedInput-root': {
                                     borderRadius: 2,
@@ -328,7 +568,80 @@ function RoadmapForm({ onGenerateRoadmap, isLoading }) {
                         />
                     </Box>
 
-                    {/* Additional Information Section */}
+                    {/* Phần Thời Gian Hoàn Thành Mục Tiêu (Mới) */}
+                    <Box>
+                        <Typography variant="h6" gutterBottom sx={{
+                            color: '#333',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 1
+                        }}>
+                            <ScheduleIcon fontSize="small" />
+                            Goal Timeframe (months)
+                            <Tooltip title="Choose the timeframe you want to achieve your learning goal">
+                                <IconButton size="small">
+                                    <HelpIcon fontSize="small" />
+                                </IconButton>
+                            </Tooltip>
+                            <Chip label="Required" color="error" size="small" />
+                        </Typography>
+                        
+                        <FormControl fullWidth sx={{ mb: showCustomTimeframe ? 2 : 0 }}>
+                            <Select
+                                value={formData.goalTimeframe}
+                                name="goalTimeframe"
+                                onChange={handleChange}
+                                displayEmpty
+                                sx={{
+                                    borderRadius: 2,
+                                    backgroundColor: '#F5F5F5'
+                                }}
+                            >
+                                {GOAL_TIMEFRAMES.map((timeframe) => (
+                                    <MenuItem key={timeframe.id} value={timeframe.id}>
+                                        {timeframe.label}
+                                    </MenuItem>
+                                ))}
+                            </Select>
+                        </FormControl>
+                        
+                        {showCustomTimeframe && (
+                            <Stack direction="row" spacing={2} sx={{ mt: 2 }}>
+                                <TextField
+                                    fullWidth
+                                    name="customTimeframe"
+                                    value={formData.customTimeframe}
+                                    onChange={handleChange}
+                                    placeholder="Enter a custom timeframe"
+                                    type="number"
+                                    sx={{
+                                        '& .MuiOutlinedInput-root': {
+                                            borderRadius: 2,
+                                            backgroundColor: '#F5F5F5'
+                                        }
+                                    }}
+                                />
+                                <FormControl sx={{ minWidth: 120 }}>
+                                    <Select
+                                        value={formData.timeframeUnit}
+                                        name="timeframeUnit"
+                                        onChange={handleChange}
+                                        sx={{
+                                            borderRadius: 2,
+                                            backgroundColor: '#F5F5F5'
+                                        }}
+                                    >
+                                        <MenuItem value="days">Days</MenuItem>
+                                        <MenuItem value="weeks">Weeks</MenuItem>
+                                        <MenuItem value="months">Months</MenuItem>
+                                        <MenuItem value="years">Years</MenuItem>
+                                    </Select>
+                                </FormControl>
+                            </Stack>
+                        )}
+                    </Box>
+
+                    {/* Phần Thông Tin Bổ Sung */}
                     <Box>
                         <Typography variant="h6" gutterBottom sx={{ color: '#333' }}>
                             Additional Information
@@ -343,7 +656,7 @@ function RoadmapForm({ onGenerateRoadmap, isLoading }) {
                             rows={3}
                             value={formData.additionalInfo}
                             onChange={handleChange}
-                            placeholder="Any specific areas of interest or requirements?"
+                            placeholder="Is there anything else you'd like to share?"
                             sx={{
                                 '& .MuiOutlinedInput-root': {
                                     borderRadius: 2,
@@ -353,12 +666,12 @@ function RoadmapForm({ onGenerateRoadmap, isLoading }) {
                         />
                     </Box>
                     
-                        {/* Error Message */}
-                        {error && (
-                            <Typography variant="body2" sx={{ color: 'error.main' }}>
-                                {error}
-                            </Typography>
-                        )}
+                    {/* Thông Báo Lỗi */}
+                    {error && (
+                        <Typography variant="body2" sx={{ color: 'error.main' }}>
+                            {error}
+                        </Typography>
+                    )}
                     <Button
                         type="submit"
                         variant="contained"
@@ -373,7 +686,7 @@ function RoadmapForm({ onGenerateRoadmap, isLoading }) {
                             borderRadius: 2
                         }}
                     >
-                        {isLoading ? 'Generating...' : 'Generate My Roadmap'}
+                        {isLoading ? 'Generating...' : 'Generate Roadmap'}
                     </Button>
                 </Stack>
             </form>

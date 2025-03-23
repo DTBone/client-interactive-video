@@ -1,17 +1,17 @@
 /* eslint-disable react/prop-types */
 import '~/index.css';
-import MermaidChart from "~/modules/User/RoadMap/MermaidChart/index.jsx";
 import RoadmapForm from "~/modules/User/RoadMap/RoadMapForm/index.jsx";
 import RoadMapDisplay from "~/modules/User/RoadMap/RoadMapDisplay/index.jsx";
 import React, {useEffect} from 'react';
 import {useDispatch} from "react-redux";
 import {createRoadMap, getRoadMap} from "~/store/slices/Roadmap/action.js";
-import {CircularProgress} from "@mui/material";
+import {Box} from "@mui/material";
 
 function RoadMap({user}) {
     const dispatch = useDispatch();
     const [roadmap, setRoadmap] = React.useState(null);
     const [isLoading, setIsLoading] = React.useState(false);
+    console.log('RoadMap', roadmap);
     if(!user) {
         user = {}
     }
@@ -45,7 +45,7 @@ function RoadMap({user}) {
             return 1;
         let count = 0;
         phases.forEach(phase => {
-            if (phase.status === 'completed') {
+            if (phase.status === 'completed' || phase.status === 'in-progress') {
                 count++;
             }
         });
@@ -54,20 +54,29 @@ function RoadMap({user}) {
         return count;
     }
     return (
-        <>
-            {isLoading && <CircularProgress/>}
+        
+        <Box
+            sx={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                height: '100%',
+                width: '100%',
+            }}
+            >
+            {/*    <MermaidChart*/}
+            {/*    chartCode={chartCode}*/}
+            {/*    onNodeClick={handleNodeClick}*/}
+            {/*/>*/}
             {roadmap && (
-                <RoadMapDisplay data={roadmap} userProgress={countCompleted(roadmap.phases || 1)}/>
+                <RoadMapDisplay data={roadmap} setRoadmapOutSide={setRoadmap} userProgress={countCompleted(roadmap.phases || 1)}/>
             )}
-        {/*    <MermaidChart*/}
-        {/*    chartCode={chartCode}*/}
-        {/*    onNodeClick={handleNodeClick}*/}
-        {/*/>*/}
             {user && !roadmap && (
                 <RoadmapForm onGenerateRoadmap={handleSubmit} isLoading={isLoading}/>
             )}
-        </>
-
+            {/* <AssessmentTestForm/> */}
+        </Box>
 
      );
 }

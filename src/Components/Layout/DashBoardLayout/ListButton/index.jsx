@@ -54,10 +54,8 @@ function ListButton() {
         if(index === 1){
             navigate('/roadmap');
         }
+        
         if(index === 2){
-            navigate('/chat');
-        }
-        if(index === 3){
             navigate('/blogs');
         }
 

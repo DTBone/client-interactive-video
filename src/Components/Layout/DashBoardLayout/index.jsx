@@ -18,7 +18,8 @@ import ListButton from './ListButton';
 import userService from '~/services/api/userService';
 import ErrorModal from '~/pages/ErrorModal';
 import ListButtonAdmin from './ListButtonAdmin';
-import backgroundGif from '~/assets/backgroundBlind.jpg';
+import backgroundGif from '~/assets/bg.jpg';
+import Footer from '~/components/Footer';
 
 const drawerWidth = 260;
 
@@ -120,9 +121,8 @@ export default function MiniDrawer({ children }) {
   //   setOpen(false);
   // };
   return (
-    <Box sx={{ display: 'flex' }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
       <ErrorModal error={error} />
-      <CssBaseline />
       <AppBar position="fixed" open={open}
         sx={{
           backgroundColor: '#C5FFFF',
@@ -164,16 +164,28 @@ export default function MiniDrawer({ children }) {
         </Toolbar>
         <Divider />
       </AppBar>
-      <Drawer variant="permanent" open={open}>
-        <DrawerHeader>
-        </DrawerHeader>
-        <Divider />
-        {user.role !== 'admin' ? <ListButton /> : <ListButtonAdmin />}
-      </Drawer>
-      <Box component="main" sx={{
-        flexGrow: 1, p: 3,
-        backgroundColor: 'rgba(255, 255, 245 , 0.5)',
-      }}>
+      <Box
+      component="main"
+      sx={{
+        flexGrow: 1,
+        position: "relative", // Để định vị overlay
+        minHeight: "100vh",
+        overflow: "hidden",
+
+        "&::before": {
+          content: '""',
+          position: "absolute",
+          top: 0,
+          left: 0,
+          width: "100%",
+          height: "100%",
+          backgroundImage: `url(${backgroundGif})`,
+          backgroundSize: "300px",
+          backgroundPosition: "center",
+          opacity: 0.1, // Điều chỉnh độ mờ (0.1 - 1)
+        },
+      }}
+    >
         <DrawerHeader />
         <div
           style={{
@@ -187,6 +199,7 @@ export default function MiniDrawer({ children }) {
           {React.cloneElement(children, { user, search })}
         </div>
       </Box>
+      <Footer />
     </Box>
   );
 }
