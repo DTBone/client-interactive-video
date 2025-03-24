@@ -1,4 +1,4 @@
-import { Avatar, Button, Card, CardContent, CardMedia, Typography } from '@mui/material'
+import { Avatar, Button, Card, CardContent, CardMedia, Chip, Divider, Stack, Typography } from '@mui/material'
 import { useEffect, useState } from 'react'
 import HeaderCourse from '../../Components/Common/Header/HeaderCourse'
 import Breadcrumb from '../../Components/Common/Breadcrumbs/Breadcrumb'
@@ -11,27 +11,19 @@ import courseService from '../../services/api/courseService'
 import { useNavigate, useParams } from 'react-router-dom';
 import { enrollCourse as enroll } from '~/store/slices/Course/action'
 import { useDispatch, useSelector } from 'react-redux'
+import Header from '~/Components/Header'
 
-
+import AccessTimeIcon from '@mui/icons-material/AccessTime';
+import PeopleAltIcon from '@mui/icons-material/PeopleAlt';
+import StarIcon from '@mui/icons-material/Star';
+import LocalOfferIcon from '@mui/icons-material/LocalOffer';
+import Footer from '~/Components/Footer'
 
 const EnrollToCourse = () => {
 
-    // const [enrollCourse, setState] = useState(false);
-    // const [isSubmit, setSubmit] = useState(false);
-
-    //     useEffect(() => {
-    //         dispatch(getAllCourse()); // Gọi API để lấy danh sách khóa học
-    //     }, [dispatch]);
-
-
-    //     if (!courseState) {
-    //         console.error("courseState is undefined");
-    //         return null; // Hoặc hiển thị loading state
-    //     }
-
-
     const dispatch = useDispatch();
     const [enrollCourse, setState] = useState(false);
+    const [enrollments, setEnroll] = useState();
     const [course, setCourse] = useState({});
     const [intructor, setIntructor] = useState({});
     const courseId = window.location.pathname.split('/').at(-1);
@@ -60,7 +52,8 @@ const EnrollToCourse = () => {
                 const data = await courseService.getCourseById(courseId, user._id);
                 setCourse(data.data);
                 setIntructor(data.data.instructor);
-                console.log(data);
+                setEnroll(data.enrollments);
+                console.log(enrollments);
                 setState(data.isEnrolled);
             } catch (err) {
                 console.error(err);
@@ -84,43 +77,75 @@ const EnrollToCourse = () => {
         setSnackbarState({ ...snackbarState, open: false });
     };
     return (
-        <div className='space-y-2'>
-            <section className=' '>
-                <HeaderCourse />
-
-
+        <div className='space-y-2 min-h-screen'>
+            <section className='p-0 w-full m-0 '>
+                <Header />
+                <Divider />
             </section>
-            <section className='ml-5'>
-
+            <section className='px-6'>
                 <Breadcrumb
-                    courseId={currentCourse?.courseId}
+                    courseId={courseId}
                 //moduleIndex={ }
                 //itemTitle={ }
                 />
             </section>
 
-            <section className="bg-[#f2f6fd] w-full h-3/4 mt-2 flex flex-row justify-center items-center ">
+            <section className="bg-[#f2f6fd] w-full  mt-2 flex flex-row justify-center items-center px-6">
                 <div className="flex-grow-[6]  ml-5 max-w-4xl ">
-                    <div className='flex flex-col gap-4 justify-start items-start h-[400px]'>
+                    <div className='flex flex-col gap-2 justify-start items-start h-[400px]'>
                         <Typography
                             variant='h2'
                             className='text-start font-bold'
                             sx={{ fontWeight: 500, marginTop: "16px" }}
-                            noWrap={false}>{course?.title}</Typography>
-                        <Typography noWrap={false} >{course?.description}</Typography>
-                        <Typography>Intrucstors: {intructor?.profile?.fullname}
+                            noWrap={false}>{course?.title}
+                        </Typography>
+                        {/* Course Stats */}
+                        <Stack direction="row" spacing={2} sx={{ mb: 3 }}>
+                            {/* <Chip
+                                icon={<AccessTimeIcon />}
+                                label={`${course?.duration || '0'} hours`}
+                                size="small"
+                                sx={{ bgcolor: 'white' }}
+                            /> */}
+                            <Chip
+                                icon={<PeopleAltIcon />}
+                                label={`${enrollments || '0'} students`}
+                                size="small"
+                                sx={{ bgcolor: 'white' }}
+                            />
+                            <Chip
+                                icon={<StarIcon />}
+                                label={`${course?.averageRating || '0'} rating`}
+                                size="small"
+                                sx={{ bgcolor: 'white' }}
+                            />
+                            <Chip
+                                icon={<LocalOfferIcon />}
+                                label={course?.level || 'Beginner'}
+                                size="small"
+                                sx={{ bgcolor: 'white' }}
+                            />
+                        </Stack>
+                        <Typography noWrap={false} >{course?.description}
+                        </Typography>
+                        <div className="flex flex-row gap-4 align-items-center">
                             <Avatar
                                 alt={intructor?.profile?.fullname}
                                 src={intructor?.profile?.picture}
                                 sx={{ width: 56, height: 56 }}
                             />
-                        </Typography>
-                        <Typography>{intructor?.email}</Typography>
+                            <Typography>Intrucstors: {intructor?.profile?.fullname}
+                                <Typography>{intructor?.email}</Typography>
+                            </Typography>
+
+
+                        </div>
+
 
                         <div className='mt-auto mb-6'>
                             {enrollCourse ? (
                                 <div>
-                                    <Button onClick={handleLearn} variant='contained' sx={{ width: "18rem", height: "4rem", background: "#0048b0" }}>
+                                    <Button onClick={handleLearn} variant='contained' sx={{ width: "18rem", height: "4rem", background: theme => theme.palette.primary.main }}>
                                         Go To Course
                                     </Button>
                                     <span className="ml-4 text-sm text-gray-500">Already go to course</span>
@@ -149,23 +174,24 @@ const EnrollToCourse = () => {
                 <div className="flex-grow-[4] ml-10">
                     <Card sx={{ maxWidth: 600, minHeight: 350 }}>
                         <CardMedia
-                            sx={{ height: 300 }}
+                            sx={{ height: 400 }}
                             image={course?.photo}
                             title="green iguana"
                         />
-                        <CardContent>
-                            <Typography gutterBottom variant="h5" component="div">
-                                {course?.title}
-                            </Typography>
-                        </CardContent>
+
                     </Card>
                 </div>
             </section>
-            <section className='ml-5 space-y-2 mr-6'>
+            <section className='ml-5 space-y-2 mr-6 px-6'>
                 <Tabcourse course={course} isEnrolled={enrollCourse} />
             </section>
+
+            <Footer className="mt-auto" />
+
         </div>
     )
 }
 
 export default EnrollToCourse
+
+

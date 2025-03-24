@@ -6,6 +6,7 @@ import Sidebar from './Sidebar/Sidebar';
 import { Outlet } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import Breadcrumb from '~/Components/Common/Breadcrumbs/Breadcrumb';
+import Header from '~/Components/Header';
 
 const ModuleSection = () => {
     const { currentCourse } = useSelector(state => state.course);
@@ -13,7 +14,8 @@ const ModuleSection = () => {
     return (
         <div className="h-screen flex flex-col overflow-hidden">
             <header className=' '>
-                <HeaderCourse />
+                <Header />
+                <Divider />
 
             </header>
             <div className="flex h-full ">

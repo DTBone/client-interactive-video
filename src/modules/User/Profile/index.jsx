@@ -24,7 +24,7 @@ function Profile() {
     });
     const [open, setOpen] = useState(false);
     const navigate = useNavigate();
-    
+
     useEffect(() => {
         const fetchUser = async () => {
             const token = localStorage.getItem('token');
@@ -33,7 +33,7 @@ function Profile() {
                 console.log(response.data);
                 setUser(response.data);
             } catch (error) {
-                if(error.status === 401) {
+                if (error.status === 401) {
                     // Gọi API để lấy access token mới
                     try {
                         const response = await userService.getResetAccessToken();
@@ -47,16 +47,16 @@ function Profile() {
                     return;
                 }
                 else {
-                setUser({
-                    username: '',
-                    email: '',
-                    profile: {
-                        fullname: '',
-                    }
-                });
-                setError(error.message);
-                return;
-            }
+                    setUser({
+                        username: '',
+                        email: '',
+                        profile: {
+                            fullname: '',
+                        }
+                    });
+                    setError(error.message);
+                    return;
+                }
             }
         };
         if (id) {
@@ -65,16 +65,16 @@ function Profile() {
     }, [dispatch, id, navigate, error, open]);
 
     return (
-        <div className="w-full h-auto flex flex-col items-center shadow-xl rounded-3xl bg-red-100 p-5">
-            <ErrorModal error={error}/>
-            {open && <ModalEditProfile user={user} setOpen={setOpen}/>}
-            <div className="flex justify-center items-center w-5/6 rounded-3xl overflow-hidden">
+        <div className="w-full h-auto flex flex-col items-center shadow-xl rounded-3xl bg-gray-50 p-5">
+            <ErrorModal error={error} />
+            {open && <ModalEditProfile user={user} setOpen={setOpen} />}
+            {/* <div className="flex justify-center items-center w-5/6 rounded-3xl overflow-hidden">
                 <img src={background} className="w-full h-full"/>
-            </div>
+            </div> */}
             {/* Thong tin ca nhan */}
             <div className="flex flex-row justify-center items-center gap-4 w-5/6 mt-4 shadow-xl rounded-3xl bg-white">
                 <div className="flex flex-col justify-center items-center w-1/5">
-                    <img src={user.profile.picture || 'https://i.pinimg.com/564x/bc/43/98/bc439871417621836a0eeea768d60944.jpg'} alt={user.username} className="size-10 object-cover rounded-full "/>
+                    <img src={user.profile.picture || 'https://i.pinimg.com/564x/bc/43/98/bc439871417621836a0eeea768d60944.jpg'} alt={user.username} className="size-10 object-cover rounded-full " />
                 </div>
                 <div className="flex flex-col w-1/3 gap-2 pt-5 pb-5">
                     <h1 className="text-2xl font-bold">{user.profile.fullname}</h1>
@@ -84,11 +84,11 @@ function Profile() {
                         id="outlined-disabled"
                         label="Bio"
                         multiline
-                        sx={{width: '100%'}}
+                        sx={{ width: '100%' }}
                         defaultValue="Hello, I'm a developer"
                         value={user.profile.bio}
-                        />
-                    <Button onClick={() => setOpen(true)} variant="contained">Edit Profile</Button>    
+                    />
+                    <Button onClick={() => setOpen(true)} variant="contained">Edit Profile</Button>
                 </div>
                 <Divider orientation="vertical" variant="middle" flexItem />
                 <div className="flex flex-col w-1/3 gap-3">
@@ -109,17 +109,17 @@ function Profile() {
                         <Typography>{user.level || '---'}</Typography>
                     </div>
                 </div>
-                        
+
             </div>
             <Divider className="pt-2 w-5/6 self-center" variant="middle" />
             {/* Khoa hoc */}
-            <SliderCourses className="w-5/6" title="Khóa học gần đây" course={user?.enrolled_courses} colunms={3}/>
+            <SliderCourses className="w-5/6" title="Khóa học gần đây" course={user?.enrolled_courses} colunms={3} />
 
             {/* Lịch sử giao dịch */}
-            <TransactionHistory userId= {user._id} />
+            <TransactionHistory userId={user._id} />
 
         </div>
-      );
+    );
 }
 
 export default Profile;

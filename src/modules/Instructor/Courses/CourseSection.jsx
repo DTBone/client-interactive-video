@@ -6,6 +6,7 @@ import {
     List, ListItem, ListItemText, ListItemSecondaryAction, IconButton, Dialog, DialogTitle,
     DialogContent, DialogActions, Chip, Paper,
     Autocomplete,
+    Divider,
 } from '@mui/material';
 import { Add as AddIcon, Edit as EditIcon, Delete as DeleteIcon } from '@mui/icons-material';
 import HeaderCourse from '~/Components/Common/Header/HeaderCourse';
@@ -14,9 +15,10 @@ import spinnerLoading from '~/assets/spinnerLoading.gif';
 import Breadcrumb from '~/Components/Common/Breadcrumbs/Breadcrumb';
 import ImageUpload from './UploadImage'
 import ArrowRightAltIcon from '@mui/icons-material/ArrowRightAlt';
-import { clearError } from '~/store/slices/Course/courseSlice';
+import { clearCurrentCourse, clearError } from '~/store/slices/Course/courseSlice';
 import { useNotification } from '~/hooks/useNotification';
 import { uploadToCloudnary } from '~/Utils/uploadToCloudnary';
+import Header from '~/Components/Header';
 
 const suggestedTags = [
     // Ngôn ngữ lập trình
@@ -47,6 +49,7 @@ const suggestedTags = [
 
 const CourseSection = ({ state }) => {
     const { courseId } = useParams();
+    const [courseID, setCourseID] = useState(courseId || null);
     const { currentCourse, loading, error } = useSelector((state) => state.course);
     const dispatch = useDispatch();
     const navigate = useNavigate();
@@ -97,30 +100,29 @@ const CourseSection = ({ state }) => {
 
     useEffect(() => {
         let mounted = true;
-
         const fetchCourse = async () => {
-            if (state === 'edit' && courseId && mounted) {
-                setIsLoading(true);
+            if (state === 'edit' && courseID && mounted) {
+                //setIsLoading(true);
                 try {
-                    console.log('courseId:', courseId);
-                    await dispatch(getCourseByID(courseId));
+                    //dispatch(clearCurrentCourse());
+                    console.log('courseId effect:', courseID);
+                    await dispatch(getCourseByID(courseID));
 
                 } catch (error) {
                     console.error('Error:', error);
                 } finally {
                     if (mounted) {
-                        setIsLoading(false);
+                        //setIsLoading(false);
                     }
                 }
             }
         };
-
         fetchCourse();
 
         return () => {
             mounted = false;
         };
-    }, [courseId, state]);
+    }, [courseID, state]); // Chỉ gọi lại khi courseId thay đổi
 
     useEffect(() => {
         if (error) {
@@ -130,11 +132,12 @@ const CourseSection = ({ state }) => {
     }, [error]);
 
     useEffect(() => {
-        if (currentCourse?.data) {
-            setCourseData(currentCourse.data);
+        if (currentCourse) {
+            setCourseData(currentCourse);
             setSelectedImageFile(currentCourse.photo);
         }
         console.log('course:', currentCourse, error, loading,);
+        console.log('courseData:', courseData);
     }, [currentCourse])
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -336,13 +339,32 @@ const CourseSection = ({ state }) => {
     return (
         <div className="h-screen flex flex-col overflow-hidden">
             <header>
-                <HeaderCourse />
-                <Breadcrumb
-                    courseId={currentCourse?.data?._id}
-                />
+                <Header />
+                <Divider />
+                <div className=" px-6">
+                    <Breadcrumb
+                        courseId={courseID}
+                    // moduleIndex={currentModule.index}
+                    // itemTitle={currentModule.title}
+                    // courseTitle={courseData.title}
+                    // handleClickNewCourse={() => {
+                    //     dispatch(clearCurrentCourse());
+                    //     navigate(`/course-management/new-course`);
+                    // }}
+                    // handleClick={() => {
+                    //     if (courseID) {
+                    //         navigate(`/course-management/${courseID}`);
+                    //     } else {
+                    //         navigate(`/course-management`);
+                    //     }
+                    // }}
+                    />
+                </div>
+
+
             </header>
 
-            <div className="flex h-full px-6 overflow-y-auto pt-5">
+            <div className="flex h-full overflow-y-auto pt-5 px-6">
                 <form onSubmit={(e) => {
                     e.preventDefault(); // Prevent form submission
                     handleSubmit('published', e);

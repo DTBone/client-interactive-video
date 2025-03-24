@@ -15,15 +15,42 @@ import { useDispatch } from 'react-redux';
 import { setSearchQuery } from '~/store/slices/SearchCourseForUser/searchSlice';
 import { useLazySearchCoursesQuery } from '~/store/slices/SearchCourseForUser/searchCourseAPI';
 
+function parseJwt(token) {
+    try {
+        return JSON.parse(atob(token.split('.')[1])); // Giải mã payload từ base64
+    } catch (e) {
+        return null;
+    }
+}
+
 function Header({ isLogin, user, setSearch }) {
     const navigate = useNavigate();
     const dispatch = useDispatch();
+    //console.log(localStorage.getItem("token"));  // Kiểm tra trong Local Storage
+    //console.log(localStorage.getItem("user"));  // Kiểm tra trong Local Storage
+
+    const token = localStorage.getItem("token");
+
+    if (token) {
+        const decodedData = parseJwt(token);
+        console.log(decodedData); // In ra nội dung payload của JWT
+    } else {
+        console.log("Token không tồn tại!");
+    }
 
     const [searchCourses, { data, isLoading, error }] = useLazySearchCoursesQuery();
     if (!isLogin) {
         isLogin = false;
     }
-    if (!user) {
+    if (localStorage.getItem("token")) {
+        isLogin = true;
+    }
+
+    if (!user && localStorage.getItem("user")) {
+        user = JSON.parse(localStorage.getItem('user'));
+
+    }
+    else {
         user =
         {
             username: 'Guest',
@@ -65,7 +92,7 @@ function Header({ isLogin, user, setSearch }) {
         }
     };
     return (
-        <div className="flex flex-row items-center justify-between w-full h-full bg-[#fffffa] gap-8 p-6">
+        <div className="flex flex-row items-center justify-between w-full h-[60px] bg-[#fffffa] gap-8 px-6">
 
             <div className="w-10 h-10" onClick={() => handleClick()}>
                 <img src={logo} alt="logo" />
@@ -89,6 +116,8 @@ function Header({ isLogin, user, setSearch }) {
                     backgroundColor: 'white',
                     overflow: 'hidden',
                     borderRadius: '28px',
+                    margin: 0,
+                    padding: 0,
 
                     '& .MuiOutlinedInput-root': {
                         borderRadius: '28px',
@@ -121,7 +150,7 @@ function Header({ isLogin, user, setSearch }) {
                             <IconButton
                                 onClick={handleSubmit}
                                 sx={{
-                                    backgroundColor: '#1a73e8',
+                                    backgroundColor: theme => theme.palette.primary.main,
                                     color: 'white',
                                     borderRadius: '50%',
                                     width: '30px',

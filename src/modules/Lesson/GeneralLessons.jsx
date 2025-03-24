@@ -8,6 +8,7 @@ import React, { useEffect, useState } from 'react';
 import CustomScrollbar from '~/Components/Common/CustomScrollbar';
 import { useDispatch, useSelector } from 'react-redux';
 import Module from './../CourseDetail/MainSection/Modules/Module';
+import Header from '~/Components/Header';
 
 const GeneralLessons = () => {
 
@@ -39,7 +40,8 @@ const GeneralLessons = () => {
     return (
         <div className="h-screen flex flex-col overflow-hidden">
             <header className=' '>
-                <HeaderCourse />
+                <Header />
+                <Divider />
             </header>
             <div className="flex h-full ">
                 <Grid container className=" justify-between ">

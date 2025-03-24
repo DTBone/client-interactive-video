@@ -26,33 +26,40 @@ import { useLocation } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { getLectureById, updateLectureProgress } from '~/store/slices/Quiz/action';
 import { useOutletContext } from 'react-router-dom';
+import { gridColumnsTotalWidthSelector } from '@mui/x-data-grid';
+import EditNoteIcon from '@mui/icons-material/EditNote';
 
 const Lecture = () => {
     const dispatch = useDispatch();
+    const location = useLocation();
+    const progress = useSelector((state) => state.progress.progress);
+    const lectureId = location.state.item.video;
+    console.log('location', lectureId);
+
     const { onQuizSubmit } = useOutletContext();
     const [value, setValue] = React.useState('1');
     const [isCompleted, setIsCompleted] = React.useState(false);
-    const progress = useSelector((state) => state.progress.progress);
-    const location = useLocation();
-    console.log('location', location);
-    const lectureId = location.state.item.video;
     const [lecture, setLecture] = React.useState({})
     const [alert, setAlert] = React.useState('');
+
     console.log('progress', progress)
 
     const getLecture = async () => {
         const result = await dispatch(getLectureById(lectureId))
         if (result.payload.success) {
-            setLecture({...result.payload.data, title: location.state.item.title});
+            setLecture({ ...result.payload.data, title: location.state.item.title });
             setIsCompleted(progress.status == 'completed');
         }
         else {
             console.log("Failed to get lecture")
         }
     }
+    React.useEffect(() => {
+        console.log("lecture", lecture)
+    }, [lecture])
 
     const onCompleteVideo = async (progressVideo) => {
-        const rep = await dispatch(updateLectureProgress({progressId: progress._id, progressVideo: {...progressVideo, videoId: lectureId}}))
+        const rep = await dispatch(updateLectureProgress({ progressId: progress._id, progressVideo: { ...progressVideo, videoId: lectureId } }))
         if (rep.payload.success) {
             setAlert('Completed video');
             if (onQuizSubmit) {
@@ -66,7 +73,7 @@ const Lecture = () => {
 
     React.useEffect(() => {
         getLecture()
-    }, [])
+    }, [location])
 
     const handleChange = (event, newValue) => {
         setValue(newValue);
@@ -92,12 +99,19 @@ const Lecture = () => {
     };
 
     return (
-        <Paper elevation={3} sx={{ m: 2, width: '100%',
-            borderRadius: 5, }}>
+        <Paper elevation={3} sx={{
+            m: 2, width: '100%',
+            borderRadius: 5,
+        }}>
             <Box sx={{ width: '100%', typography: 'body1' }}>
-                <Typography variant="h5" sx={{ p: 2, fontWeight: 'bold' }}>
-                    {lecture?.title || 'Video'}
-                </Typography>
+                <div className="felx flex-row justify-between items-center">
+
+                    <Typography variant="h5" sx={{ p: 2, fontWeight: 'bold' }}>
+                        {lecture?.title || 'Video'}
+                    </Typography>
+
+                    <EditNoteIcon sx={{ fontSize: 30, color: '#1976d2', marginRight: '16px' }} />
+                </div>
 
                 <TabContext value={value}>
                     <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
@@ -108,7 +122,7 @@ const Lecture = () => {
                     </Box>
 
                     <TabPanel value="1" sx={{ p: 0 }}>
-                        <Video src={lecture.file} questions={lecture?.questions} isComplete={isCompleted} setIsComplete={setIsCompleted} onCompleteVideo={onCompleteVideo} moduleItemId={location.state.item._id}/>
+                        <Video src={lecture.file} questions={lecture?.questions} isComplete={isCompleted} setIsComplete={setIsCompleted} onCompleteVideo={onCompleteVideo} moduleItemId={location.state.item._id} />
 
                     </TabPanel>
 
@@ -147,7 +161,7 @@ const Lecture = () => {
             >
                 <Alert
                     onClose={() => setAlert('')}
-                    severity= {'success'}
+                    severity={'success'}
                     variant="filled"
                     sx={{ width: '100%' }}
                 >

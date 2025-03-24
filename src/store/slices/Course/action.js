@@ -12,7 +12,7 @@ export const getAllCourse = createAsyncThunk(
                     limit: filter?.limit,
                     search: filter?.search || '',
                     level: filter?.level || 'all',
-                    tags: filter?.tags  || [],
+                    tags: filter?.tags || [],
                     orderBy: filter?.orderBy,
                 }
             });
@@ -26,10 +26,11 @@ export const getAllCourse = createAsyncThunk(
 
 export const getCourseByID = createAsyncThunk(
     'course/getCourseByID',
-    async (courseId, { rejectWithValue }) => {
-        console.log('courseId', courseId);
+    async (id, { rejectWithValue }) => {
+        console.log('courseId', id);
+
         try {
-            const { data } = await axiosInstance.get(`/learns/${courseId}`);
+            const { data } = await axiosInstance.get(`/learns/${id}`);
             return data;
         } catch (error) {
             return rejectWithValue(error.message);

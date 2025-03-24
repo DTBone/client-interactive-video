@@ -37,7 +37,7 @@ const courseSlice = createSlice({
             })
             .addCase(getCourseByID.fulfilled, (state, action) => {
                 state.loading = false;
-                state.currentCourse = action.payload;
+                state.currentCourse = action.payload.data;
                 state.error = null;
             })
             .addCase(getCourseByID.rejected, (state, action) => {

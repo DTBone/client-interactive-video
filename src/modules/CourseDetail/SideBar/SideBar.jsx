@@ -29,7 +29,7 @@ const SideBar = () => {
     const [activeButton, setActiveButton] = useState(null);
     useEffect(() => {
         if (currentCourse) {
-            setCourse(currentCourse.data);
+            setCourse(currentCourse);
         }
     }, [currentCourse])
     const handleButtonClick = (buttonId) => {
@@ -214,7 +214,7 @@ const SideBar = () => {
         navigate(`/learns/${courseId}`)
     }
     return (
-        <div className="">
+        <div className="flex flex-col pl-6">
             <Button onClick={() => navigate(`/course/${courseId}`)} className="flex items-center gap-2">⇽ Back to Courses</Button>
 
             <div

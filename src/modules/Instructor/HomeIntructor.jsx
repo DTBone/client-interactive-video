@@ -11,6 +11,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import Module from './../CourseDetail/MainSection/Modules/Module';
 import AddToPhotosIcon from '@mui/icons-material/AddToPhotos';
 import { clearCurrentCourse } from '~/store/slices/Course/courseSlice';
+import Header from '~/Components/Header';
 
 const HomeIntructor = () => {
 
@@ -34,9 +35,10 @@ const HomeIntructor = () => {
         <div>
             <div className="h-screen flex flex-col overflow-hidden">
                 <header className=' '>
-                    <HeaderCourse />
+                    <Header />
+                    <Divider />
                 </header>
-                <div className="flex h-full ">
+                <div className="flex h-full pl-6 ">
                     <Grid container className=" justify-between ">
                         <Grid item xs={2} sm={3} md={4} lg={isExpanded ? 2.1 : 0.6}
                             // sx={{

@@ -297,32 +297,6 @@ const Video = ({ src, questions = questionsExample, isComplete, onCompleteVideo,
         };
     }, [questions, answeredQuestions, complete, isComplete, onCompleteVideo]);
 
-    // useEffect(() => {
-    //     const video = videoRef.current;
-    //     if (!video) return;
-
-    //     const handleLoadedMetadata = () => {
-    //         setDuration(video.duration);
-    //     };
-
-    //     const handleTimeUpdate = () => {
-    //         setCurrentTime(video.currentTime);
-    //     };
-
-    //     const handleFullscreenChange = () => {
-    //         setIsFullscreen(document.fullscreenElement !== null);
-    //     };
-
-    //     video.addEventListener('loadedmetadata', handleLoadedMetadata);
-    //     video.addEventListener('timeupdate', handleTimeUpdate);
-    //     document.addEventListener('fullscreenchange', handleFullscreenChange);
-
-    //     return () => {
-    //         video.removeEventListener('loadedmetadata', handleLoadedMetadata);
-    //         video.removeEventListener('timeupdate', handleTimeUpdate);
-    //         document.removeEventListener('fullscreenchange', handleFullscreenChange);
-    //     };
-    // }, []);
 
     const formatTime = (timeInSeconds) => {
         const hours = Math.floor(timeInSeconds / 3600);

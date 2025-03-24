@@ -117,7 +117,7 @@ export default function MainDrawer({ children }) {
         position: "relative", // Để định vị overlay
         minHeight: "100vh",
         overflow: "hidden",
-
+        marginTop:"130px",
         "&::before": {
           content: '""',
           position: "absolute",
@@ -132,7 +132,7 @@ export default function MainDrawer({ children }) {
         },
       }}
     >
-        <DrawerHeader />
+        {/* <DrawerHeader /> */}
         <div
           style={{
             // height: 'calc(100vh - 130px)',
