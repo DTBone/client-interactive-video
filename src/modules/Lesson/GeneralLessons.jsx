@@ -9,8 +9,21 @@ import CustomScrollbar from '~/Components/Common/CustomScrollbar';
 import { useDispatch, useSelector } from 'react-redux';
 import Module from './../CourseDetail/MainSection/Modules/Module';
 import Header from '~/Components/Header';
+import { setSidebar } from '~/store/slices/ModuleItem/moduleItemSlice';
 
 const GeneralLessons = () => {
+    const dispatch = useDispatch();
+    const isExpandedRedux = useSelector((state) => state.moduleItem.isExpanded);
+    const [isExpanded, setIsExpanded] = useState(true);
+
+    useEffect(() => {
+        dispatch(setSidebar(isExpanded));
+    }, [isExpanded]);
+
+    useEffect(() => {
+        setIsExpanded(isExpandedRedux);
+    }, [isExpandedRedux]);
+
 
     //const { currentCourse } = useSelector(state => state.course);
     const location = useLocation();
@@ -24,13 +37,11 @@ const GeneralLessons = () => {
         console.log('result', result);
         setIsSubmitted(result || false);
     }
-    const [isExpanded, setIsExpanded] = useState(true);
     const handleSidebarButtonClick = () => {
         setIsExpanded(!isExpanded);
         //console.log('isExpanded', isExpanded);
         //setSidebarWidth(isExpanded ? 55 : 255);
     };
-    const dispatch = useDispatch();
     useEffect(() => {
         // if (!currentCourse) {
         //     //dispatch(getCourseById({ courseId: courseId }));

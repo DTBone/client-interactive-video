@@ -418,7 +418,7 @@ const Video = ({ src, questions = questionsExample, isComplete, onCompleteVideo,
                 bgcolor: 'black',
                 overflow: 'hidden',
                 '&:hover .controls': { opacity: 1 },
-                borderRadius: '0 0 20px 20px',
+                borderRadius: '20px 20px 0px 0px',
             }}
             onMouseEnter={() => setShowControls(true)}
             onMouseLeave={() => setShowControls(false)}
