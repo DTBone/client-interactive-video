@@ -8,7 +8,8 @@ const moduleItemSlice = createSlice({
         error: null,
         items: [],
         currentItem: null,
-        refresh: false
+        refresh: false,
+        isExpanded: false,
     },
     reducers: {
         clearCurrentModule: (state) => {
@@ -20,7 +21,13 @@ const moduleItemSlice = createSlice({
         },
         toggleRefresh: (state) => {
             state.refresh = !state.refresh;
-        }
+        },
+        toggleSidebar: (state) => {
+            state.isExpanded = !state.isExpanded;
+        },
+        setSidebar: (state, action) => {
+            state.isExpanded = action.payload;
+        },
     },
     extraReducers: (builder) => {
         builder
@@ -163,5 +170,5 @@ const moduleItemSlice = createSlice({
     }
 });
 
-export const { clearCurrentModule, clearError, toggleRefresh } = moduleItemSlice.actions;
+export const { clearCurrentModule, clearError, toggleRefresh, setSidebar, toggleSidebar } = moduleItemSlice.actions;
 export default moduleItemSlice.reducer;

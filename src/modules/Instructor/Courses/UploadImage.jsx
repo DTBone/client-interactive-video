@@ -6,6 +6,7 @@ const ImageUpload = ({ initialImage, setCourseData, onFileSelect }) => {
     const [selectedFile, setSelectedFile] = useState(null);
     const [error, setError] = useState(null);
     const [previewUrl, setPreviewUrl] = useState(initialImage || "");
+    console.log("previewImage", previewImage);
 
     const createImagePreview = (file) => {
         if (!file) return;

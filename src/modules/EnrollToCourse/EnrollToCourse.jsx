@@ -172,15 +172,32 @@ const EnrollToCourse = () => {
                     </div>
                 </div>
                 <div className="flex-grow-[4] ml-10">
-                    <Card sx={{ maxWidth: 600, minHeight: 350 }}>
-                        <CardMedia
-                            sx={{ height: 400 }}
-                            image={course?.photo}
-                            title="green iguana"
-                        />
-
-                    </Card>
+                    {course?.sumaryVideo ? (
+                        <video
+                            // width="600"
+                            // height="350"
+                            controls // Thêm điều khiển play/pause
+                            preload="metadata" // Tải metadata trước nhưng không tự phát
+                            poster={course?.photo} // Ảnh thay thế khi video chưa tải
+                        >
+                            <source src={course.sumaryVideo} type="video/mp4" />
+                            Trình duyệt của bạn không hỗ trợ thẻ video.
+                        </video>
+                    ) : (
+                        <Card sx={{ maxWidth: 600, minHeight: 350 }}>
+                            {course?.photo ? (
+                                <CardMedia
+                                    sx={{ height: 400 }}
+                                    image={course.photo}
+                                    title="Course Image"
+                                />
+                            ) : (
+                                <p className="text-center p-5">Không có hình ảnh</p>
+                            )}
+                        </Card>
+                    )}
                 </div>
+
             </section>
             <section className='ml-5 space-y-2 mr-6 px-6'>
                 <Tabcourse course={course} isEnrolled={enrollCourse} />
