@@ -177,3 +177,23 @@ export const editProgrammingByItemId = createAsyncThunk(
         }
     }
 )
+
+export const createNewInteractiveQuestion = createAsyncThunk(
+    'module/moduleItem/createNewQuestionInteractive',
+    async ({ moduleItemId, currentQuestion, videoId, selectedAnswer }, { rejectWithValue }) => {
+        console.log('questionData', currentQuestion)
+        console.log('videoId', videoId)
+        console.log('moduleItemId', moduleItemId)
+        console.log('selectedAnswer', selectedAnswer)
+        try {
+            const { data } = await axiosInstance.post(`/moduleitem/lecture/${moduleItemId}/interactive`,
+                currentQuestion,
+                {
+                    params: { videoId, selectedAnswer }
+                });
+            return data;
+        } catch (error) {
+            return rejectWithValue(error.message);
+        }
+    }
+)

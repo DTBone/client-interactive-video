@@ -34,6 +34,7 @@ import {
 } from '@mui/icons-material';
 import { useDispatch, useSelector } from 'react-redux';
 import { updateLectureProgress } from '~/store/slices/Quiz/action';
+import { createNewInteractiveQuestion } from '~/store/slices/ModuleItem/action';
 
 const questionsExample = [
     {
@@ -84,7 +85,7 @@ const questionsExample = [
     }
 ]
 
-const Video = ({ src, questions = questionsExample, isComplete, onCompleteVideo, moduleItemId }) => {
+const Video = ({ src, questions = questionsExample, isComplete, onCompleteVideo, moduleItemId, videoId }) => {
     const dispatch = useDispatch();
     // const progress = useSelector((state) => Object.keys(state.progress.progress).length > 0 ? state.progress.progress?.moduleItemProgresses.find(p => p.moduleItemId === moduleItemId) : {});
     const progress = useSelector((state) => {
@@ -115,6 +116,19 @@ const Video = ({ src, questions = questionsExample, isComplete, onCompleteVideo,
     const [selectedAnswer, setSelectedAnswer] = useState([]);
     const [answeredQuestions, setAnsweredQuestions] = useState(new Set());// Set chứa các câu hỏi đã trả lời
     const [lastAllowedTime, setLastAllowedTime] = useState(progress?.status === 'completed' ? duration : progress?.result?.video?.lastPosition || 0);
+
+    // console.log("curent question", currentQuestion)
+    // console.log("videoId", videoId)
+    // console.log("moduleItemId", moduleItemId)
+
+    const currQuestion = useSelector((state => state.moduleItem.currentQuestion));
+    console.log("currQuestion", currQuestion)
+    useEffect(() => {
+        if (currQuestion) {
+            setCurrentQuestion(currQuestion);
+        }
+    }, [currQuestion])
+
     const [progressVideo, setProgressVideo] = useState({
         watchedDuration: 0,
         totalDuration: 0,
@@ -194,6 +208,7 @@ const Video = ({ src, questions = questionsExample, isComplete, onCompleteVideo,
                 setIsPlaying(true);
             }, 1500);
         } else {
+            dispatch(createNewInteractiveQuestion({ moduleItemId, currentQuestion, videoId, selectedAnswer }));
             setAlert('Please try again.');
         }
 
@@ -713,7 +728,7 @@ const Video = ({ src, questions = questionsExample, isComplete, onCompleteVideo,
                                         onChange={handleSingleChoiceChange}
                                     >
                                         <Stack className="space-y-4">
-                                            {currentQuestion.answers.map((answer) => (
+                                            {currentQuestion?.answers?.map((answer) => (
                                                 <FormControlLabel
                                                     key={answer._id}
                                                     value={answer._id}

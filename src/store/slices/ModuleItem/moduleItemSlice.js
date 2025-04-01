@@ -1,5 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { createModuleItemLecture, createModuleItemProgramming, createModuleItemQuiz, createModuleItemSupplement, editLectureByItemId, editProgrammingByItemId, editQuizByItemId, editSupplementByItemId, getModuleItemById } from "./action";
+import { createModuleItemLecture, createModuleItemProgramming, createModuleItemQuiz, createModuleItemSupplement, createNewInteractiveQuestion, editLectureByItemId, editProgrammingByItemId, editQuizByItemId, editSupplementByItemId, getModuleItemById } from "./action";
 
 const moduleItemSlice = createSlice({
     name: 'module-item-slice',
@@ -10,6 +10,7 @@ const moduleItemSlice = createSlice({
         currentItem: null,
         refresh: false,
         isExpanded: false,
+        currentQuestion: null,
     },
     reducers: {
         clearCurrentModule: (state) => {
@@ -164,6 +165,19 @@ const moduleItemSlice = createSlice({
                 state.error = null;
             })
             .addCase(editProgrammingByItemId.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
+            .addCase(createNewInteractiveQuestion.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(createNewInteractiveQuestion.fulfilled, (state, action) => {
+                state.loading = false;
+                state.currentQuestion = action.payload.data;
+                state.error = null;
+            })
+            .addCase(createNewInteractiveQuestion.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload;
             })

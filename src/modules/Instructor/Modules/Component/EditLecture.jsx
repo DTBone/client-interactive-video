@@ -20,6 +20,35 @@ const EditLecture = ({ moduleItem }) => {
     const videoRef = useRef(null);
     const { showNotice } = useNotification();
     const { courseId, moduleId } = useParams();
+    const { refresh } = useSelector((state) => state.module)
+    console.log(`Refreshing`, refresh);
+    const clearFormData = () => {
+        setFormData({
+            title: '',
+            description: '',
+            type: 'lecture',
+            contentType: 'Video',
+            icon: 'video',
+            file: null,
+            duration: 0,
+            questions: {
+                index: null,
+                questionType: null,
+                question: null,
+                startTime: null,
+                answers: [
+                    { content: null, isCorrect: null },
+                    { content: null, isCorrect: null },
+                ],
+            }
+        })
+    }
+    useEffect(() => {
+        clearFormData();
+    }, [refresh, moduleItem])
+    useEffect(() => {
+        clearFormData();
+    }, [])
 
     // State để lưu trữ form data
     const [formData, setFormData] = useState({
@@ -206,6 +235,7 @@ const EditLecture = ({ moduleItem }) => {
                 showNotice('error', res.error.message);
             } else {
                 showNotice('success', 'Lecture edit successfully');
+                //window.location.reload();
                 dispatch(toggleRefresh())
                 navigate(`/course-management/${courseId}/module/${moduleId}`);
             }

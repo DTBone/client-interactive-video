@@ -114,7 +114,7 @@ const QuizQuestionForm = ({ questions, onUpdate, duration }) => {
 
     return (
         <div className=''>
-            {quizData.map((question, questionIndex) => (
+            {quizData?.map((question, questionIndex) => (
                 <Card key={questionIndex} className="p-4">
                     <CardContent>
                         <div className="flex justify-between items-center mb-4">
