@@ -125,7 +125,7 @@ const Lecture = () => {
         }}>
             <Box sx={{ width: '100%', typography: 'body1' }}>
                 <div className="mt-0">
-                    <Video src={lecture.file} questions={lecture?.questions} isComplete={isCompleted} setIsComplete={setIsCompleted} onCompleteVideo={onCompleteVideo} moduleItemId={location.state.item._id} />
+                    <Video src={lecture.file} questions={lecture?.questions} isComplete={isCompleted} setIsComplete={setIsCompleted} onCompleteVideo={onCompleteVideo} moduleItemId={location.state.item._id} videoId={lectureId} />
 
                 </div>
 
