@@ -146,18 +146,18 @@ const Lecture = () => {
                     <TabContext value={value}>
                         <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
                             <TabList onChange={handleChange}>
-                                <Tab label="Note" value="1" />
-                                <Tab label="Infomation" value="2" />
+                                {/* <Tab label="Note" value="1" /> */}
+                                <Tab label="Infomation" value="1" />
                             </TabList>
                         </Box>
 
-                        <TabPanel value="1" sx={{ p: 0 }}>
+                        {/* <TabPanel value="1" sx={{ p: 0 }}>
                             <div className=" mt-2 ">
                                 <NoteVideo />
                             </div>
-                        </TabPanel>
+                        </TabPanel> */}
 
-                        <TabPanel value="2">
+                        <TabPanel value="1">
                             <Stack spacing={2}>
                                 <Box>
                                     <Typography variant="h6" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
