@@ -2,11 +2,15 @@
 import { Button, Divider, Paper, Typography } from '@mui/material';
 import { useEffect, useState } from 'react';
 import Course from '~/components/SliderCourses/components/Course';
-
-const CourseList = ({ title, initialCourses, handleClick, hasMore = false, loading }) => {
+import PlayArrowIcon from '@mui/icons-material/PlayArrow';
+import theme from '~/theme';
+import { useNavigate } from 'react-router-dom';
+const CourseList = ({ title, initialCourses, handleClick, hasMore = false, loading, showAll = false }) => {
     const [visibleCourses, setVisibleCourses] = useState([]);
     const COURSES_PER_PAGE = 6;
-    console.log(initialCourses);
+    const navigate = useNavigate();
+    const [isHovered, setIsHovered] = useState(false);
+    // console.log(initialCourses);
 
     // Reset visible courses when initialCourses changes
     useEffect(() => {
@@ -40,13 +44,45 @@ const CourseList = ({ title, initialCourses, handleClick, hasMore = false, loadi
             </div>
         );
     }
+    const handleArrowClick = () => {
+        navigate('/search');
+    }
 
     return (
         <Paper elevation={0} sx={{ width: '100%', backgroundColor: 'transparent' }}
-        className='px-12 py-6'
+            className='px-12 py-6'
         >
             <div className="w-10 h-[0.3rem] bg-green-700 opacity-80 rounded-lg"></div>
-            <Typography variant="h4" style={{ marginBottom: '1rem', textTransform: 'uppercase', fontWeight: 'bold' }}>{title}</Typography>
+
+            <div className="flex flex-row items-center justify-start gap-2 mt-4 mb-2">
+
+                <Typography variant="h4" style={{ marginBottom: '1rem', textTransform: 'uppercase', fontWeight: 'bold' }}>{title}</Typography>
+                {showAll && (
+                    <div
+                        className="flex items-center cursor-pointer transition-all duration-300"
+                        onMouseEnter={() => setIsHovered(true)}
+                        onMouseLeave={() => setIsHovered(false)}
+                        onClick={handleArrowClick}
+                    >
+                        <div className="relative flex items-center">
+                            <PlayArrowIcon
+                                sx={{
+                                    fontSize: '2rem',
+                                    color: theme.palette.primary.main,
+                                    marginBottom: '1rem',
+                                    transform: isHovered ? 'scale(1.2)' : 'scale(1)',
+                                    transition: 'transform 0.3s ease'
+                                }}
+                            />
+                            {isHovered && (
+                                <div className="absolute left-full whitespace-nowrap ml-2 bg-white rounded px-2 py-1 shadow-md" style={{ bottom: '1rem' }}>
+                                    <Typography variant="body2" color="primary">Show more</Typography>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                )}
+            </div>
             <Divider style={{ marginBottom: '1rem' }} />
             <div className='flex flex-row flex-wrap items-start' style={{ height: 'auto' }}>
                 {visibleCourses.map((course) => (
