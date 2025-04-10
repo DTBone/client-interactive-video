@@ -34,6 +34,7 @@ import {
 } from '@mui/icons-material';
 import { useDispatch, useSelector } from 'react-redux';
 import { updateLectureProgress } from '~/store/slices/Quiz/action';
+import { createNewInteractiveQuestion } from '~/store/slices/ModuleItem/action';
 
 const questionsExample = [
     {
@@ -84,7 +85,7 @@ const questionsExample = [
     }
 ]
 
-const Video = ({ src, questions = questionsExample, isComplete, onCompleteVideo, moduleItemId }) => {
+const Video = ({ src, questions = questionsExample, isComplete, onCompleteVideo, moduleItemId, videoId }) => {
     const dispatch = useDispatch();
     // const progress = useSelector((state) => Object.keys(state.progress.progress).length > 0 ? state.progress.progress?.moduleItemProgresses.find(p => p.moduleItemId === moduleItemId) : {});
     const progress = useSelector((state) => {
@@ -115,6 +116,20 @@ const Video = ({ src, questions = questionsExample, isComplete, onCompleteVideo,
     const [selectedAnswer, setSelectedAnswer] = useState([]);
     const [answeredQuestions, setAnsweredQuestions] = useState(new Set());// Set chứa các câu hỏi đã trả lời
     const [lastAllowedTime, setLastAllowedTime] = useState(progress?.status === 'completed' ? duration : progress?.result?.video?.lastPosition || 0);
+
+    // console.log("curent question", currentQuestion)
+    // console.log("videoId", videoId)
+    // console.log("moduleItemId", moduleItemId)
+
+    const currQuestion = useSelector((state => state.moduleItem.currentQuestion));
+    const loading = useSelector((state) => state.moduleItem.loading);
+    console.log("currQuestion", currQuestion)
+    useEffect(() => {
+        if (currQuestion) {
+            setCurrentQuestion(currQuestion);
+        }
+    }, [currQuestion])
+
     const [progressVideo, setProgressVideo] = useState({
         watchedDuration: 0,
         totalDuration: 0,
@@ -194,6 +209,7 @@ const Video = ({ src, questions = questionsExample, isComplete, onCompleteVideo,
                 setIsPlaying(true);
             }, 1500);
         } else {
+            dispatch(createNewInteractiveQuestion({ moduleItemId, currentQuestion, videoId, selectedAnswer }));
             setAlert('Please try again.');
         }
 
@@ -297,32 +313,6 @@ const Video = ({ src, questions = questionsExample, isComplete, onCompleteVideo,
         };
     }, [questions, answeredQuestions, complete, isComplete, onCompleteVideo]);
 
-    // useEffect(() => {
-    //     const video = videoRef.current;
-    //     if (!video) return;
-
-    //     const handleLoadedMetadata = () => {
-    //         setDuration(video.duration);
-    //     };
-
-    //     const handleTimeUpdate = () => {
-    //         setCurrentTime(video.currentTime);
-    //     };
-
-    //     const handleFullscreenChange = () => {
-    //         setIsFullscreen(document.fullscreenElement !== null);
-    //     };
-
-    //     video.addEventListener('loadedmetadata', handleLoadedMetadata);
-    //     video.addEventListener('timeupdate', handleTimeUpdate);
-    //     document.addEventListener('fullscreenchange', handleFullscreenChange);
-
-    //     return () => {
-    //         video.removeEventListener('loadedmetadata', handleLoadedMetadata);
-    //         video.removeEventListener('timeupdate', handleTimeUpdate);
-    //         document.removeEventListener('fullscreenchange', handleFullscreenChange);
-    //     };
-    // }, []);
 
     const formatTime = (timeInSeconds) => {
         const hours = Math.floor(timeInSeconds / 3600);
@@ -436,6 +426,8 @@ const Video = ({ src, questions = questionsExample, isComplete, onCompleteVideo,
     };
 
 
+
+
     return (
         <Box
             sx={{
@@ -444,7 +436,7 @@ const Video = ({ src, questions = questionsExample, isComplete, onCompleteVideo,
                 bgcolor: 'black',
                 overflow: 'hidden',
                 '&:hover .controls': { opacity: 1 },
-                borderRadius: '0 0 20px 20px',
+                borderRadius: '20px 20px 0px 0px',
             }}
             onMouseEnter={() => setShowControls(true)}
             onMouseLeave={() => setShowControls(false)}
@@ -673,6 +665,7 @@ const Video = ({ src, questions = questionsExample, isComplete, onCompleteVideo,
                 </Paper>
             </Popover>
             {/* Interactive Question Dialog */}
+
             {(openQuestionDialog && progress?.status !== 'completed') && (
                 <Dialog
                     open={true}
@@ -708,61 +701,89 @@ const Video = ({ src, questions = questionsExample, isComplete, onCompleteVideo,
                         ><Close /></Tooltip>
                         </Button>
                     </DialogTitle>
-                    <DialogContent sx={{ mt: 2 }}>
-                        {currentQuestion && (
-                            <FormControl className="w-full">
-                                <Typography variant="h6" className="mb-4">
-                                    {currentQuestion.question}
-                                </Typography>
-                                <Typography variant="subtitle1" className="mb-2">
-                                    {currentQuestion.questionType === 'multipleChoice' ? 'Select all that apply:' : 'Select one:'}
-                                </Typography>
-
-                                {currentQuestion.questionType === 'multipleChoice' ? (
-                                    <Stack className="space-y-4">
-                                        {currentQuestion.answers.map((answer) => (
-                                            <FormControlLabel
-                                                key={answer._id}
-                                                control={
-                                                    <Checkbox
-                                                        checked={selectedAnswer?.includes(answer._id)}
-                                                        onChange={() => handleMultipleChoiceChange(answer._id)}
-                                                    />
-                                                }
-                                                label={answer.content}
-                                            />
-                                        ))}
-                                    </Stack>
-                                ) : (
-                                    <RadioGroup
-                                        value={selectedAnswer?.[0] || ''}
-                                        onChange={handleSingleChoiceChange}
-                                    >
-                                        <Stack className="space-y-4">
-                                            {currentQuestion.answers.map((answer) => (
-                                                <FormControlLabel
-                                                    key={answer._id}
-                                                    value={answer._id}
-                                                    control={<Radio />}
-                                                    label={answer.content}
-                                                />
-                                            ))}
-                                        </Stack>
-                                    </RadioGroup>
-                                )}
-                            </FormControl>
-                        )}
-                    </DialogContent>
-                    <DialogActions sx={{ p: 2 }}>
-                        <Button
-                            variant="contained"
-                            onClick={handleAnswerSubmit}
-                            disabled={selectedAnswer === null}
-                            startIcon={<QuestionAnswer />}
+                    {loading ? (
+                        <Box
+                            sx={{
+                                position: 'absolute',
+                                top: 0,
+                                left: 0,
+                                right: 0,
+                                bottom: 0,
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                bgcolor: 'rgba(0, 0, 0, 0.5)'
+                            }}
                         >
-                            Submit Answer
-                        </Button>
-                    </DialogActions>
+                            <CircularProgress />
+                        </Box>
+
+
+                    ) : (
+                        <div>
+                            <DialogContent sx={{
+                                mt: 2,
+                                minHeight: '300px',
+                            }}>
+                                {currentQuestion && (
+                                    <FormControl className="w-full">
+                                        <Typography variant="h6" className="mb-4">
+                                            {currentQuestion.question}
+                                        </Typography>
+                                        <Typography variant="subtitle1" className="mb-2">
+                                            {currentQuestion.questionType === 'multipleChoice' ? 'Select all that apply:' : 'Select one:'}
+                                        </Typography>
+
+                                        {currentQuestion.questionType === 'multipleChoice' ? (
+                                            <Stack className="space-y-4">
+                                                {currentQuestion.answers.map((answer) => (
+                                                    <FormControlLabel
+                                                        key={answer._id}
+                                                        control={
+                                                            <Checkbox
+                                                                checked={selectedAnswer?.includes(answer._id)}
+                                                                onChange={() => handleMultipleChoiceChange(answer._id)}
+                                                            />
+                                                        }
+                                                        label={answer.content}
+                                                    />
+                                                ))}
+                                            </Stack>
+                                        ) : (
+                                            <RadioGroup
+                                                value={selectedAnswer?.[0] || ''}
+                                                onChange={handleSingleChoiceChange}
+                                            >
+                                                <Stack className="space-y-4">
+                                                    {currentQuestion?.answers?.map((answer) => (
+                                                        <FormControlLabel
+                                                            key={answer._id}
+                                                            value={answer._id}
+                                                            control={<Radio />}
+                                                            label={answer.content}
+                                                        />
+                                                    ))}
+                                                </Stack>
+                                            </RadioGroup>
+                                        )}
+                                    </FormControl>
+                                )}
+                            </DialogContent>
+                            <DialogActions sx={{ p: 2 }}>
+                                <Button
+                                    variant="contained"
+                                    onClick={handleAnswerSubmit}
+                                    disabled={selectedAnswer === null}
+                                    startIcon={<QuestionAnswer />}
+                                >
+                                    Submit Answer
+                                </Button>
+                            </DialogActions>
+                        </div>
+
+                    )}
+
+
                 </Dialog>
             )}
             <Snackbar

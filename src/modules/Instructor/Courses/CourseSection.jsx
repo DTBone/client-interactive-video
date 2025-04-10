@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import {
@@ -6,6 +6,9 @@ import {
     List, ListItem, ListItemText, ListItemSecondaryAction, IconButton, Dialog, DialogTitle,
     DialogContent, DialogActions, Chip, Paper,
     Autocomplete,
+    Divider,
+    Box,
+    Typography,
 } from '@mui/material';
 import { Add as AddIcon, Edit as EditIcon, Delete as DeleteIcon } from '@mui/icons-material';
 import HeaderCourse from '~/Components/Common/Header/HeaderCourse';
@@ -14,9 +17,11 @@ import spinnerLoading from '~/assets/spinnerLoading.gif';
 import Breadcrumb from '~/Components/Common/Breadcrumbs/Breadcrumb';
 import ImageUpload from './UploadImage'
 import ArrowRightAltIcon from '@mui/icons-material/ArrowRightAlt';
-import { clearError } from '~/store/slices/Course/courseSlice';
+import { clearCurrentCourse, clearError } from '~/store/slices/Course/courseSlice';
 import { useNotification } from '~/hooks/useNotification';
 import { uploadToCloudnary } from '~/Utils/uploadToCloudnary';
+import Header from '~/Components/Header';
+import FileUpload from '../Modules/Component/FileUpload';
 
 const suggestedTags = [
     // Ngôn ngữ lập trình
@@ -47,6 +52,7 @@ const suggestedTags = [
 
 const CourseSection = ({ state }) => {
     const { courseId } = useParams();
+    const [courseID, setCourseID] = useState(courseId || null);
     const { currentCourse, loading, error } = useSelector((state) => state.course);
     const dispatch = useDispatch();
     const navigate = useNavigate();
@@ -65,6 +71,12 @@ const CourseSection = ({ state }) => {
     const [selectedImageFile, setSelectedImageFile] = useState(null);
     const [inputValue, setInputValue] = useState('');
     const [filteredSuggestions, setFilteredSuggestions] = useState(suggestedTags);
+
+
+    const [videoPreview, setVideoPreview] = useState(currentCourse?.sumaryVideo || '');
+    const [videoKey, setVideoKey] = useState(0);
+    const videoRef = useRef(null);
+    const [fileVideo, setFileVideo] = useState(null);
 
     const handleTagChange = (event, newValue) => {
         if (newValue && !courseData.tags?.includes(newValue)) {
@@ -97,30 +109,29 @@ const CourseSection = ({ state }) => {
 
     useEffect(() => {
         let mounted = true;
-
         const fetchCourse = async () => {
-            if (state === 'edit' && courseId && mounted) {
-                setIsLoading(true);
+            if (state === 'edit' && courseID && mounted) {
+                //setIsLoading(true);
                 try {
-                    console.log('courseId:', courseId);
-                    await dispatch(getCourseByID(courseId));
+                    //dispatch(clearCurrentCourse());
+                    console.log('courseId effect:', courseID);
+                    await dispatch(getCourseByID(courseID));
 
                 } catch (error) {
                     console.error('Error:', error);
                 } finally {
                     if (mounted) {
-                        setIsLoading(false);
+                        //setIsLoading(false);
                     }
                 }
             }
         };
-
         fetchCourse();
 
         return () => {
             mounted = false;
         };
-    }, [courseId, state]);
+    }, [courseID, state]); // Chỉ gọi lại khi courseId thay đổi
 
     useEffect(() => {
         if (error) {
@@ -130,11 +141,12 @@ const CourseSection = ({ state }) => {
     }, [error]);
 
     useEffect(() => {
-        if (currentCourse?.data) {
-            setCourseData(currentCourse.data);
+        if (currentCourse) {
+            setCourseData(currentCourse);
             setSelectedImageFile(currentCourse.photo);
         }
         console.log('course:', currentCourse, error, loading,);
+        console.log('courseData:', courseData);
     }, [currentCourse])
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -170,7 +182,7 @@ const CourseSection = ({ state }) => {
 
             let uploadedImageUrl = courseData.photo; // Giữ ảnh cũ nếu không có ảnh mới
             // Upload ảnh lên Cloudinary nếu có file ảnh mới được chọn
-            if (selectedImageFile) {
+            if (selectedImageFile !== courseData.photo) {
                 try {
                     uploadedImageUrl = await uploadToCloudnary(selectedImageFile);
                 } catch (error) {
@@ -181,23 +193,60 @@ const CourseSection = ({ state }) => {
             }
 
 
-            const updatedCourseData = (() => {
-                const baseData = {
-                    ...courseData,
-                    photo: uploadedImageUrl
-                };
+            // const updatedCourseData = (() => {
+            //     const baseData = {
+            //         ...courseData,
+            //         photo: uploadedImageUrl,
+            //         video: fileVideo,
+            //     };
 
-                switch (actionType) {
-                    case 'delete':
-                        return { ...baseData, status: 'unpublished' };
-                    case 'published':
-                        return { ...baseData, status: 'published' };
-                    case 'draft':
-                        return { ...baseData, status: 'draft' };
-                    default:
-                        return { ...baseData, status: 'published' };
+            //     switch (actionType) {
+            //         case 'delete':
+            //             return { ...baseData, status: 'unpublished' };
+            //         case 'published':
+            //             return { ...baseData, status: 'published' };
+            //         case 'draft':
+            //             return { ...baseData, status: 'draft' };
+            //         default:
+            //             return { ...baseData, status: 'published' };
+            //     }
+            // })();
+            const statusMap = {
+                delete: 'unpublished',
+                published: 'published',
+                draft: 'draft',
+            };
+
+            const updatedCourseData = {
+                ...courseData,
+                photo: uploadedImageUrl,
+                video: fileVideo,
+                status: statusMap[actionType] || 'published', // Nếu không tìm thấy, mặc định là 'published'
+            };
+
+            const formData = new FormData();
+            if (updatedCourseData.instructor && typeof updatedCourseData.instructor === 'object') {
+                formData.append("instructor", updatedCourseData.instructor._id); // Chỉ lấy ObjectId
+            } else {
+                formData.append("instructor", updatedCourseData.instructor);
+            }
+
+            // Thêm dữ liệu văn bản
+            Object.keys(updatedCourseData).forEach((key) => {
+                if (key !== 'video' && key !== 'instructor' && key !== 'courseReviews' && key !== 'enrollmentCount') {
+                    formData.append(key, updatedCourseData[key]);
                 }
-            })();
+            });
+
+            // Thêm file video (nếu có)
+            if (updatedCourseData.video instanceof File) {
+                //console.log('fileVideo:', fileVideo);
+                console.log("Kiểm tra file video:", updatedCourseData.video);
+                console.log("Loại dữ liệu:", typeof updatedCourseData.video);
+                console.log("Có phải File object không?", updatedCourseData.video instanceof File);
+
+                formData.append('sumaryVideo', updatedCourseData.video);
+            }
 
             setCourseData(updatedCourseData);
 
@@ -206,12 +255,12 @@ const CourseSection = ({ state }) => {
             if (courseId) {
                 await dispatch(updateCourse({
                     courseId,
-                    courseData: updatedCourseData
+                    formData: formData
                 })).unwrap();
                 showNotice('success', 'Course updated successfully!');
                 await dispatch(getCourseByID(courseId));
             } else {
-                await dispatch(createCourse(updatedCourseData)).unwrap();
+                await dispatch(createCourse(formData)).unwrap();
                 showNotice('success', 'Course created successfully!');
                 navigate('/instructor/course-management', { replace: true });
             }
@@ -321,6 +370,45 @@ const CourseSection = ({ state }) => {
         navigate(path);
     };
 
+    const handleFileChange = (file) => {
+        if (file) {
+            // Kiểm tra xem file có phải là video không
+            if (!file.type.startsWith('video/')) {
+                showNotice('error', 'Please select a video file');
+                return;
+            }
+
+            const fileData = new FormData();
+            fileData.append('file', file);
+
+            // Tạo URL để preview video
+
+            if (videoPreview) {
+                URL.revokeObjectURL(videoPreview);
+            }
+
+            const videoURL = URL.createObjectURL(file);
+            setVideoPreview(videoURL);
+            setVideoKey(prevKey => prevKey + 1);
+
+
+            setFileVideo(file);
+        } else {
+            setVideoPreview(null);
+            setFileVideo('');
+        }
+    };
+
+    const handleVideoLoad = () => {
+        if (videoRef.current) {
+            const duration = videoRef.current.duration;
+            // setFormData(prev => ({
+            //     ...prev,
+            //     duration: duration
+            // }));
+        }
+    };
+
 
 
 
@@ -336,13 +424,19 @@ const CourseSection = ({ state }) => {
     return (
         <div className="h-screen flex flex-col overflow-hidden">
             <header>
-                <HeaderCourse />
-                <Breadcrumb
-                    courseId={currentCourse?.data?._id}
-                />
+                <Header />
+                <Divider />
+                <div className=" px-6">
+                    <Breadcrumb
+                        courseId={courseID}
+
+                    />
+                </div>
+
+
             </header>
 
-            <div className="flex h-full px-6 overflow-y-auto pt-5">
+            <div className="flex h-full overflow-y-auto pt-5 px-6">
                 <form onSubmit={(e) => {
                     e.preventDefault(); // Prevent form submission
                     handleSubmit('published', e);
@@ -428,14 +522,45 @@ const CourseSection = ({ state }) => {
                             />
                         </Grid>
 
+                        <div className="flex justify-between items-start w-full gap-3 mt-4 ml-4">
 
-                        <Grid item xs={12}>
-                            <ImageUpload
-                                initialImage={currentCourse?.data?.photo}
-                                setCourseData={setCourseData}
-                                onFileSelect={setSelectedImageFile}
-                            />
-                        </Grid>
+                            <Grid item xs={6}>
+                                <Typography variant="h6" sx={{ marginBottom: '16px', marginLeft: '4px' }} gutterBottom> Video Sumary </Typography>
+                                <FileUpload
+                                    onFileChange={handleFileChange}
+                                    accept='.mp4,.webm'
+                                />
+                                {videoPreview && (
+                                    <div>
+                                        <Box className="mt-4">
+                                            <video
+                                                key={videoKey}
+                                                ref={videoRef}
+                                                className="w-full max-h-[400px]"
+                                                controls
+                                                onLoadedMetadata={handleVideoLoad}
+                                            >
+                                                <source src={videoPreview} type="video/mp4" />
+                                                Your browser does not support the video tag.
+                                            </video>
+
+                                        </Box>
+
+                                    </div>
+                                )}
+                            </Grid>
+                            <Grid item xs={6}>
+                                <Typography variant="h6" sx={{ marginBottom: '16px', marginLeft: '4px' }} gutterBottom> Thumnail </Typography>
+
+                                <ImageUpload
+                                    initialImage={currentCourse?.photo}
+                                    setCourseData={setCourseData}
+                                    onFileSelect={setSelectedImageFile}
+                                />
+                            </Grid>
+                        </div>
+
+
 
                         <Grid item xs={12}>
                             <Paper elevation={0} className="p-3 border rounded">

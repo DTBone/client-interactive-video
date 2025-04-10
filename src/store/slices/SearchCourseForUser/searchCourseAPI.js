@@ -34,7 +34,7 @@ export const searchCourseAPI = createApi({
                 if (typeof params === 'string') {
                     queryParams.append('q', params);
                     queryParams.append('page', 1);
-                    queryParams.append('limit', 12);
+                    queryParams.append('limit', 9);
                     return {
                         url: `/search?${queryParams.toString()}`,
                         method: 'GET',
@@ -46,8 +46,8 @@ export const searchCourseAPI = createApi({
                     if (params.query) {
                         queryParams.append('q', params.query);
                     }
-                    if (params.categories && params.categories.length > 0) {
-                        queryParams.append('categories', params.categories.join(','));
+                    if (params.tags && params.tags.length > 0) {
+                        queryParams.append('tags', params.tags.join(','));
                     }
 
                     if (params.levels && params.levels.length > 0) {
@@ -68,7 +68,7 @@ export const searchCourseAPI = createApi({
                     }
 
                     queryParams.append('page', params.page || 1);
-                    queryParams.append('limit', params.limit || 10);
+                    queryParams.append('limit', params.limit || 9);
 
                     return {
                         url: `/search?${queryParams.toString()}`,
@@ -96,12 +96,12 @@ export const searchCourseAPI = createApi({
                 }
             }
         }),
-        getCategories: builder.query({
+        getTags: builder.query({
             query: () => ({
-                url: '/search/categories',
+                url: '/search/tags',
                 method: 'GET'
             }),
-            transformResponse: (response) => response.categories || []
+            transformResponse: (response) => response.tags || []
         }),
 
         getLevels: builder.query({
@@ -115,7 +115,7 @@ export const searchCourseAPI = createApi({
 
 });
 
-export const { useSearchCoursesQuery, useGetCategoriesQuery, useGetLevelsQuery } = searchCourseAPI;
+export const { useSearchCoursesQuery, useGetTagsQuery, useGetLevelsQuery } = searchCourseAPI;
 
 export const useLazySearchCoursesQuery = searchCourseAPI.endpoints.searchCourses.useLazyQuery;
 export default searchCourseAPI;

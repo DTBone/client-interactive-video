@@ -195,7 +195,7 @@ const Lecture = () => {
             submitFormData.append('duration', formData.duration);
             submitFormData.append('questions', JSON.stringify(formData.questions));
 
-
+            console.log('file: ', formData.file);
             // Debug log
             for (let [key, value] of submitFormData.entries()) {
                 console.log(`${key}:`, value instanceof File ? value.name : value);

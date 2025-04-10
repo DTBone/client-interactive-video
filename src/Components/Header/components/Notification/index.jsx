@@ -10,27 +10,27 @@ import {
     Box,
 } from '@mui/material';
 import { Circle as CircleIcon } from '@mui/icons-material';
-import {useNavigate} from "react-router-dom";
-import {api} from "~/Config/api.js";
-import {useParams} from "react-router-dom";
-import {useEffect} from "react";
-import {useDispatch} from "react-redux";
-import {getCourseByID} from "~/store/slices/Course/action";
+import { useNavigate } from "react-router-dom";
+import { api } from "~/Config/api.js";
+import { useParams } from "react-router-dom";
+import { useEffect } from "react";
+import { useDispatch } from "react-redux";
+import { getCourseByID } from "~/store/slices/Course/action";
 
 const NotificationMenu = ({ anchorEl, open, onClose, notifications = [], setNotifications }) => {
     const navigate = useNavigate();
     const { courseId } = useParams();
     const dispatch = useDispatch();
-    useEffect(() => {
-            if (courseId) {
-                const fetchData = async () => {
-                    await dispatch(getCourseByID(courseId));
-    
-                };
-                fetchData();
-            }
-        }, [courseId, dispatch]);
-    const handleNotificationClick =async (notification) => {
+    // useEffect(() => {
+    //         if (courseId) {
+    //             const fetchData = async () => {
+    //                 await dispatch(getCourseByID(courseId));
+
+    //             };
+    //             fetchData();
+    //         }
+    //     }, [courseId]);
+    const handleNotificationClick = async (notification) => {
         // Xử lý khi click vào notification
         // Đánh dấu notification đã đọc
         const result = await api.put(`/notifications/${notification._id}`, { read: true });

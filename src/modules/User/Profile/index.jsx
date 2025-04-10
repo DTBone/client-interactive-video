@@ -37,7 +37,6 @@ function Profile() {
     const [open, setOpen] = useState(false);
     const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState(0);
-    
     useEffect(() => {
         const fetchUser = async () => {
             const token = localStorage.getItem('token');

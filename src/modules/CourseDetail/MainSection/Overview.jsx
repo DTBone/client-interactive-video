@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { Book, Clock, Star } from 'lucide-react';
 
 import { useNavigate, useParams } from 'react-router-dom';
-import { getCertificateByCourseId } from '~/store/slices/Course/action';
+import { getCertificateByCourseId, getCourseByID } from '~/store/slices/Course/action';
 import { getCheckProgress } from '~/store/slices/Progress/action';
 const Overview = () => {
     const { currentCourse } = useSelector((state) => state.course);
@@ -16,13 +16,14 @@ const Overview = () => {
     useEffect(() => {
         if (courseId) {
             const fetchData = async () => {
+                // await dispatch(getCourseByID(courseId));
                 await dispatch(getCheckProgress({ courseId }));
             };
             fetchData();
         }
-    }, [courseId]);
+    }, [courseId, currentCourse]);
 
-    const { data } = currentCourse ? currentCourse : "";
+    const data = currentCourse ? currentCourse : "";
     const handleCerClick = () => {
         console.log("Certificate Clicked");
         navigate(`/certificate/${courseId}`, { state: { courseId, course: currentCourse } });
@@ -86,21 +87,21 @@ const Overview = () => {
                 {/* Course Image */}
                 <div className="md:w-1/3">
                     <img
-                        src={data.photo}
-                        alt={data.title}
+                        src={data?.photo}
+                        alt={data?.title}
                         className="w-full h-48 object-cover rounded-lg"
                     />
                 </div>
 
                 {/* Course Details */}
                 <div className="md:w-2/3 space-y-4">
-                    <h1 className="text-2xl font-bold text-gray-800">{data.title}</h1>
+                    <h1 className="text-2xl font-bold text-gray-800">{data?.title}</h1>
 
                     {/* Course Metadata */}
                     <div className="flex items-center space-x-4 text-gray-600">
                         <div className="flex items-center space-x-2">
                             <Star className="w-5 h-5" />
-                            <span>{data.averageRating.toFixed(2)}/5 Rating</span>
+                            <span>{data?.averageRating?.toFixed(2)}/5 Rating</span>
                         </div>
                         {/* <div className="flex items-center space-x-2">
                             <Users className="w-5 h-5" />
@@ -108,14 +109,14 @@ const Overview = () => {
                         </div> */}
                         <div className="flex items-center space-x-2">
                             <Book className="w-5 h-5" />
-                            <span>{data.level} Level</span>
+                            <span>{data?.level} Level</span>
                         </div>
                     </div>
 
                     {/* Description */}
                     <div>
                         <h2 className="text-lg font-semibold mb-2">Course Description</h2>
-                        <p className="text-gray-700">{data.description}</p>
+                        <p className="text-gray-700">{data?.description}</p>
                     </div>
                 </div>
             </div>
@@ -124,7 +125,7 @@ const Overview = () => {
             <div className="mt-6 mb-6">
                 <h2 className="text-lg font-semibold mb-4">Course Modules</h2>
                 <div className="grid md:grid-cols-2 gap-4">
-                    {data.modules.map((module, index) => (
+                    {data?.modules.map((module, index) => (
                         <div
                             key={module._id}
                             className="bg-gray-50 p-4 rounded-lg border border-gray-200"

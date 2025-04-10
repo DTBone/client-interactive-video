@@ -84,7 +84,7 @@ function HomeUser({ user }) {
             setWebDevelopmentCourses(webDevelopmentCourses);
         }
         const initializeNewCourses = async () => {
-            const newCourse = await getCoursesBySearch( '', 'newest'); // Replace 'Web Development' with the actual search term for Web Development courses
+            const newCourse = await getCoursesBySearch('', 'newest'); // Replace 'Web Development' with the actual search term for Web Development courses
             setNewCourses(newCourse);
         }
         initializeNewCourses();
@@ -142,82 +142,83 @@ function HomeUser({ user }) {
     return (
         <>
             <Banner image={banner} />
-        <div className='h-full w-full flex flex-col items-center'>
-            {/* Categories */}
-            <Categories />
-            <section className='w-full flex flex-col items-center'>
-                <CourseList
-                    title={'Recent Courses'}
-                    initialCourses={recentCourses}
-                    handleClick={handleLoadMore}
-                    hasMore={hasMore}
-                    loading={loading}
-                />
-            </section>
-            <section className='w-full flex flex-col items-center bg-green-100'>
-            <CourseList
-                title={'Newest Courses'}
-                initialCourses={newCourses}
-            />
-            </section>
-            {/* About me */}
-            <section className='w-full flex flex-col items-center'>
-                <Paper elevation={0} sx={{ width: '100%', backgroundColor: 'transparent' }}
-                className='px-12 py-6'>
-                    <div className="w-10 h-[0.3rem] bg-green-700 opacity-80 rounded-lg">
-                    </div>
-                    <Box sx={{ marginBottom: '1rem', display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
-                    
-                        <img src={imageAbout} alt='About us' className='w-1/2 h-full object-cover' />
-                        <Box sx={{ marginLeft: '1rem' }}>
-                            <Typography variant="h4" style={{ marginBottom: '1rem', textTransform: 'uppercase', fontWeight: 'bold' }}>Why CodeChef</Typography>
-                            <Divider style={{ marginBottom: '1rem' }} />
-                            <Typography variant='body1' style={{ marginBottom: '1rem' }}>
-                                CodeChef is a platform which supports over 50 programming languages and has a large community.
-                            </Typography>
-                            <Typography variant='body1' style={{ marginBottom: '1rem' }}>
-                                CodeChef was created as a platform to help programmers make it big in the world of algorithms, computer programming, and programming contests. It hosts three featured contests every month (Long Challenge, Cook-Off, Lunchtime) and gives away prizes and goodies to the winners as encouragement.
-                            </Typography>
-                            <Typography variant='body1' style={{ marginBottom: '1rem' }}>
-                                CodeChef for Schools aims to provide a fun and interactive platform for students to learn programming. It is a non-commercial initiative and is open to students from all schools across the globe.
-                            </Typography>
-                            <Typography variant='body1' style={{ marginBottom: '1rem' }}>
-                                CodeChef was created as a platform to help programmers make it big in the world of algorithms, computer programming, and programming contests. It hosts three featured contests every month (Long Challenge, Cook-Off, Lunchtime) and gives away prizes and goodies to the winners as encouragement.
-                            </Typography>
-                        </Box>
-                        
-                    </Box>
+            <div className='h-full w-full flex flex-col items-center'>
+                {/* Categories */}
+                <Categories />
+                <section className='w-full flex flex-col items-center'>
+                    <CourseList
+                        title={'Recent Courses'}
+                        initialCourses={recentCourses}
+                        handleClick={handleLoadMore}
+                        hasMore={hasMore}
+                        loading={loading}
+                    />
+                </section>
+                <section className='w-full flex flex-col items-center bg-green-100'>
+                    <CourseList
+                        title={'Newest Courses'}
+                        initialCourses={newCourses}
+                        showAll={true}
+                    />
+                </section>
+                {/* About me */}
+                <section className='w-full flex flex-col items-center'>
+                    <Paper elevation={0} sx={{ width: '100%', backgroundColor: 'transparent' }}
+                        className='px-12 py-6'>
+                        <div className="w-10 h-[0.3rem] bg-green-700 opacity-80 rounded-lg">
+                        </div>
+                        <Box sx={{ marginBottom: '1rem', display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
 
-                </Paper>
-            </section>
-            {/* Aim to your goals */}
-            <section className='w-full flex flex-col items-center bg-green-100'>
-                <Paper elevation={0} sx={{ width: '100%', backgroundColor: 'transparent' }}
-                className='px-12 py-6'>
-                    <div className="w-10 h-[0.3rem] bg-green-700 opacity-80 rounded-lg"></div>
-                    <Typography variant="h4" style={{ marginBottom: '1rem', textTransform: 'uppercase', fontWeight: 'bold' }}>Follow your goals</Typography>
-                    <Divider style={{ marginBottom: '1rem' }} />
-                    <Box sx={{ marginBottom: '1rem', display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
-                    
-                        <Box sx={{ marginLeft: '1rem' }}>
-                            <img src={you} alt='Goals' className='w-1/2 object-cover' />
-                            <Typography variant='body1' style={{ marginBottom: '1rem' }}>
-                                CodeChef provides a roadmap to help you achieve your goals. 
-                            </Typography>
-                            <Typography variant='body1' style={{ marginBottom: '1rem' }}>
-                                The roadmap is a step-by-step guide to help you learn programming and algorithms.
-                            </Typography>
-                            <Typography variant='body1' style={{ marginBottom: '1rem' }}>
-                                The roadmap is divided into levels, each level containing a list of topics to learn.
-                            </Typography>
-                        </Box>
-                        <img src={roadmap} alt='Goals' className='w-1/2 h-full object-cover' />
-                        
-                    </Box>
+                            <img src={imageAbout} alt='About us' className='w-1/2 h-full object-cover' />
+                            <Box sx={{ marginLeft: '1rem' }}>
+                                <Typography variant="h4" style={{ marginBottom: '1rem', textTransform: 'uppercase', fontWeight: 'bold' }}>Why CodeChef</Typography>
+                                <Divider style={{ marginBottom: '1rem' }} />
+                                <Typography variant='body1' style={{ marginBottom: '1rem' }}>
+                                    CodeChef is a platform which supports over 50 programming languages and has a large community.
+                                </Typography>
+                                <Typography variant='body1' style={{ marginBottom: '1rem' }}>
+                                    CodeChef was created as a platform to help programmers make it big in the world of algorithms, computer programming, and programming contests. It hosts three featured contests every month (Long Challenge, Cook-Off, Lunchtime) and gives away prizes and goodies to the winners as encouragement.
+                                </Typography>
+                                <Typography variant='body1' style={{ marginBottom: '1rem' }}>
+                                    CodeChef for Schools aims to provide a fun and interactive platform for students to learn programming. It is a non-commercial initiative and is open to students from all schools across the globe.
+                                </Typography>
+                                <Typography variant='body1' style={{ marginBottom: '1rem' }}>
+                                    CodeChef was created as a platform to help programmers make it big in the world of algorithms, computer programming, and programming contests. It hosts three featured contests every month (Long Challenge, Cook-Off, Lunchtime) and gives away prizes and goodies to the winners as encouragement.
+                                </Typography>
+                            </Box>
 
-                </Paper>
-            </section>
-        </div>
+                        </Box>
+
+                    </Paper>
+                </section>
+                {/* Aim to your goals */}
+                <section className='w-full flex flex-col items-center bg-green-100'>
+                    <Paper elevation={0} sx={{ width: '100%', backgroundColor: 'transparent' }}
+                        className='px-12 py-6'>
+                        <div className="w-10 h-[0.3rem] bg-green-700 opacity-80 rounded-lg"></div>
+                        <Typography variant="h4" style={{ marginBottom: '1rem', textTransform: 'uppercase', fontWeight: 'bold' }}>Follow your goals</Typography>
+                        <Divider style={{ marginBottom: '1rem' }} />
+                        <Box sx={{ marginBottom: '1rem', display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
+
+                            <Box sx={{ marginLeft: '1rem' }}>
+                                <img src={you} alt='Goals' className='w-1/2 object-cover' />
+                                <Typography variant='body1' style={{ marginBottom: '1rem' }}>
+                                    CodeChef provides a roadmap to help you achieve your goals.
+                                </Typography>
+                                <Typography variant='body1' style={{ marginBottom: '1rem' }}>
+                                    The roadmap is a step-by-step guide to help you learn programming and algorithms.
+                                </Typography>
+                                <Typography variant='body1' style={{ marginBottom: '1rem' }}>
+                                    The roadmap is divided into levels, each level containing a list of topics to learn.
+                                </Typography>
+                            </Box>
+                            <img src={roadmap} alt='Goals' className='w-1/2 h-full object-cover' />
+
+                        </Box>
+
+                    </Paper>
+                </section>
+            </div>
         </>
     );
 }

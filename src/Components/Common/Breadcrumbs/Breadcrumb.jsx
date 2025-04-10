@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux';
 import { useEffect, useState } from 'react';
 import { getCourseByID } from '~/store/slices/Course/action';
+import { clearCurrentCourse } from '~/store/slices/Course/courseSlice';
 
 
 function handleClick(event) {
@@ -22,19 +23,28 @@ export default function Breadcrumb({ courseId, moduleIndex, itemTitle, studentMa
     const dispatch = useDispatch();
     const { currentCourse } = useSelector((state) => state.course)
     const [course, setCourse] = useState(currentCourse);
-    //const [loadCourse, setLoadCourse] = useState(false);
+    console.log("props", courseId, moduleIndex, itemTitle, studentManager)
+    const [loadCourse, setLoadCourse] = useState(false);
+
+    // dispatch(clearCurrentCourse()); // Xóa currentCourse khi component mount
+
+    useEffect(() => {
+        if (courseId && !currentCourse) { // Chỉ gọi API nếu dữ liệu chưa có
+            const fetchData = async () => {
+                //dispatch(clearCurrentCourse());
+                await dispatch(getCourseByID(courseId));
+            };
+            fetchData();
+        }
+    }, [courseId, currentCourse]); // Thêm currentCourse để ngăn lặp vô hạn
+
+
     // useEffect(() => {
-    //     if (courseId) {
-    //         const fetchData = async () => {
-    //             await dispatch(getCourseByID(courseId));
-    //             if (currentCourse) {
-    //                 console.log('currentCourse', currentCourse);
-    //                 setCourse(currentCourse);
-    //             }
-    //         };
-    //         fetchData();
+    //     if (currentCourse) {
+    //         setCourse(currentCourse);
+    //         console.log('currentCourse', currentCourse);
     //     }
-    // }, [courseId, dispatch, getCourseByID]);
+    // }, [currentCourse]);
 
     const handleClick = (path) => {
         let navigatePath = '';
@@ -86,7 +96,7 @@ export default function Breadcrumb({ courseId, moduleIndex, itemTitle, studentMa
                         onClick={() => handleClick('course')}
                         sx={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}
                     >
-                        {currentCourse?.data?.title}
+                        {currentCourse?.title}
                     </Link>
                 )}
 

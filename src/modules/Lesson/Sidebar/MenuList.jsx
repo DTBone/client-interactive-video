@@ -50,15 +50,7 @@ const MenuList = ({ module, onQuizSubmit }) => {
             let navigationpath = `/learns/lessons/${item.type}/${item._id}`;
             navigate(navigationpath, { state: { module, item } });
         }
-        // if (currentItem?.status !== "completed") {
-        //     setShowDialog(true);
-        // } else {
-        //     setActiveButton(item.quiz || item.programming || item.reading || item.video);
-        //     setCurrentItem(item);
-        //     setTimeout(() => {
-        //         navigateToItem(item);
-        //     }, 50);
-        // }
+
     };
 
     return (

@@ -1,5 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { createModuleItemLecture, createModuleItemProgramming, createModuleItemQuiz, createModuleItemSupplement, editLectureByItemId, editProgrammingByItemId, editQuizByItemId, editSupplementByItemId, getModuleItemById } from "./action";
+import { createModuleItemLecture, createModuleItemProgramming, createModuleItemQuiz, createModuleItemSupplement, createNewInteractiveQuestion, editLectureByItemId, editProgrammingByItemId, editQuizByItemId, editSupplementByItemId, getModuleItemById } from "./action";
 
 const moduleItemSlice = createSlice({
     name: 'module-item-slice',
@@ -8,7 +8,9 @@ const moduleItemSlice = createSlice({
         error: null,
         items: [],
         currentItem: null,
-        refresh: false
+        refresh: false,
+        isExpanded: false,
+        currentQuestion: null,
     },
     reducers: {
         clearCurrentModule: (state) => {
@@ -20,7 +22,13 @@ const moduleItemSlice = createSlice({
         },
         toggleRefresh: (state) => {
             state.refresh = !state.refresh;
-        }
+        },
+        toggleSidebar: (state) => {
+            state.isExpanded = !state.isExpanded;
+        },
+        setSidebar: (state, action) => {
+            state.isExpanded = action.payload;
+        },
     },
     extraReducers: (builder) => {
         builder
@@ -160,8 +168,21 @@ const moduleItemSlice = createSlice({
                 state.loading = false;
                 state.error = action.payload;
             })
+            .addCase(createNewInteractiveQuestion.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(createNewInteractiveQuestion.fulfilled, (state, action) => {
+                state.loading = false;
+                state.currentQuestion = action.payload.data;
+                state.error = null;
+            })
+            .addCase(createNewInteractiveQuestion.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
     }
 });
 
-export const { clearCurrentModule, clearError, toggleRefresh } = moduleItemSlice.actions;
+export const { clearCurrentModule, clearError, toggleRefresh, setSidebar, toggleSidebar } = moduleItemSlice.actions;
 export default moduleItemSlice.reducer;

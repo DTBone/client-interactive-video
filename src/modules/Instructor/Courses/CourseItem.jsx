@@ -47,12 +47,12 @@ const CourseItem = ({ isFree, courseImg, courseName, courseId, status, approveBy
     const navigate = useNavigate();
     //console.log("imge url", courseImg)
     const handleClickCourseItem = (courseId) => {
-        navigate(`/course-management/${courseId.trim().toLowerCase().replace(/\s+/g, '-')}`)
+        navigate(`/course-management/${courseId}`)
     }
     const handleClickListStudentOfCourse = (courseId) => {
         navigate(`student/${courseId.trim().toLowerCase().replace(/\s+/g, '-')}`)
     }
-    console.log("CourseId: ", courseId)
+
     return (
         <StyledCard elevation={2} onClick={() => handleClickCourseItem(courseId)}>
             <div style={{ position: 'relative', padding: '1rem' }}

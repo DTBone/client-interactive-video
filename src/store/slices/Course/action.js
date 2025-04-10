@@ -12,7 +12,7 @@ export const getAllCourse = createAsyncThunk(
                     limit: filter?.limit,
                     search: filter?.search || '',
                     level: filter?.level || 'all',
-                    tags: filter?.tags  || [],
+                    tags: filter?.tags || [],
                     orderBy: filter?.orderBy,
                 }
             });
@@ -26,10 +26,11 @@ export const getAllCourse = createAsyncThunk(
 
 export const getCourseByID = createAsyncThunk(
     'course/getCourseByID',
-    async (courseId, { rejectWithValue }) => {
-        console.log('courseId', courseId);
+    async (id, { rejectWithValue }) => {
+        console.log('courseId', id);
+
         try {
-            const { data } = await axiosInstance.get(`/learns/${courseId}`);
+            const { data } = await axiosInstance.get(`/learns/${id}`);
             return data;
         } catch (error) {
             return rejectWithValue(error.message);
@@ -69,11 +70,26 @@ export const createCourse = createAsyncThunk(
 
 export const updateCourse = createAsyncThunk(
     'course/updateCourse',
-    async ({ courseId, courseData }, { rejectWithValue }) => {
+    async ({ courseId, formData }, { rejectWithValue }) => {
+        console.log("courseData", formData);
+        for (let [key, value] of formData.entries()) {
+            console.log(`${key}:`, value instanceof File ? value.name : value);
+        }
         try {
-            const { data } = await axiosInstance.put(`/learns/${courseId}`, courseData);
-            console.log('data', data);
-            console.log('API request body:', JSON.stringify(courseData));
+
+            const config = {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            };
+
+            const { data } = await axiosInstance.put(
+                `/learns/${courseId}`,
+                formData,
+                config
+            );
+            // console.log('data', data);
+            // console.log('API request body:', JSON.stringify(courseData));
             return data;
         } catch (error) {
             const errorMessage = error.response?.data?.message ||

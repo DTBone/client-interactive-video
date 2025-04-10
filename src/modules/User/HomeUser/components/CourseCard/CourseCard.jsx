@@ -1,5 +1,6 @@
 import { Box, Button, Card, CardActions, CardContent, CardMedia, Chip, Rating, Typography } from '@mui/material'
 import React from 'react'
+import { Navigate, useNavigate } from 'react-router-dom'
 
 const CourseCard = ({ course }) => {
     const getLevelColor = (level) => {
@@ -14,28 +15,35 @@ const CourseCard = ({ course }) => {
                 return '#2196f3' // Blue
         }
     }
-
+    const navigate = useNavigate();
     const formatLevel = (level) => {
         if (!level) return 'N/A'
         return level.charAt(0).toUpperCase() + level.slice(1).toLowerCase()
     }
+    const handleCourseClick = () => {
+        // Handle course click event here
+        console.log('Course clicked:', course._id)
+        navigate(`/course/${course._id}`,)
+    }
     return (
         <div>
-            <Card sx={{
-                height: "100%",
-                display: "flex",
-                flexDirection: "column",
-                position: "relative",
-                transition: "transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out",
-                "&:hover": {
-                    transform: "scale(1.05)",
-                    boxShadow: 6, // Tăng bóng đổ khi hover
-                    "& .MuiChip-root": {
-                        // Ensure chip always stays at the same position relative to card
-                        transform: "scale(0.952)", // 1/1.05 to counteract card scaling
-                    }
-                },
-            }}>
+            <Card
+                onClick={handleCourseClick}
+                sx={{
+                    height: "100%",
+                    display: "flex",
+                    flexDirection: "column",
+                    position: "relative",
+                    transition: "transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out",
+                    "&:hover": {
+                        transform: "scale(1.05)",
+                        boxShadow: 6, // Tăng bóng đổ khi hover
+                        "& .MuiChip-root": {
+                            // Ensure chip always stays at the same position relative to card
+                            transform: "scale(0.952)", // 1/1.05 to counteract card scaling
+                        }
+                    },
+                }}>
                 <Chip
                     label={formatLevel(course.level)}
                     size="small"
@@ -80,12 +88,12 @@ const CourseCard = ({ course }) => {
                         {course?.price === 0 ? 'Free' : `${course?.price?.toLocaleString() || 'N/A'}₫`}
 
                     </Typography>
-                    <Button size="small" variant="contained" sx={{ ml: 'auto' }}>
+                    <Button size="small" variant="contained" sx={{ ml: 'auto' }} onClick={handleCourseClick}>
                         Detail
                     </Button>
                 </CardActions>
             </Card>
-        </div>
+        </div >
     )
 }
 

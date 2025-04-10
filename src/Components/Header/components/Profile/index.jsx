@@ -30,6 +30,7 @@ export default function AccountMenu({ user }) {
   const notificationOpen = Boolean(notificationAnchorEl);
 
 
+  console.log('user', user);
   const handleNotificationClick = (event) => {
     setNotificationAnchorEl(event.currentTarget);
   };
@@ -57,11 +58,12 @@ export default function AccountMenu({ user }) {
     }
   }
   React.useEffect(() => {
+    console.log('user', user);
     fetchNotifications();
     socket.emit('user:login', {
       userId: user._id,
-      fullname: user.profile.full_name || user.profile.fullname,
-      picture: user.profile.picture,
+      fullname: user?.profile?.fullname || "Chưa cập nhật",
+      picture: user?.profile?.picture,
       role: 'student'
     });
     socket.on('notification:new', (data) => {
@@ -91,7 +93,10 @@ export default function AccountMenu({ user }) {
     }
   }
   const handleProfile = () => {
-    navigate('/profile/' + user._id);
+    const user1 = JSON.parse(localStorage.getItem('user'));
+    console.log('user', user1._id);
+
+    navigate('/profile/' + user1._id);
     handleClose();
   }
   const handleClose = () => {

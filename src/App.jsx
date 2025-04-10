@@ -61,6 +61,7 @@ import DetailedStatistic from './modules/Instructor/Statistical/DetailedStatisti
 import MyLearning from './modules/User/MyLearning/MyLearning';
 import SearchPage from './modules/User/SearchPage/SearchPage';
 import Message from './modules/Instructor/Messages';
+import ScrollToTop from './Utils/scrollToTop';
 // import Certificate from './modules/User/Certificate/Certificate';
 
 
@@ -107,6 +108,7 @@ function App() {
   return (
     <div>
       <ToastContainer />
+
       <Routes>
         {/* Public routes */}
         <Route path="/signin" element={<Login />} />
@@ -249,7 +251,7 @@ function App() {
         } />
         <Route path="instructor/instructor-chat" element={
           <ProtectedRoute allowedRoles={['instructor', 'admin']}>
-            <Message />
+            {/* <Message /> */}
 
           </ProtectedRoute>
         } ></Route>
@@ -259,7 +261,7 @@ function App() {
 
           </ProtectedRoute>
         } >
-          
+
           <Route path="course/:courseId" element={<DetailedStatistic />} />
         </Route>
         <Route path="/course-management/new-course" element={

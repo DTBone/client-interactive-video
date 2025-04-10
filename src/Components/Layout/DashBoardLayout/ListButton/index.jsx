@@ -21,7 +21,7 @@ function ListButton() {
     { text: 'Home', url: '/homeuser' },
     { text: 'My Learning', url: '/my-learning' },
     { text: 'Road Map', url: '/roadmap' },
-    { text: 'Search', url: '/search' },
+    // { text: 'Search', url: '/search' },
   ];
 
   const [opened, setOpened] = useState(list.findIndex(e => e.url === url) || 0);

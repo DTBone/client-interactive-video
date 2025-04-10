@@ -9,6 +9,7 @@ import { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { getCourseByID } from '~/store/slices/Course/action';
 import { User } from 'lucide-react';
+import Header from '~/Components/Header';
 
 const CourseDetail = () => {
     const courseID = localStorage.getItem('courseId');
@@ -40,7 +41,8 @@ const CourseDetail = () => {
 
         <div className="h-screen flex flex-col overflow-hidden">
             <header className=' '>
-                <HeaderCourse />
+                <Header />
+                <Divider />
 
             </header>
             <div className="flex h-full overflow-hidden">
