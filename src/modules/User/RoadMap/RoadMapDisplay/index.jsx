@@ -1,4 +1,5 @@
-﻿import React, { useState } from 'react';
+﻿/* eslint-disable react/prop-types */
+import React, { useEffect, useState } from 'react';
 import { 
   Box, 
   Paper, 
@@ -37,6 +38,8 @@ import UpdateIcon from '@mui/icons-material/Update';
 import LaptopIcon from '@mui/icons-material/Laptop';
 import StorageIcon from '@mui/icons-material/Storage';
 import BoltIcon from '@mui/icons-material/Bolt';
+import ChipTest from '../RoadMapTest/Chip';
+import { api } from '~/Config/api';
 
 // Styled components for enhanced UI
 const RoadmapHeader = styled(Paper)(({ theme }) => ({
@@ -158,10 +161,9 @@ function CustomStepIcon(props) {
   const icons = {
     1: <LaptopIcon />,
     2: <CodeIcon />,
-    3: <StorageIcon />,
-    4: <BoltIcon />,
+    3: <BoltIcon />,
   };
-
+  console.log(props.icon);
   return (
     <StepIconRoot ownerState={{ completed, active }} className={className}>
       {icons[String(props.icon)]}
@@ -169,7 +171,9 @@ function CustomStepIcon(props) {
   );
 }
 
-const WebDevelopmentRoadmap = () => {
+
+
+const RoadmapDisplay = ({data, setRoadmapOutSide}) => {
   const [expanded, setExpanded] = useState('panel0');
   const theme = useTheme();
 
@@ -178,129 +182,33 @@ const WebDevelopmentRoadmap = () => {
   };
 
   // Sample data from the provided JSON
-  const roadmapData = {
-    "_id": "67cd462d1d2bd9c4279780ec",
-    "title": "Web Development Roadmap",
-    "description": "A 1-year roadmap for beginners to learn front-end and back-end web development with a focus on JavaScript, React, and Node.js.",
-    "phases": [
-      {
-        "phase": 1,
-        "name": "Foundation of Frontend Development",
-        "duration": 4,
-        "items": [
-          {
-            "name": "Enhance HTML & CSS",
-            "tags": ["HTML", "CSS"],
-            "description": "Deepen your understanding of HTML5 and CSS3. Learn responsive design using CSS Grid and Flexbox.",
-            "completed": true,
-            "order": 1
-          },
-          {
-            "name": "JavaScript Essentials",
-            "tags": ["JavaScript"],
-            "description": "Master JavaScript basics, including ES6 features like arrow functions, destructuring, and modules.",
-            "completed": true,
-            "order": 2
-          },
-          {
-            "name": "Introduction to React",
-            "tags": ["React"],
-            "description": "Learn React basics, including components, props, state, and the component lifecycle.",
-            "completed": true,
-            "order": 3
-          }
-        ],
-        "status": "completed",
-        "startDate": "2025-03-09T07:41:38.363Z",
-        "endDate": "2025-03-09T08:17:50.818Z"
-      },
-      {
-        "phase": 2,
-        "name": "Advanced Frontend Development",
-        "duration": 4,
-        "items": [
-          {
-            "name": "React Hooks",
-            "tags": ["React"],
-            "description": "Learn how to use React Hooks like useState, useEffect, useContext, and more.",
-            "completed": false,
-            "order": 1
-          },
-          {
-            "name": "Advanced JavaScript",
-            "tags": ["JavaScript"],
-            "description": "Explore asynchronous JavaScript with Promises, async/await, and advanced topics like event loop and scope.",
-            "completed": false,
-            "order": 2
-          },
-          {
-            "name": "React Router",
-            "tags": ["React"],
-            "description": "Implement routing in React applications using React Router.",
-            "completed": false,
-            "order": 3
-          }
-        ],
-        "status": "in-progress",
-        "startDate": "2025-03-09T08:16:30.538Z",
-        "endDate": null
-      },
-      {
-        "phase": 3,
-        "name": "Introduction to Backend Development",
-        "duration": 3,
-        "items": [
-          {
-            "name": "Node.js Basics",
-            "tags": ["Node.js"],
-            "description": "Learn server-side JavaScript with Node.js, including the Node.js runtime environment and NPM.",
-            "completed": false,
-            "order": 1
-          },
-          {
-            "name": "Express.js",
-            "tags": ["Node.js", "Express"],
-            "description": "Build RESTful APIs using Express.js, a minimal and flexible Node.js web application framework.",
-            "completed": false,
-            "order": 2
-          },
-          {
-            "name": "Databases",
-            "tags": ["Database", "MongoDB"],
-            "description": "Learn how to work with databases in your web applications. Start with MongoDB for its flexibility and ease of use.",
-            "completed": false,
-            "order": 3
-          }
-        ],
-        "status": "not-started",
-        "startDate": null,
-        "endDate": null
-      },
-      {
-        "phase": 4,
-        "name": "Full Stack Project",
-        "duration": 1,
-        "items": [
-          {
-            "name": "Build a Full Stack Application",
-            "tags": ["React", "Node.js", "MongoDB"],
-            "description": "Apply everything you've learned by building a full-stack project. Examples include a social media app, e-commerce platform, or a personal blog.",
-            "completed": false,
-            "order": 1
-          }
-        ],
-        "status": "not-started",
-        "startDate": null,
-        "endDate": null
+  const [roadmapData, setRoadmapData] = useState(data);
+  useEffect(() => {
+    setRoadmapData(data);
+  }, [data]);
+  
+  async function StartPhase(phase) {
+    try{
+        const rs = await api.put(`/roadmap/${roadmapData._id}`, {
+          ...roadmapData,
+          phases: roadmapData.phases.map(p => {
+            if (p.phase === phase) {
+              p.status = 'in-progress';
+              p.startDate = new Date().toISOString();
+            }
+            return p;
+          })
+        
+      });
+      if(rs.data.success) {
+        setRoadmapData(rs.data.data);
+        setRoadmapOutSide(rs.data.data);
       }
-    ],
-    "progress": 30,
-    "tags": ["web development", "frontend", "backend", "javascript", "react", "node.js"],
-    "difficulty": "beginner",
-    "estimatedTimeInMonths": 12,
-    "createdAt": "2025-03-09T07:41:33.663Z",
-    "updatedAt": "2025-03-09T08:17:50.818Z"
-  };
+    }
+    catch (e) {
+        console.log(e);
+    }
+}
 
   const getStatusIcon = (status) => {
     switch (status) {
@@ -330,20 +238,6 @@ const WebDevelopmentRoadmap = () => {
     if (!dateString) return 'Not started';
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
-  };
-
-  const getTagColor = (tag) => {
-    const tagColors = {
-      "HTML": "error",
-      "CSS": "info",
-      "JavaScript": "warning",
-      "React": "primary",
-      "Node.js": "success",
-      "Express": "secondary",
-      "Database": "default",
-      "MongoDB": "info"
-    };
-    return tagColors[tag] || "default";
   };
 
   return (
@@ -455,7 +349,14 @@ const WebDevelopmentRoadmap = () => {
       <Stepper orientation="vertical" sx={{ mb: 4 }} connector={null}>
         {roadmapData.phases.map((phase, index) => (
           <Step key={index} active={true}>
-            <StepLabel StepIconComponent={CustomStepIcon}>
+            <StepLabel
+              slots={{ stepIcon: CustomStepIcon }} 
+              slotProps={{ 
+                stepIcon: { 
+                  icon: index === 0 ? 1 : (index === roadmapData.phases.length - 1 ? 3 : 2) 
+                } 
+              }}
+            >
               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
                 <Typography variant="h6" fontWeight="bold">
                   Phase {phase.phase}: {phase.name}
@@ -536,9 +437,9 @@ const WebDevelopmentRoadmap = () => {
                               {item.tags.map((tag, tagIndex) => (
                                 <Chip 
                                   key={tagIndex} 
-                                  label={tag} 
+                                  label={'#'+tag} 
                                   size="small" 
-                                  color={getTagColor(tag)}
+                                  color={'info'}
                                   sx={{ mr: 0.5, mb: 0.5 }}
                                 />
                               ))}
@@ -546,16 +447,9 @@ const WebDevelopmentRoadmap = () => {
                             <Typography variant="body2" color="text.secondary" paragraph>
                               {item.description}
                             </Typography>
-                            {item.test && !item.completed && (
-                              <Button 
-                                variant="contained" 
-                                color="primary"
-                                size="small"
-                                startIcon={<SchoolIcon />}
-                                sx={{ borderRadius: 8 }}
-                              >
-                                Take Assessment
-                              </Button>
+                            { (
+                              <ChipTest item={item} phase={phase} roadmap={roadmapData} setRoadmap={setRoadmapData} />
+                              
                             )}
                           </Box>
                         </Box>
@@ -568,8 +462,10 @@ const WebDevelopmentRoadmap = () => {
                           variant="contained"
                           color="primary"
                           size="large"
+                          disabled={roadmapData.phases[phase.phase - 2]?.status !== 'completed' && phase.phase !== 1}
                           startIcon={<BoltIcon />}
                           sx={{ borderRadius: 28, px: 4 }}
+                          onClick={() => StartPhase(phase.phase)}
                         >
                           Start Phase
                         </Button>
@@ -586,4 +482,4 @@ const WebDevelopmentRoadmap = () => {
   );
 };
 
-export default WebDevelopmentRoadmap;
+export default RoadmapDisplay;

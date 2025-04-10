@@ -60,6 +60,7 @@ import DetailedStatistic from './modules/Instructor/Statistical/DetailedStatisti
 
 import MyLearning from './modules/User/MyLearning/MyLearning';
 import SearchPage from './modules/User/SearchPage/SearchPage';
+import Message from './modules/Instructor/Messages';
 // import Certificate from './modules/User/Certificate/Certificate';
 
 

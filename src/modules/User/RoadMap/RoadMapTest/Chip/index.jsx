@@ -1,8 +1,8 @@
-import { Chip } from "@mui/material";
+import { Button, Chip } from "@mui/material";
 import { api } from "~/Config/api";
 import React from "react";
 import TestModal from "..";
-import { CheckCircle } from "@mui/icons-material";
+import { CheckCircle, School } from "@mui/icons-material";
 
 /* eslint-disable react/prop-types */
 function ChipTest({item, phase, roadmap, setRoadmap, onClick}) {
@@ -40,18 +40,36 @@ function ChipTest({item, phase, roadmap, setRoadmap, onClick}) {
         return null;
     }
     React.useEffect(() => {
+        
         if (phase.status !== 'not-started') {
             getTestFromServer();
         }
-    }, [phase.status]);
+        return () => {
+            setTest(null);
+            setStatus('not-started');
+        }
+    }, [phase.status, roadmap._id]);
 
     React.useEffect(() => {
         if (test?.passed && setRoadmap) {
-            const newRoadmap = roadmap;
-            newRoadmap.phases.find(p => p._id === phase._id).items.find(i => i._id === item._id).completed = true;
-            setRoadmap(newRoadmap);
+            setRoadmap(prevRoadmap => {
+                const newRoadmap = { ...prevRoadmap };
+                newRoadmap.phases = newRoadmap.phases.map(p => {
+                    if (p._id === phase._id) {
+                        return {
+                            ...p,
+                            items: p.items.map(i => 
+                                i._id === item._id ? { ...i, completed: true } : i
+                            )
+                        };
+                    }
+                    return p;
+                });
+                return newRoadmap;
+            });
         }
     }, [test]);
+    
 
     const tryAgain = async () => {
         await getTestFromServer();
@@ -69,16 +87,18 @@ function ChipTest({item, phase, roadmap, setRoadmap, onClick}) {
 
     return ( 
         <>
-        <Chip 
-            label={phase.status === 'not-started' ? 'Not started' : state[status]}
-            color= {test?.passed ? 'success' : 'primary'}
+        <Button 
+            variant="contained" 
+            color="primary"
+            disabled={status !== 'done'}
             size="small"
-            sx={{
-                cursor: 'pointer',
-                }}
+            startIcon={<School />}
+            sx={{ borderRadius: 8 }}
+            label={phase.status === 'not-started' ? 'Not started' : state[status]}
             onClick={status === 'done' ? handleOpenTest : status === 'failed' ? tryAgain : null}
         >
-        </Chip>
+            {phase.status === 'not-started' ? 'Not started' : state[status]}
+        </Button>
         {test?.passed && <CheckCircle color="success" />}
         {isTesting && (
             <TestModal test={test} setTest={setTest} roadmapId={roadmap._id} open={isTesting} onClose={handleCloseTest} />
