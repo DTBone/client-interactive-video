@@ -4,15 +4,26 @@ import userService from "~/services/api/userService";
 import ErrorModal from "~/pages/ErrorModal";
 import '~/index.css';
 import { useNavigate } from "react-router-dom";
-import background from '~/assets/backgroundDefault.jpg';
-import { Button, Divider, TextField, Typography } from "@mui/material";
+import { 
+  Box, Button, Container, Divider, Tab, Tabs, Typography, Avatar, 
+  Paper, TextField, Grid, Card, CardContent, Chip, 
+  LinearProgress,
+} from "@mui/material";
+import EditIcon from '@mui/icons-material/Edit';
+import SchoolIcon from '@mui/icons-material/School';
+import ReceiptIcon from '@mui/icons-material/Receipt';
+import PersonIcon from '@mui/icons-material/Person';
+import EmailIcon from '@mui/icons-material/Email';
+import PhoneIcon from '@mui/icons-material/Phone';
+import BadgeIcon from '@mui/icons-material/Badge';
+import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import SliderCourses from "~/components/SliderCourses";
 import ModalEditProfile from "./ModalEditProfile";
 import TransactionHistory from "./PaymentHistory";
+
 function Profile() {
     const path = window.location.pathname;
-
-    const id = path.split('/').pop(); // Tách và lấy phần cuối là ID
+    const id = path.split('/').pop();
     const dispatch = useDispatch();
     const [error, setError] = useState(null);
     const [user, setUser] = useState({
@@ -21,24 +32,22 @@ function Profile() {
         profile: {
             fullname: '',
         },
+        enrolled_courses: []
     });
     const [open, setOpen] = useState(false);
     const navigate = useNavigate();
-
+    const [activeTab, setActiveTab] = useState(0);
     useEffect(() => {
         const fetchUser = async () => {
             const token = localStorage.getItem('token');
             try {
                 const response = await userService.getUserById(id, token);
-                console.log(response.data);
                 setUser(response.data);
             } catch (error) {
-                if (error.status === 401) {
-                    // Gọi API để lấy access token mới
+                if(error.status === 401) {
                     try {
                         const response = await userService.getResetAccessToken();
                         localStorage.setItem('token', response.data.newToken);
-                        // Thử gọi lại API
                         fetchUser();
                     } catch (error) {
                         setError('You must login again to continue');
@@ -52,73 +61,314 @@ function Profile() {
                         email: '',
                         profile: {
                             fullname: '',
-                        }
+                        },
+                        enrolled_courses: []
                     });
                     setError(error.message);
                     return;
                 }
             }
         };
+        
         if (id) {
             fetchUser();
         }
     }, [dispatch, id, navigate, error, open]);
 
+    const handleChangeTab = (event, newValue) => {
+        setActiveTab(newValue);
+    };
+    
+    // Tính toán tiến độ học tập tổng thể
+    const calculateOverallProgress = () => {
+        if (!user.enrolled_courses || user.enrolled_courses.length === 0) return 0;
+        
+        const totalCompletedLessons = user.enrolled_courses.reduce((total, course) => 
+            total + (course.progress || 0), 0);
+            
+        return Math.round(totalCompletedLessons / user.enrolled_courses.length);
+    };
+
     return (
-        <div className="w-full h-auto flex flex-col items-center shadow-xl rounded-3xl bg-gray-50 p-5">
-            <ErrorModal error={error} />
-            {open && <ModalEditProfile user={user} setOpen={setOpen} />}
-            {/* <div className="flex justify-center items-center w-5/6 rounded-3xl overflow-hidden">
-                <img src={background} className="w-full h-full"/>
-            </div> */}
-            {/* Thong tin ca nhan */}
-            <div className="flex flex-row justify-center items-center gap-4 w-5/6 mt-4 shadow-xl rounded-3xl bg-white">
-                <div className="flex flex-col justify-center items-center w-1/5">
-                    <img src={user.profile.picture || 'https://i.pinimg.com/564x/bc/43/98/bc439871417621836a0eeea768d60944.jpg'} alt={user.username} className="size-10 object-cover rounded-full " />
-                </div>
-                <div className="flex flex-col w-1/3 gap-2 pt-5 pb-5">
-                    <h1 className="text-2xl font-bold">{user.profile.fullname}</h1>
-                    <h5 className="text-lg font-semibold">User name: {user.username}</h5>
-                    <TextField
-                        disabled
-                        id="outlined-disabled"
-                        label="Bio"
-                        multiline
-                        sx={{ width: '100%' }}
-                        defaultValue="Hello, I'm a developer"
-                        value={user.profile.bio}
+        <Container maxWidth="lg" sx={{ py: 4 }}>
+            <ErrorModal error={error}/>
+            {open && <ModalEditProfile user={user} setOpen={setOpen}/>}
+            
+            {/* Header Card */}
+            <Paper 
+                elevation={3}
+                sx={{ 
+                    borderRadius: 4, 
+                    overflow: 'hidden',
+                    mb: 4,
+                    position: 'relative'
+                }}
+            >
+                {/* Cover Image */}
+                <Box 
+                    sx={{ 
+                        height: 200, 
+                        bgcolor: 'primary.light',
+                        backgroundImage: `url(${user.profile.coverPhoto || 'https://images.unsplash.com/photo-1610116306796-6fea9f4fae38'})`,
+                        backgroundSize: 'cover',
+                        backgroundPosition: 'center',
+                    }}
+                />
+                
+                {/* Profile Info */}
+                <Box sx={{ 
+                    p: 3, 
+                    display: 'flex',
+                    flexDirection: { xs: 'column', md: 'row' },
+                    alignItems: { xs: 'center', md: 'flex-start' },
+                    position: 'relative'
+                }}>
+                    {/* Avatar */}
+                    <Avatar 
+                        src={user.profile.picture || 'https://i.pinimg.com/564x/bc/43/98/bc439871417621836a0eeea768d60944.jpg'}
+                        alt={user.username}
+                        sx={{ 
+                            width: 120, 
+                            height: 120, 
+                            border: '4px solid white',
+                            boxShadow: 2,
+                            mt: { xs: -8, md: -12 }
+                        }}
                     />
-                    <Button onClick={() => setOpen(true)} variant="contained">Edit Profile</Button>
-                </div>
-                <Divider orientation="vertical" variant="middle" flexItem />
-                <div className="flex flex-col w-1/3 gap-3">
-                    <div className="flex flex-row gap-2 w-full justify-between">
-                        <h5 className="font-semibold">Email: </h5>
-                        <Typography>{user.email}</Typography>
-                    </div>
-                    <div className="flex flex-row gap-2 w-full justify-between">
-                        <h5 className="font-semibold">Phone number: </h5>
-                        <Typography>{user.profile.phone || '---'}</Typography>
-                    </div>
-                    <div className="flex flex-row gap-2 w-full justify-between">
-                        <h5 className="font-semibold">Role: </h5>
-                        <Typography>{user.role || '---'}</Typography>
-                    </div>
-                    <div className="flex flex-row gap-2 w-full justify-between">
-                        <h5 className="font-semibold">Level: </h5>
-                        <Typography>{user.level || '---'}</Typography>
-                    </div>
-                </div>
-
-            </div>
-            <Divider className="pt-2 w-5/6 self-center" variant="middle" />
-            {/* Khoa hoc */}
-            <SliderCourses className="w-5/6" title="Khóa học gần đây" course={user?.enrolled_courses} colunms={3} />
-
-            {/* Lịch sử giao dịch */}
-            <TransactionHistory userId={user._id} />
-
-        </div>
+                    
+                    {/* User Info */}
+                    <Box sx={{ 
+                        ml: { xs: 0, md: 3 },
+                        mt: { xs: 2, md: 0 },
+                        flexGrow: 1,
+                        textAlign: { xs: 'center', md: 'left' }
+                    }}>
+                        <Typography variant="h4" fontWeight="bold">
+                            {user.profile.fullname}
+                        </Typography>
+                        
+                        <Typography variant="subtitle1" color="text.secondary" gutterBottom>
+                            @{user.username}
+                        </Typography>
+                        
+                        <Typography variant="body1" sx={{ mt: 1, mb: 2 }}>
+                            {user.profile.bio || "No bio available"}
+                        </Typography>
+                        
+                        <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', justifyContent: { xs: 'center', md: 'flex-start' } }}>
+                            <Chip 
+                                icon={<BadgeIcon />} 
+                                label={`Role: ${user.role || 'Student'}`} 
+                                variant="outlined" 
+                                color="primary"
+                            />
+                            <Chip 
+                                icon={<EmojiEventsIcon />} 
+                                label={`Level: ${user.level || 'Beginner'}`} 
+                                variant="outlined" 
+                                color="secondary"
+                            />
+                            <Chip 
+                                icon={<SchoolIcon />} 
+                                label={`${user.enrolled_courses?.length || 0} Courses`} 
+                                variant="outlined" 
+                            />
+                        </Box>
+                    </Box>
+                    
+                    {/* Edit Button */}
+                    <Button 
+                        variant="contained" 
+                        startIcon={<EditIcon />}
+                        onClick={() => setOpen(true)}
+                        sx={{ alignSelf: 'flex-start' }}
+                    >
+                        Edit Profile
+                    </Button>
+                </Box>
+            </Paper>
+            
+            {/* Tabs Navigation */}
+            <Paper sx={{ borderRadius: 2, mb: 4 }}>
+                <Tabs 
+                    value={activeTab} 
+                    onChange={handleChangeTab} 
+                    variant="fullWidth"
+                    indicatorColor="primary"
+                    textColor="primary"
+                >
+                    <Tab icon={<SchoolIcon />} label="My Courses" />
+                    <Tab icon={<PersonIcon />} label="Personal Info" />
+                    <Tab icon={<ReceiptIcon />} label="Payment History" />
+                </Tabs>
+            </Paper>
+            
+            {/* Tab Content */}
+            <Box sx={{ display: activeTab === 0 ? 'block' : 'none' }}>
+                {/* My Courses Section */}
+                <Paper sx={{ p: 3, borderRadius: 2, mb: 4 }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+                        <Typography variant="h5" fontWeight="bold">
+                            My Learning Journey
+                        </Typography>
+                        
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                            <Typography variant="body1" fontWeight="medium">
+                                Overall Progress: {calculateOverallProgress()}%
+                            </Typography>
+                            <Box sx={{ width: 100 }}>
+                                <LinearProgress 
+                                    variant="determinate" 
+                                    value={calculateOverallProgress()} 
+                                    sx={{ height: 8, borderRadius: 2 }}
+                                />
+                            </Box>
+                        </Box>
+                    </Box>
+                    
+                    <SliderCourses 
+                        title="Currently Learning" 
+                        course={user?.enrolled_courses?.filter(course => 
+                            course.progress && course.progress < 100
+                        )} 
+                        colunms={3}
+                    />
+                    
+                    <Divider sx={{ my: 4 }} />
+                    
+                    <SliderCourses 
+                        title="Completed Courses" 
+                        course={user?.enrolled_courses?.filter(course => 
+                            course.progress && course.progress === 100
+                        )} 
+                        colunms={3}
+                    />
+                </Paper>
+            </Box>
+            
+            <Box sx={{ display: activeTab === 1 ? 'block' : 'none' }}>
+                {/* Personal Info Section */}
+                <Paper sx={{ p: 4, borderRadius: 2 }}>
+                    <Typography variant="h5" fontWeight="bold" gutterBottom>
+                        Personal Information
+                    </Typography>
+                    
+                    <Grid container spacing={4} sx={{ mt: 2 }}>
+                        <Grid item xs={12} md={6}>
+                            <Card variant="outlined" sx={{ height: '100%' }}>
+                                <CardContent>
+                                    <Typography variant="h6" color="primary" gutterBottom>
+                                        Contact Information
+                                    </Typography>
+                                    
+                                    <Box sx={{ display: 'flex', alignItems: 'center', mt: 2 }}>
+                                        <EmailIcon color="action" sx={{ mr: 2 }} />
+                                        <Box>
+                                            <Typography variant="caption" color="text.secondary">
+                                                Email Address
+                                            </Typography>
+                                            <Typography variant="body1">
+                                                {user.email || 'Not provided'}
+                                            </Typography>
+                                        </Box>
+                                    </Box>
+                                    
+                                    <Box sx={{ display: 'flex', alignItems: 'center', mt: 3 }}>
+                                        <PhoneIcon color="action" sx={{ mr: 2 }} />
+                                        <Box>
+                                            <Typography variant="caption" color="text.secondary">
+                                                Phone Number
+                                            </Typography>
+                                            <Typography variant="body1">
+                                                {user.profile.phone || 'Not provided'}
+                                            </Typography>
+                                        </Box>
+                                    </Box>
+                                </CardContent>
+                            </Card>
+                        </Grid>
+                        
+                        <Grid item xs={12} md={6}>
+                            <Card variant="outlined" sx={{ height: '100%' }}>
+                                <CardContent>
+                                    <Typography variant="h6" color="primary" gutterBottom>
+                                        About Me
+                                    </Typography>
+                                    
+                                    <TextField
+                                        disabled
+                                        multiline
+                                        rows={4}
+                                        fullWidth
+                                        variant="outlined"
+                                        value={user.profile.bio || "No bio available"}
+                                        sx={{ mt: 2 }}
+                                    />
+                                </CardContent>
+                            </Card>
+                        </Grid>
+                        
+                        <Grid item xs={12}>
+                            <Card variant="outlined">
+                                <CardContent>
+                                    <Typography variant="h6" color="primary" gutterBottom>
+                                        Account Information
+                                    </Typography>
+                                    
+                                    <Grid container spacing={2} sx={{ mt: 1 }}>
+                                        <Grid item xs={12} sm={6}>
+                                            <Typography variant="caption" color="text.secondary">
+                                                Username
+                                            </Typography>
+                                            <Typography variant="body1">
+                                                {user.username}
+                                            </Typography>
+                                        </Grid>
+                                        
+                                        <Grid item xs={12} sm={6}>
+                                            <Typography variant="caption" color="text.secondary">
+                                                Account Type
+                                            </Typography>
+                                            <Typography variant="body1">
+                                                {user.role || 'Student'}
+                                            </Typography>
+                                        </Grid>
+                                        
+                                        <Grid item xs={12} sm={6}>
+                                            <Typography variant="caption" color="text.secondary">
+                                                Member Since
+                                            </Typography>
+                                            <Typography variant="body1">
+                                                {new Date(user.createdAt).toLocaleDateString() || 'Unknown'}
+                                            </Typography>
+                                        </Grid>
+                                        
+                                        <Grid item xs={12} sm={6}>
+                                            <Typography variant="caption" color="text.secondary">
+                                                Last Login
+                                            </Typography>
+                                            <Typography variant="body1">
+                                                {new Date(user.lastLogin || Date.now()).toLocaleDateString() || 'Unknown'}
+                                            </Typography>
+                                        </Grid>
+                                    </Grid>
+                                </CardContent>
+                            </Card>
+                        </Grid>
+                    </Grid>
+                </Paper>
+            </Box>
+            
+            <Box sx={{ display: activeTab === 2 ? 'block' : 'none' }}>
+                {/* Payment History Section */}
+                <Paper sx={{ p: 3, borderRadius: 2 }}>
+                    <Typography variant="h5" fontWeight="bold" gutterBottom>
+                        Transaction History
+                    </Typography>
+                    <TransactionHistory userId={user._id} />
+                </Paper>
+            </Box>
+        </Container>
     );
 }
 

@@ -21,8 +21,6 @@ import ListButtonAdmin from './ListButtonAdmin';
 import backgroundGif from '~/assets/bg.jpg';
 import Footer from '~/components/Footer';
 
-
-
 const AppBar = styled(MuiAppBar, {
   shouldForwardProp: (prop) => prop !== 'open',
 })(({ theme }) => ({
@@ -117,7 +115,7 @@ export default function MainDrawer({ children }) {
         position: "relative", // Để định vị overlay
         minHeight: "100vh",
         overflow: "hidden",
-        marginTop:"130px",
+        marginTop: "130px",
         "&::before": {
           content: '""',
           position: "absolute",
