@@ -134,22 +134,29 @@ const SideBar = () => {
     }));
 
     const CustomButton = styled(Button)(({ theme, isActive, isCompleted }) => ({
-
-
-        justifyContent: 'flex-start',
         paddingLeft: theme.spacing(4),
+        paddingRight: theme.spacing(1), // Thêm padding bên phải nhỏ hơn
         width: '100%',
         height: '64px',
-        //fontWeight: 'bold',
         textTransform: "capitalize",
         color: "#000000",
         fontSize: "16px",
         background: isActive ? "#f2f5fa" : "transparent",
-        borderLeftColor: isActive ? "#0056d2" : "transparent",
+        borderLeftColor: isActive ? theme.palette.primary : "transparent",
         borderLeftWidth: isActive ? "4px" : "0",
         borderRadius: isActive ? "4px" : "0 4px 4px 0",
         borderLeftStyle: isActive ? 'solid' : 'none',
         textDecoration: isActive ? 'underline' : 'none',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'flex-start',
+        textAlign: 'left', // Đảm bảo text luôn căn trái
+
+        '& .MuiButton-label': { // Targeting the label inside the button
+            justifyContent: 'flex-start', // Đảm bảo nội dung button căn trái
+            width: '100%', // Chiếm toàn bộ không gian
+            textAlign: 'left', // Text căn trái
+        },
 
         '&::before': {
             content: '""',
@@ -163,13 +170,14 @@ const SideBar = () => {
         },
         '&:hover': {
             background: "#f0f6ff",
-            //textDecoration: 'underline',
+            justifyContent: 'flex-start', // Vẫn giữ căn trái khi hover
         },
 
-        display: 'flex',
-        alignItems: 'center',
-        gap: "8px",
+        '&:active': {
+            justifyContent: 'flex-start', // Vẫn giữ căn trái khi active/click
+        },
 
+        gap: "8px",
     }));
 
     const [modules, setModules] = useState(useSelector(state => state.module.modules) || []);

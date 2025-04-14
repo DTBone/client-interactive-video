@@ -54,7 +54,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import MainSection from './modules/Instructor/Modules/MainSection/MainSection';
 import Blogs from "~/modules/User/Blogs/index.jsx";
 import HomeIntructor from './modules/Instructor/HomeIntructor';
-import HTMLEditor from './testFile';
+import Editor from './testFile';
 import CourseCertificate from './modules/CourseDetail/CourseCertificate ';
 import DetailedStatistic from './modules/Instructor/Statistical/DetailedStatistic';
 
@@ -337,7 +337,7 @@ function App() {
 
         {/* Catch all route */}
         <Route path="*" element={<Navigate to="/error" replace />} />
-        <Route path='/test' element={<HTMLEditor />} />
+        <Route path='/test' element={<Editor />} />
 
         <Route path="/certificate/:courseId" element={
           <ProtectedRoute allowedRoles={['student']}>
