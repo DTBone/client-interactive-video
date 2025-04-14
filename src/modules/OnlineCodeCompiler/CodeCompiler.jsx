@@ -4,6 +4,8 @@ import TabSection from './Tab/TabSection';
 import CodeSection from './Code/CodeSection';
 import TestCaseSection from './TestCase/TestCaseSection';
 import { CodeProvider } from './CodeContext';
+import Header from '~/Components/Header';
+import { Divider } from '@mui/material';
 
 
 function CodeCompiler() {
@@ -11,7 +13,8 @@ function CodeCompiler() {
         <CodeProvider>
             <div className="h-screen flex flex-col overflow-hidden bg-[#f0f6ff]">
                 <header className=' '>
-                    <HeaderCourse />
+                    <Header />
+                    <Divider />
                 </header>
                 <div className="flex-grow p-1 ">
                     <PanelGroup direction="horizontal" >

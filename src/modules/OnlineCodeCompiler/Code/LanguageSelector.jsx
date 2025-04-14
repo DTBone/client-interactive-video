@@ -59,7 +59,7 @@ const LanguageButtonSelector = () => {
                 anchorEl={anchorEl}
                 open={open}
                 onClose={handleClose}
-                MenuListProps={{ selectedIndex: -1 }}
+            // MenuListProps={{ selectedIndex: -1 }}
             >
                 <MenuList sx={{ border: "none" }}>
                     {languages.map((lang) => (
