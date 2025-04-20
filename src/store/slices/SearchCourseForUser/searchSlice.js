@@ -91,10 +91,18 @@ const searchSlice = createSlice({
             })
             .addCase(fetchCourses.fulfilled, (state, action) => {
                 state.loading = false;
-                const newCourses = Array.isArray(action.payload?.data?.courses)
+                // Truy cập dữ liệu theo cấu trúc mới
+                let newCourses = Array.isArray(action.payload?.data?.courses)
                     ? action.payload.data.courses
                     : [];
-                const currentRequestPage = action.payload?.data?.currentPage || 1;
+                // Nếu API trả về 1 object thay vì array (trường hợp chỉ có 1 khóa học)
+                if (!Array.isArray(newCourses) && newCourses && typeof newCourses === 'object') {
+                    newCourses = [newCourses];
+                }
+                // Truy cập thông tin phân trang từ đối tượng pagination
+                const pagination = action.payload?.data?.pagination || {};
+                const currentRequestPage = pagination.currentPage || 1;
+                // Cập nhật danh sách khóa học
                 if (currentRequestPage === 1) {
                     state.courses = newCourses;
                 } else {
@@ -103,11 +111,17 @@ const searchSlice = createSlice({
                     }
                     state.courses = [...state.courses, ...newCourses];
                 }
-                state.currentPage = action.payload?.data?.currentPage || 1;
-                state.totalPages = action.payload?.data?.totalPages || 0;
-                state.totalCount = action.payload?.data?.totalCount || 0;
-                state.hasMore = (action.payload?.data?.currentPage || 0) < (action.payload?.data?.totalPages || 0);
+                // Cập nhật thông tin phân trang từ object pagination mới
+                state.currentPage = pagination.currentPage || 1;
+                state.totalPages = pagination.totalPages || 0;
+                state.totalCount = pagination.totalCount || 0;
+                // Sử dụng hasNextPage trực tiếp nếu có, nếu không thì tính toán từ currentPage và totalPages
+                state.hasMore = pagination.hasNextPage !== undefined 
+                    ? pagination.hasNextPage 
+                    : (pagination.currentPage || 0) < (pagination.totalPages || 0);
+                // Log để debug
                 console.log('hasMore updated:', state.hasMore);
+                console.log('pagination info:', pagination);
                 console.log('courses updated:', state.courses);
             })
             .addCase(fetchCourses.rejected, (state, action) => {
