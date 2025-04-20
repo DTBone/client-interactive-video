@@ -1,7 +1,7 @@
-
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useCallback } from 'react'
 import { useSelector, useDispatch } from 'react-redux';
 import { useSearchParams } from 'react-router-dom';
+import { debounce } from 'lodash';
 import {
     setSearchQuery,
     setTags,
@@ -18,17 +18,17 @@ import HighlightOffIcon from '@mui/icons-material/HighlightOff';
 import theme from '~/theme';
 import { fetchCourses } from '~/store/slices/SearchCourseForUser/action';
 import InfiniteScroll from 'react-infinite-scroll-component';
-import { Box, CircularProgress } from '@mui/material';
+import { Box, CircularProgress, Chip, FormControlLabel, Checkbox, Radio, RadioGroup } from '@mui/material';
 
 const SearchPage = () => {
     const dispatch = useDispatch();
     const searchState = useSelector(state => state.search);
-    const initialCourses = useSelector(state => state.search.courses);
+
     const page = useSelector(state => state.search.currentPage);
     const [hasMore, setHasMore] = useState(useSelector(state => state.search.hasMore));
     const loading = useSelector(state => state.search.loading);
 
-    const [courses, setCourses] = useState([]);
+    const [recentFilters, setRecentFilters] = useState([]);
 
     const { query, filters, currentPage, isFilterApplied, totalPages } = searchState;
     const [searchParams, setSearchParams] = useSearchParams();
@@ -43,6 +43,14 @@ const SearchPage = () => {
     const [priceRange, setPriceRange] = useState([0, 1000]);
     const [rating, setRating] = useState(0);
     const [sortBy, setSortBy] = useState('relevance');
+    const [filterHistory, setFilterHistory] = useState(() => {
+        const saved = localStorage.getItem('recentFilters');
+        return saved ? JSON.parse(saved) : [];
+    });
+
+    // Thêm trạng thái cho trạng thái hiện tại của filter và kết quả
+    const [activeFilters, setActiveFilters] = useState({});
+    const [isFilterChanged, setIsFilterChanged] = useState(false);
     console.log("data", data);
     console.log("totalPages", totalPages);
     console.log("page", page);
@@ -89,13 +97,15 @@ const SearchPage = () => {
 
     const visibleTags = tag.slice(0, visibleCount);
 
-    const levels = ['Beginner', 'Intermediate', 'Advanced', 'All Levels'];
+    const levels = ['Beginner', 'Intermediate', 'Advanced'];
+
+    const courses = useSelector(state => state.search.courses);
 
 
     // Kiểm tra xem có bất kỳ filter nào được áp dụng hay không
     const isAnyFilterApplied = () => {
         return (
-            query ||
+            (typeof query === 'string' && query.trim() !== '') ||
             selectedtag.length > 0 ||
             selectedLevels.length > 0 ||
             priceRange[0] > 0 ||
@@ -104,6 +114,10 @@ const SearchPage = () => {
             sortBy !== 'relevance'
         );
     };
+
+    const [error, setError] = useState("");
+
+
 
     // Đồng bộ hóa URL params với state khi component mount
     useEffect(() => {
@@ -172,30 +186,15 @@ const SearchPage = () => {
                 rating: parseInt(searchParams.get('rating') || 0),
                 sortBy: searchParams.get('sort') || 'relevance',
                 page: 1,
-                limit: 9
+                limit: 12
             };
 
             searchCourses(searchObj);
         } else {
             // Nếu không có params, load tất cả khóa học
-            dispatch(fetchCourses({ page: 1, limit: 9 }));
+            dispatch(fetchCourses({ page: 1, limit: 12 }));
         }
     }, [dispatch, searchParams]);
-
-    // Cập nhật courses khi có data mới từ API tìm kiếm
-    useEffect(() => {
-        if (data && data.courses) {
-            setCourses(data.courses);
-        }
-    }, [data]);
-
-    // Cập nhật courses khi có data mới từ redux store (fetchCourses)
-    useEffect(() => {
-        if (initialCourses && initialCourses.length > 0) {
-            setCourses(initialCourses);
-        }
-    }, [initialCourses]);
-
     // Cập nhật URL khi filters thay đổi
     const updateFilters = () => {
         const params = new URLSearchParams();
@@ -230,57 +229,160 @@ const SearchPage = () => {
 
     // Handlers for filter
     const handleCategoryChange = (category) => {
-        setSelectedtag(
-            selectedtag.includes(category)
-                ? selectedtag.filter(cat => cat !== category)
-                : [...selectedtag, category]
-        );
+        const newSelectedTags = selectedtag.includes(category)
+            ? selectedtag.filter(cat => cat !== category)
+            : [...selectedtag, category];
+
+        setSelectedtag(newSelectedTags);
+
+        // Tự động áp dụng bộ lọc khi thay đổi
+        setTimeout(() => {
+            applyFiltersAutomatic(newSelectedTags, selectedLevels, priceRange, rating, sortBy);
+        }, 0);
     };
 
     const handleLevelChange = (level) => {
-        setSelectedLevels(
-            selectedLevels.includes(level)
-                ? selectedLevels.filter(lvl => lvl !== level)
-                : [...selectedLevels, level]
-        );
+        const newSelectedLevels = selectedLevels.includes(level)
+            ? selectedLevels.filter(lvl => lvl !== level)
+            : [...selectedLevels, level];
+
+        setSelectedLevels(newSelectedLevels);
+
+        // Tự động áp dụng bộ lọc khi thay đổi
+        setTimeout(() => {
+            applyFiltersAutomatic(selectedtag, newSelectedLevels, priceRange, rating, sortBy);
+        }, 0);
     };
+
+    // Sử dụng debounce cho thay đổi giá
+    const debouncedPriceChange = useCallback(
+        debounce((min, max) => {
+            applyFiltersAutomatic(selectedtag, selectedLevels, [min, max], rating, sortBy);
+        }, 800),
+        [selectedtag, selectedLevels, rating, sortBy]
+    );
 
     const handlePriceChange = (min, max) => {
         setPriceRange([min, max]);
+        debouncedPriceChange(min, max);
+
+        if (min < 0 || max < 0) {
+            setError("The value must be greater than 0.");
+        } else if (min >= max) {
+            setError("The minimum value must be less than the maximum value.");
+        } else {
+            setError("");
+            setPriceRange([min, max]);
+        }
     };
 
     const handleRatingChange = (value) => {
         setRating(value);
+
+        // Tự động áp dụng bộ lọc khi thay đổi
+        setTimeout(() => {
+            applyFiltersAutomatic(selectedtag, selectedLevels, priceRange, value, sortBy);
+        }, 0);
     };
 
     const handleSortChange = (value) => {
         setSortBy(value);
+
+        // Tự động áp dụng bộ lọc khi thay đổi
+        setTimeout(() => {
+            applyFiltersAutomatic(selectedtag, selectedLevels, priceRange, rating, value);
+        }, 0);
     };
 
-    const handleApplyFilters = () => {
+    // Hàm tự động áp dụng bộ lọc mà không cần nhấn nút
+    const applyFiltersAutomatic = useCallback((tags, levels, price, ratingValue, sort) => {
         // Đồng bộ state vào Redux
-        dispatch(setTags(selectedtag));
-        dispatch(setLevels(selectedLevels));
-        dispatch(setPriceRangeSlice(priceRange));
-        dispatch(setRatingSlice(rating));
-        dispatch(setSortBySlice(sortBy));
+        dispatch(setTags(tags));
+        dispatch(setLevels(levels));
+        dispatch(setPriceRangeSlice(price));
+        dispatch(setRatingSlice(ratingValue));
+        dispatch(setSortBySlice(sort));
+
+        // Lưu bộ lọc vào lịch sử nếu đáng lưu
+        saveRecentFilter(tags, levels, price, ratingValue, sort);
 
         // Cập nhật URL và thực hiện tìm kiếm
-        updateFilters();
+        const params = new URLSearchParams();
+
+        if (query) {
+            params.set('q', query);
+        }
+
+        if (tags.length > 0) {
+            params.set('tag', tags.join(','));
+        }
+
+        if (levels.length > 0) {
+            params.set('levels', levels.join(','));
+        }
+
+        if (price[0] > 0 || price[1] < 1000) {
+            params.set('priceMin', price[0].toString());
+            params.set('priceMax', price[1].toString());
+        }
+
+        if (ratingValue > 0) {
+            params.set('rating', ratingValue.toString());
+        }
+
+        if (sort !== 'relevance') {
+            params.set('sort', sort);
+        }
+
+        setSearchParams(params);
 
         // Tạo đối tượng params cho tìm kiếm
         const searchObj = {
             query: query || '',
-            tags: selectedtag,
-            levels: selectedLevels,
-            priceRange: priceRange,
-            rating: rating,
-            sortBy: sortBy,
+            tags: tags,
+            levels: levels,
+            priceRange: price,
+            rating: ratingValue,
+            sortBy: sort,
             page: 1,
-            limit: 9
+            limit: 12  // Tăng số lượng kết quả mỗi trang
         };
 
         searchCourses(searchObj);
+    }, [query, dispatch, searchCourses, setSearchParams]);
+
+    // Lưu bộ lọc gần đây
+    const saveRecentFilter = (tags, levels, price, ratingValue, sort) => {
+        // Chỉ lưu khi có bộ lọc đáng kể
+        if (tags.length > 0 || levels.length > 0 || ratingValue > 0 ||
+            price[0] > 0 || price[1] < 1000 || sort !== 'relevance') {
+
+            const currentFilter = {
+                tags,
+                levels,
+                price,
+                rating: ratingValue,
+                sortBy: sort,
+                timestamp: new Date().toISOString()
+            };
+
+            // Lấy bộ lọc từ localStorage
+            const savedFilters = localStorage.getItem('recentFilters');
+            let recentFilters = savedFilters ? JSON.parse(savedFilters) : [];
+
+            // Kiểm tra xem bộ lọc có tồn tại chưa (bỏ qua timestamp)
+            const exists = recentFilters.some(filter =>
+                JSON.stringify({ ...filter, timestamp: undefined }) ===
+                JSON.stringify({ ...currentFilter, timestamp: undefined })
+            );
+
+            if (!exists) {
+                // Thêm bộ lọc mới vào đầu và giới hạn 5 bộ lọc
+                recentFilters = [currentFilter, ...recentFilters].slice(0, 5);
+                localStorage.setItem('recentFilters', JSON.stringify(recentFilters));
+                setRecentFilters(recentFilters);
+            }
+        }
     };
 
     const handleResetFilters = () => {
@@ -305,7 +407,7 @@ const SearchPage = () => {
             searchCourses(query);
         } else {
             // Nếu không có query, load tất cả khóa học
-            dispatch(fetchCourses({ page: 1, limit: 9 }));
+            dispatch(fetchCourses({ page: 1, limit: 12 }));
         }
     };
 
@@ -313,50 +415,243 @@ const SearchPage = () => {
         // Reset query và load tất cả khóa học
         dispatch(resetQeury());
         setSearchParams({});
-        dispatch(fetchCourses({ page: 1, limit: 9 }));
+        dispatch(fetchCourses({ page: 1, limit: 12 }));
         setHasMore(true);
-    };
 
-    // Hàm fetch thêm dữ liệu cho infinite scroll
+
+    };    // Hàm fetch thêm dữ liệu cho infinite scroll
     const fetchMoreData = () => {
-        // Case 1: When filters are applied (search mode)
-        if (isAnyFilterApplied()) {
-            // Check if there are more pages to load
-            if (page < data.totalPages) {
-                const searchObj = {
-                    query: query || '',
-                    tags: selectedtag,
-                    levels: selectedLevels,
-                    priceRange: priceRange,
-                    rating: rating,
-                    sortBy: sortBy,
-                    page: page + 1,
-                    limit: 9
-                };
-                // Use the RTK Query search function
-                searchCourses(searchObj);
-                //setPage(prevPage => prevPage + 1);
-            } else {
-                // No more search results to load
-                setHasMore(false);
-            }
+        // Nếu đang loading hoặc không còn dữ liệu thì dừng lại
+        if (loading || searchLoading || !hasMore) {
+            console.log('Đang loading hoặc không còn dữ liệu để tải thêm');
+            return;
         }
 
-        // Case 2: When showing all courses (no filters)
-        else {
+        try {
+            // Case 1: When filters are applied (search mode)
+            if (isAnyFilterApplied()) {
+                // Lấy thông tin phân trang từ cấu trúc phản hồi mới
+                const pagination = data?.data?.pagination;
+                const currentPage = pagination?.currentPage || page;
+                const totalPagesFromResponse = pagination?.totalPages || 0;
+                const hasNextPage = pagination?.hasNextPage || false;
 
-            // Check if there are more pages of all courses
-            if (page < totalPages) {
-                // Use the regular Redux action to fetch all courses
-                dispatch(fetchCourses({ page: page + 1, limit: 9 }));
-                //setPage(prevPage => prevPage + 1);
+                console.log(`Debug pagination - Current page: ${currentPage}, Total pages: ${totalPagesFromResponse}, Has next page: ${hasNextPage}`);
 
+                // Sử dụng hasNextPage trực tiếp từ API nếu có, nếu không thì dùng kiểm tra dự phòng
+                const canLoadMore = hasNextPage || (totalPagesFromResponse > 0 && currentPage < totalPagesFromResponse)
+                    || (data?.data?.courses && data.data.courses.length === 12); // Dự phòng cuối cùng
+
+                if (canLoadMore) {
+                    const nextPage = pagination?.nextPage || currentPage + 1;
+                    const searchObj = {
+                        query: query || '',
+                        tags: selectedtag,
+                        levels: selectedLevels,
+                        priceRange: priceRange,
+                        rating: rating,
+                        sortBy: sortBy,
+                        page: nextPage,
+                        limit: 12
+                    };
+                    console.log(`Đang tải thêm dữ liệu trang ${nextPage}/${totalPagesFromResponse || 'unknown'}`);
+                    searchCourses(searchObj);
+                } else {
+                    console.log('Đã tải hết khóa học với bộ lọc hiện tại');
+                    setHasMore(false);
+                }
+            }        // Case 2: When showing all courses (no filters)
+            else {
+                // Kiểm tra phân trang sử dụng dữ liệu từ Redux store
+                console.log(`Debug No Filter - Current page: ${page}, Total pages: ${totalPages}`);
+
+                // Kiểm tra nếu có totalPages trả về và còn trang để tải
+                if (totalPages > 0 && page < totalPages) {
+                    console.log(`Đang tải thêm tất cả khóa học: trang ${page + 1}/${totalPages}`);
+                    dispatch(fetchCourses({ page: page + 1, limit: 12 }));
+                }
+                // Nếu không có thông tin totalPages rõ ràng, dùng kiểm tra dựa trên số lượng kết quả
+                else {
+                    const pageLimit = 12;
+                    const hasMoreByCount = courses && courses.length > 0 && courses.length % pageLimit === 0;
+
+                    if (hasMoreByCount) {
+                        console.log(`Đang tải thêm tất cả khóa học (dựa trên số lượng): trang ${page + 1}`);
+                        dispatch(fetchCourses({ page: page + 1, limit: pageLimit }));
+                    } else {
+                        console.log('Đã tải hết tất cả khóa học (dựa trên số lượng kết quả)');
+                        setHasMore(false);
+                    }
+                }
+            }
+        } catch (error) {
+            console.error('Lỗi khi tải thêm dữ liệu:', error);
+            setHasMore(false);
+        }
+    };
+
+    // Thêm useEffect để xử lý pagination và hasMore đúng cách
+    useEffect(() => {
+        if (data && data.data) {
+            // Trích xuất thông tin từ dữ liệu API mới
+            const pagination = data.data.pagination || {};
+            const coursesFromAPI = data.data.courses || [];
+
+            console.log('API Pagination Data:', {
+                currentPage: pagination.currentPage,
+                totalPages: pagination.totalPages,
+                totalCount: pagination.totalCount,
+                hasNextPage: pagination.hasNextPage,
+                hasPrevPage: pagination.hasPrevPage,
+                coursesCount: coursesFromAPI.length
+            });
+
+            // Xác định có thể tải thêm không - ưu tiên sử dụng hasNextPage trực tiếp từ API
+            if (pagination.hasNextPage !== undefined) {
+                // Nếu API trả về hasNextPage rõ ràng
+                setHasMore(pagination.hasNextPage);
+                console.log(`Có thể tải thêm (dựa vào hasNextPage): ${pagination.hasNextPage}`);
+            } else if (pagination.totalPages && pagination.currentPage) {
+                // Nếu API trả về currentPage và totalPages
+                const canLoadMore = pagination.currentPage < pagination.totalPages;
+                setHasMore(canLoadMore);
+                console.log(`Có thể tải thêm (dựa vào totalPages): ${canLoadMore}`);
             } else {
-                // No more courses to load
-                setHasMore(false);
+                // Nếu không có thông tin phân trang rõ ràng, dựa vào số lượng kết quả trả về
+                const canLoadMore = coursesFromAPI.length === 12; // Nếu trả về đủ limit
+                setHasMore(canLoadMore);
+                console.log(`Có thể tải thêm (dựa vào độ dài): ${canLoadMore}`);
+            }
+        }
+    }, [data]);
+
+    const [displayedCourses, setDisplayedCourses] = useState([]);
+
+    useEffect(() => {
+        console.log('Courses from Redux:', courses);
+        console.log('Courses from API:', data?.courses);
+        setDisplayedCourses(courses);
+
+    }, [courses]);
+
+    useEffect(() => {
+        console.log('Courses from Redux:', courses);
+        console.log('Courses from API:', data?.courses);
+        // Nếu có kết quả tìm kiếm (data.data.courses) thì cập nhật vào displayedCourses
+
+        setDisplayedCourses(data?.courses);
+
+    }, [data]);
+
+    // Hàm lưu bộ lọc vào lịch sử
+    const saveFilterToHistory = () => {
+        const currentFilter = {
+            tags: selectedtag,
+            levels: selectedLevels,
+            price: priceRange,
+            rating: rating,
+            sortBy: sortBy,
+            timestamp: new Date().getTime()
+        };
+
+        // Chỉ lưu khi có ít nhất một bộ lọc được áp dụng
+        if (selectedtag.length > 0 || selectedLevels.length > 0 ||
+            rating > 0 || priceRange[0] > 0 || priceRange[1] < 1000) {
+
+            // Kiểm tra nếu bộ lọc này đã tồn tại
+            const filterExists = filterHistory.some(filter =>
+                JSON.stringify({ ...filter, timestamp: undefined }) ===
+                JSON.stringify({ ...currentFilter, timestamp: undefined })
+            );
+
+            if (!filterExists) {
+                // Giữ tối đa 5 bộ lọc gần nhất
+                const newHistory = [currentFilter, ...filterHistory].slice(0, 5);
+                setFilterHistory(newHistory);
+                localStorage.setItem('recentFilters', JSON.stringify(newHistory));
             }
         }
     };
+
+    // Hàm áp dụng một bộ lọc từ lịch sử
+    const applyFilterFromHistory = (filter) => {
+        setSelectedtag(filter.tags || []);
+        setSelectedLevels(filter.levels || []);
+        setPriceRange(filter.price || [0, 1000]);
+        setRating(filter.rating || 0);
+        setSortBy(filter.sortBy || 'relevance');
+
+        // Cập nhật Redux và tìm kiếm
+        dispatch(setTags(filter.tags || []));
+        dispatch(setLevels(filter.levels || []));
+        dispatch(setPriceRangeSlice(filter.price || [0, 1000]));
+        dispatch(setRatingSlice(filter.rating || 0));
+        dispatch(setSortBySlice(filter.sortBy || 'relevance'));
+
+        // Cập nhật URL và thực hiện tìm kiếm
+        updateFiltersAndSearch();
+    };
+
+    // Thêm hàm handleApplyFilters để áp dụng filter khi nhấn nút
+    const handleApplyFilters = () => {
+        // Sử dụng hàm applyFiltersAutomatic đã có với các giá trị hiện tại
+        applyFiltersAutomatic(selectedtag, selectedLevels, priceRange, rating, sortBy);
+    };
+
+    // Thêm hàm updateFiltersAndSearch để hỗ trợ applyFilterFromHistory
+    const updateFiltersAndSearch = () => {
+        // Cập nhật URL và thực hiện tìm kiếm
+        const params = new URLSearchParams();
+
+        if (query) {
+            params.set('q', query);
+        }
+
+        if (selectedtag.length > 0) {
+            params.set('tag', selectedtag.join(','));
+        }
+
+        if (selectedLevels.length > 0) {
+            params.set('levels', selectedLevels.join(','));
+        }
+
+        if (priceRange[0] > 0 || priceRange[1] < 1000) {
+            params.set('priceMin', priceRange[0].toString());
+            params.set('priceMax', priceRange[1].toString());
+        }
+
+        if (rating > 0) {
+            params.set('rating', rating.toString());
+        }
+
+        if (sortBy !== 'relevance') {
+            params.set('sort', sortBy);
+        }
+
+        setSearchParams(params);
+
+        // Tạo đối tượng params cho tìm kiếm
+        const searchObj = {
+            query: query || '',
+            tags: selectedtag,
+            levels: selectedLevels,
+            priceRange: priceRange,
+            rating: rating,
+            sortBy: sortBy,
+            page: 1,
+            limit: 12
+        };
+
+        searchCourses(searchObj);
+    };
+
+    // Lấy danh sách khóa học từ Redux (luôn đồng bộ với state.search.courses)
+
+    // Biến trung gian xác định danh sách khóa học hiển thị
+    const hasSearchResult = data && data.data && Array.isArray(data.data.courses) && data.data.courses.length > 0;
+    const isFilterActive = isAnyFilterApplied();
+    //   displayedCourses = (isFilterActive && hasSearchResult) ? data.data.courses : courses;
+
 
     return (
         <div className="flex flex-col lg:flex-row w-full min-h-screen px-8">
@@ -442,6 +737,7 @@ const SearchPage = () => {
                             placeholder="Max"
                         />
                     </div>
+                    {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
                 </div>
 
                 {/* Ratings */}
@@ -509,7 +805,7 @@ const SearchPage = () => {
                     </div>
                 ) : (
                     <div>
-                        <h3 className="text-xl font-bold mb-4">All Courses</h3>
+                        <h3 className="text-xl font-bold mb-4"></h3>
                     </div>
                 )}
 
@@ -567,7 +863,7 @@ const SearchPage = () => {
                 )}
 
                 {/* Loading indicator */}
-                {(loading || searchLoading) && courses.length === 0 && (
+                {(loading || searchLoading) && courses?.length === 0 && (
                     <div className="flex justify-center items-center h-64">
                         <CircularProgress color="primary" />
                     </div>
@@ -582,14 +878,14 @@ const SearchPage = () => {
 
                 {/* Course display */}
                 <div className="overflow-hidden">
-                    {!loading && !searchLoading && courses.length === 0 ? (
+                    {!loading && !searchLoading && displayedCourses?.length === 0 ? (
                         <div className="flex justify-center items-center h-64">
                             <p className="text-gray-500 text-lg">
                                 No suitable course found</p>
                         </div>
                     ) : (
                         <InfiniteScroll
-                            dataLength={courses.length}
+                            dataLength={(displayedCourses || []).length }
                             next={fetchMoreData}
                             hasMore={hasMore}
                             loader={
@@ -605,7 +901,7 @@ const SearchPage = () => {
                             scrollThreshold={0.8}
                         >
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                {courses.map(course => (
+                                {displayedCourses?.map(course => (
                                     <CourseCard key={course._id} course={course} />
                                 ))}
                             </div>

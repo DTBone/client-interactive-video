@@ -8,8 +8,13 @@ export function CircularSpinner({ size = 1, useAlternativeColor = false }) {
     return (
         <div className="flex justify-center items-center">
             <div
-                className={`animate-spin rounded-full border-2 ${borderColorClass}`}
-                style={{ width: `${size}em`, height: `${size}em` }}
+                className={`animate-spin rounded-full border-4 ${borderColorClass}`}
+                style={{
+                    width: `${size}em`,
+                    height: `${size}em`,
+                    borderLeftColor: 'transparent',
+                    borderRightColor: 'transparent',
+                }}
             ></div>
         </div>
     );
