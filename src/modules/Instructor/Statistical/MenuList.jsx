@@ -1,63 +1,52 @@
 import { useEffect, useState } from "react";
 import { List, ListItem, ListItemText, ListItemIcon, styled } from "@mui/material";
-import { useNavigate } from "react-router-dom";
-import { Home, Message } from "@mui/icons-material"; // Import các icon từ MUI
-import SettingsIcon from '@mui/icons-material/Settings';
+import { useNavigate, useParams } from "react-router-dom";
 import FolderSharedIcon from '@mui/icons-material/FolderShared';
-import LogoutIcon from '@mui/icons-material/Logout';
-import Person3Icon from '@mui/icons-material/Person3';
-import GroupsIcon from '@mui/icons-material/Groups';
 import { useSelector } from "react-redux";
 
 const StyledList = styled(List)(({ theme }) => ({
-    // width: "250px", // Tăng chiều rộng
-    padding: theme.spacing(2), // Thêm padding
+    padding: theme.spacing(2),
     backgroundColor: theme.palette.background.paper,
-    borderRadius: theme.shape.borderRadius, // Bo góc
-    //boxShadow: theme.shadows[2], // Shadow nhẹ
+    borderRadius: theme.shape.borderRadius,
+    boxShadow: theme.shadows[2],
+    minWidth: 220,
     transition: "all 0.3s ease",
 }));
 
-const StyledListItem = styled(ListItem)(({ theme, isActive, isHovered }) => ({
+const StyledListItem = styled(ListItem)(({ theme, isactive, ishovered }) => ({
     cursor: "pointer",
-    borderRadius: theme.shape.borderRadius, // Bo góc cho từng item
-    padding: theme.spacing(1.5), // Thêm padding
-    backgroundColor: isActive
+    borderRadius: theme.shape.borderRadius,
+    padding: theme.spacing(1.5),
+    backgroundColor: isactive === 'true'
         ? theme.palette.primary.main
-        : isHovered
+        : ishovered === 'true'
             ? theme.palette.action.hover
             : "transparent",
-    color: isActive
+    color: isactive === 'true'
         ? theme.palette.primary.contrastText
         : theme.palette.text.primary,
-    boxShadow: isActive ? theme.shadows[3] : "none", // Shadow khi active
-    transform: isHovered || isActive ? "scale(1.02)" : "scale(1)", // Hiệu ứng phóng to nhẹ
+    boxShadow: isactive === 'true' ? theme.shadows[3] : "none",
+    transform: ishovered === 'true' || isactive === 'true' ? "scale(1.02)" : "scale(1)",
     "&:hover": {
         backgroundColor: theme.palette.action.hover,
         color: theme.palette.text.primary,
     },
-    transition: "all 0.3s ease", // Hiệu ứng mượt mà
+    transition: "all 0.3s ease",
 }));
 
 const MenuList = () => {
     const [hoveredButton, setHoveredButton] = useState(null);
     const navigate = useNavigate();
-    const course = useSelector((state) => state.course.courses);
-    console.log("course", course);
-    const menuItems = course.map(courseItem => ({
+    const { courseId } = useParams();
+    const courses = useSelector((state) => state.course.courses);
+    const menuItems = courses.map(courseItem => ({
         id: courseItem._id,
         label: courseItem.title,
-        path: `course/${courseItem._id}`
+        path: `/instructor/student-management/course/${courseItem._id}`,
+        icon: <FolderSharedIcon />
     }));
-    const [activeButton, setActiveButton] = useState(menuItems[0]?.id);
-    useEffect(() => {
-        if (menuItems.length > 0) {
-            const firstItem = menuItems[0];
-            handleItemClick(firstItem);
-        }
-    }, [course])
+
     const handleItemClick = (item) => {
-        setActiveButton(item.id);
         navigate(item.path);
     };
 
@@ -66,16 +55,16 @@ const MenuList = () => {
             {menuItems.map((item) => (
                 <StyledListItem
                     key={item.id}
-                    isActive={activeButton === item.id}
-                    isHovered={hoveredButton === item.id}
+                    isactive={(courseId === item.id).toString()}
+                    ishovered={(hoveredButton === item.id).toString()}
                     onClick={() => handleItemClick(item)}
                     onMouseEnter={() => setHoveredButton(item.id)}
                     onMouseLeave={() => setHoveredButton(null)}
                 >
                     <ListItemIcon
                         sx={{
-                            color: activeButton === item.id ? "inherit" : "text.primary",
-                            minWidth: "40px", // Đảm bảo khoảng cách giữa icon và text
+                            color: courseId === item.id ? "inherit" : "text.primary",
+                            minWidth: "40px",
                         }}
                     >
                         {item.icon}

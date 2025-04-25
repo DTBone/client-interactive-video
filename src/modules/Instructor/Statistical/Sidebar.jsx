@@ -1,44 +1,35 @@
 import React from 'react'
-
-
-import { Button, Typography } from "@mui/material";
-
+import { Button, Typography, Paper } from "@mui/material";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-
 import { useDispatch, useSelector } from "react-redux";
 import { getAllModulesByModuleItemId, getModuleById, getModuleByItemId } from "~/store/slices/Module/action.js";
-
 import ExpandBtn from '~/modules/Lesson/Button/ExpandBtn';
 import HideBtn from '~/modules/Lesson/Button/HideBtn';
 import MenuList from './MenuList';
 
-
 const Sidebar = ({ handleSidebarButtonClick, isExpanded }) => {
-    const pathSegments = window.location.pathname.split('/');
-    const itemId = pathSegments[pathSegments.length - 1];
-    console.log("Extracted ItemId:", itemId);
-
-    const dispatch = useDispatch()
-
-
     return (
-        <div>
-            <div style={{
-                //width: isExpanded ? `${sidebarWidth}px` : '55px',
-                //minWidth: isExpanded ? `${sidebarWidth}px` : '55px',
-                //transition: 'width 0.01s, min-width 0.3s',
-            }} className="flex flex-col ">
-                <div onClick={handleSidebarButtonClick} className="flex items-center justify-center">
-                    {isExpanded ?
-                        (<ExpandBtn />) : (<HideBtn />) // change the button based on the state
-                    }
-                </div>
-                {isExpanded ? (<MenuList />) : null}
-
-
+        <Paper
+            elevation={4}
+            sx={{
+                minHeight: '100vh',
+                width: isExpanded ? 260 : 64,
+                transition: 'width 0.3s',
+                borderRadius: 3,
+                boxShadow: 3,
+                display: 'flex',
+                flexDirection: 'column',
+                bgcolor: 'background.paper',
+                p: isExpanded ? 2 : 1,
+                alignItems: 'center',
+            }}
+        >
+            <div onClick={handleSidebarButtonClick} style={{ marginBottom: 16, cursor: 'pointer' }}>
+                {isExpanded ? <ExpandBtn /> : <HideBtn />}
             </div>
-        </div>
+            {isExpanded ? <MenuList /> : null}
+        </Paper>
     )
 }
 

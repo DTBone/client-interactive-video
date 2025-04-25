@@ -4,19 +4,23 @@ import { useDispatch, useSelector } from 'react-redux';
 import {
     Grid, TextField, MenuItem, Button, CircularProgress,
     List, ListItem, ListItemText, ListItemSecondaryAction, IconButton, Dialog, DialogTitle,
-    DialogContent, DialogActions, Chip, Paper,
-    Autocomplete,
-    Divider,
-    Box,
-    Typography,
+    DialogContent, DialogActions, Chip, Paper, Stepper, Step, StepLabel, StepContent,
+    Autocomplete, Card, CardContent, CardHeader, CardMedia, CardActionArea,
+    Divider, Box, Typography, Container, Tooltip, Alert, Tabs, Tab,
 } from '@mui/material';
-import { Add as AddIcon, Edit as EditIcon, Delete as DeleteIcon } from '@mui/icons-material';
-import HeaderCourse from '~/Components/Common/Header/HeaderCourse';
+import {
+    Add as AddIcon, Edit as EditIcon, Delete as DeleteIcon,
+    School as SchoolIcon, VideoLibrary as VideoIcon,
+    Tag as TagIcon, MenuBook as CourseIcon, CheckCircle as CheckIcon,
+    Info as InfoIcon, Description as DescriptionIcon, MonetizationOn as PriceIcon,
+    ArrowBack as ArrowBackIcon, ArrowForward as ArrowForwardIcon,
+    OndemandVideo as VideoFileIcon
+} from '@mui/icons-material';
+import ArrowRightAltIcon from '@mui/icons-material/ArrowRightAlt';
 import { createCourse, getCourseByID, updateCourse } from '~/store/slices/Course/action';
 import spinnerLoading from '~/assets/spinnerLoading.gif';
 import Breadcrumb from '~/Components/Common/Breadcrumbs/Breadcrumb';
-import ImageUpload from './UploadImage'
-import ArrowRightAltIcon from '@mui/icons-material/ArrowRightAlt';
+import ImageUpload from './UploadImage';
 import { clearCurrentCourse, clearError } from '~/store/slices/Course/courseSlice';
 import { useNotification } from '~/hooks/useNotification';
 import { uploadToCloudnary } from '~/Utils/uploadToCloudnary';
@@ -59,6 +63,8 @@ const CourseSection = ({ state }) => {
     const { showNotice } = useNotification();
     const [courseData, setCourseData] = useState({});
     const [currentTag, setCurrentTag] = useState(null);
+    const [activeStep, setActiveStep] = useState(0);
+    const [activeTab, setActiveTab] = useState(0);
     const [openModuleDialog, setOpenModuleDialog] = useState(false);
     const [currentModule, setCurrentModule] = useState({
         id: null,
@@ -71,12 +77,19 @@ const CourseSection = ({ state }) => {
     const [selectedImageFile, setSelectedImageFile] = useState(null);
     const [inputValue, setInputValue] = useState('');
     const [filteredSuggestions, setFilteredSuggestions] = useState(suggestedTags);
-
+    const [formValidation, setFormValidation] = useState({
+        basicInfo: false,
+        media: false,
+        tags: false
+    });
 
     const [videoPreview, setVideoPreview] = useState(currentCourse?.sumaryVideo || '');
     const [videoKey, setVideoKey] = useState(0);
     const videoRef = useRef(null);
     const [fileVideo, setFileVideo] = useState(null);
+
+    // Thêm tab categories cho tags
+    const [tagCategory, setTagCategory] = useState('all');
 
     const handleTagChange = (event, newValue) => {
         if (newValue && !courseData.tags?.includes(newValue)) {
@@ -86,14 +99,84 @@ const CourseSection = ({ state }) => {
             }));
             setCurrentTag(null);
             setInputValue('');
+
+            // Validate tag section when tags are added
+            validateForm('tags', [...(courseData.tags || []), newValue].length > 0);
         }
     };
 
     const handleDeleteTag = (tagToDelete) => {
+        const updatedTags = courseData.tags.filter(tag => tag !== tagToDelete);
         setCourseData(prev => ({
             ...prev,
-            tags: prev.tags.filter(tag => tag !== tagToDelete)
+            tags: updatedTags
         }));
+
+        // Validate tag section when tags are removed
+        validateForm('tags', updatedTags.length > 0);
+    };
+
+    // Form validation
+    const validateForm = (section, isValid) => {
+        setFormValidation(prev => ({
+            ...prev,
+            [section]: isValid
+        }));
+    };
+
+    // Validate basic info whenever relevant fields change
+    useEffect(() => {
+        if (courseData.courseId && courseData.title && courseData.description) {
+            validateForm('basicInfo', true);
+        } else {
+            validateForm('basicInfo', false);
+        }
+    }, [courseData.courseId, courseData.title, courseData.description]);
+
+    // Validate tag section whenever tags change
+    useEffect(() => {
+        if (courseData.tags && courseData.tags.length > 0) {
+            validateForm('tags', true);
+        }
+    }, [courseData.tags]);
+
+    // Các hàm điều hướng stepper
+    const handleNext = () => {
+        setActiveStep((prevActiveStep) => prevActiveStep + 1);
+    };
+
+    const handleBack = () => {
+        setActiveStep((prevActiveStep) => prevActiveStep - 1);
+    };
+
+    const handleReset = () => {
+        setActiveStep(0);
+    };
+
+    // Xử lý thay đổi tab
+    const handleTabChange = (event, newValue) => {
+        setActiveTab(newValue);
+    };
+
+    // Xử lý thay đổi tag category
+    const handleTagCategoryChange = (category) => {
+        setTagCategory(category);
+    };
+
+    // Filter tags by category
+    const getFilteredTags = (category) => {
+        const categoryMap = {
+            'languages': suggestedTags.slice(0, 11),
+            'frameworks': suggestedTags.slice(11, 20),
+            'database': suggestedTags.slice(20, 27),
+            'tools': suggestedTags.slice(27, 34),
+            'mobile': suggestedTags.slice(34, 39),
+            'web': suggestedTags.slice(39, 48),
+            'level': ['Beginner', 'Intermediate', 'Advanced'],
+            'all': suggestedTags
+        };
+
+        return category === 'all' ? suggestedTags : (categoryMap[category] || []);
     };
 
     useEffect(() => {
@@ -101,28 +184,20 @@ const CourseSection = ({ state }) => {
             setCourseData({});
             setCurrentModule({ title: '', description: '' });
             setSelectedImageFile(null);
-            // Clear redux state nếu cần
-            dispatch({ type: 'CLEAR_CURRENT_COURSE' }); // Thêm action này vào reducer
+            // Clear redux state
+            dispatch(clearCurrentCourse());
         }
-    }, [state]);
+    }, [state, dispatch]);
 
 
     useEffect(() => {
         let mounted = true;
         const fetchCourse = async () => {
             if (state === 'edit' && courseID && mounted) {
-                //setIsLoading(true);
                 try {
-                    //dispatch(clearCurrentCourse());
-                    console.log('courseId effect:', courseID);
                     await dispatch(getCourseByID(courseID));
-
                 } catch (error) {
                     console.error('Error:', error);
-                } finally {
-                    if (mounted) {
-                        //setIsLoading(false);
-                    }
                 }
             }
         };
@@ -131,86 +206,81 @@ const CourseSection = ({ state }) => {
         return () => {
             mounted = false;
         };
-    }, [courseID, state]); // Chỉ gọi lại khi courseId thay đổi
+    }, [courseID, state, dispatch]);
 
     useEffect(() => {
         if (error) {
             showNotice('error', "Error fetching course");
             dispatch(clearError());
         }
-    }, [error]);
+    }, [error, dispatch, showNotice]);
 
     useEffect(() => {
         if (currentCourse) {
             setCourseData(currentCourse);
             setSelectedImageFile(currentCourse.photo);
+            setVideoPreview(currentCourse.sumaryVideo);
+
+            // Update form validation based on current data
+            validateForm('basicInfo',
+                currentCourse.courseId && currentCourse.title && currentCourse.description);
+            validateForm('tags', currentCourse.tags && currentCourse.tags.length > 0);
+            validateForm('media', true); // Media is optional
         }
-        console.log('course:', currentCourse, error, loading,);
-        console.log('courseData:', courseData);
-    }, [currentCourse])
+    }, [currentCourse]);
+
     const handleInputChange = (e) => {
         const { name, value } = e.target;
-
         const newValue = name === 'price' ? Number(value) : value;
 
-        setCourseData(prev => {
-            const updatedData = { ...prev, [name]: newValue };
-
-            return updatedData;
-        });
+        setCourseData(prev => ({
+            ...prev,
+            [name]: newValue
+        }));
     };
-
 
     const handleSubmit = async (actionType, e) => {
         if (e) e.preventDefault();
 
+        // Form validation
         if (!courseData.courseId) {
             showNotice("error", 'Please enter a course ID');
+            setActiveTab(0); // Switch to basic info tab
             return;
         }
         if (!courseData.title) {
             showNotice("error", 'Please enter a title');
+            setActiveTab(0);
             return;
         }
         if (!courseData.description) {
             showNotice("error", 'Please enter a description');
+            setActiveTab(0);
             return;
+        }
+
+        // Recommend adding tags if none
+        if (!courseData.tags || courseData.tags.length === 0) {
+            showNotice("warning", 'Consider adding some tags to improve course discoverability');
+            // Don't return, just warn
         }
 
         try {
             setIsLoading(true);
 
-            let uploadedImageUrl = courseData.photo; // Giữ ảnh cũ nếu không có ảnh mới
-            // Upload ảnh lên Cloudinary nếu có file ảnh mới được chọn
-            if (selectedImageFile !== courseData.photo) {
+            // Handle image upload
+            let uploadedImageUrl = courseData.photo;
+            if (selectedImageFile && selectedImageFile !== courseData.photo) {
                 try {
                     uploadedImageUrl = await uploadToCloudnary(selectedImageFile);
                 } catch (error) {
                     showNotice('error', "Error uploading image");
                     console.error('Error uploading image:', error);
-                    return; // Exit if image upload fails
+                    setIsLoading(false);
+                    return;
                 }
             }
 
-
-            // const updatedCourseData = (() => {
-            //     const baseData = {
-            //         ...courseData,
-            //         photo: uploadedImageUrl,
-            //         video: fileVideo,
-            //     };
-
-            //     switch (actionType) {
-            //         case 'delete':
-            //             return { ...baseData, status: 'unpublished' };
-            //         case 'published':
-            //             return { ...baseData, status: 'published' };
-            //         case 'draft':
-            //             return { ...baseData, status: 'draft' };
-            //         default:
-            //             return { ...baseData, status: 'published' };
-            //     }
-            // })();
             const statusMap = {
                 delete: 'unpublished',
                 published: 'published',
@@ -221,37 +291,32 @@ const CourseSection = ({ state }) => {
                 ...courseData,
                 photo: uploadedImageUrl,
                 video: fileVideo,
-                status: statusMap[actionType] || 'published', // Nếu không tìm thấy, mặc định là 'published'
+                status: statusMap[actionType] || 'published',
             };
 
+            // Prepare form data for API
             const formData = new FormData();
             if (updatedCourseData.instructor && typeof updatedCourseData.instructor === 'object') {
-                formData.append("instructor", updatedCourseData.instructor._id); // Chỉ lấy ObjectId
+                formData.append("instructor", updatedCourseData.instructor._id);
             } else {
                 formData.append("instructor", updatedCourseData.instructor);
             }
 
-            // Thêm dữ liệu văn bản
+            // Add text data
             Object.keys(updatedCourseData).forEach((key) => {
                 if (key !== 'video' && key !== 'instructor' && key !== 'courseReviews' && key !== 'enrollmentCount') {
                     formData.append(key, updatedCourseData[key]);
                 }
             });
 
-            // Thêm file video (nếu có)
+            // Add video file
             if (updatedCourseData.video instanceof File) {
-                //console.log('fileVideo:', fileVideo);
-                console.log("Kiểm tra file video:", updatedCourseData.video);
-                console.log("Loại dữ liệu:", typeof updatedCourseData.video);
-                console.log("Có phải File object không?", updatedCourseData.video instanceof File);
-
                 formData.append('sumaryVideo', updatedCourseData.video);
             }
 
             setCourseData(updatedCourseData);
 
-
-            // Thực hiện action tương ứng
+            // Submit to API
             if (courseId) {
                 await dispatch(updateCourse({
                     courseId,
@@ -265,7 +330,6 @@ const CourseSection = ({ state }) => {
                 navigate('/instructor/course-management', { replace: true });
             }
 
-
         } catch (error) {
             showNotice('error', "Error while performing action");
             console.error('Error details:', error);
@@ -273,12 +337,10 @@ const CourseSection = ({ state }) => {
             setIsLoading(false);
         }
     };
-    // Xử lý module
 
+    // Module handling
     const handleOpenModuleDialog = (module) => {
-
         if (module) {
-            // Edit existing module - keep current index and title
             setCurrentModule({
                 id: module._id ? module._id : module.id,
                 index: module.index,
@@ -286,7 +348,6 @@ const CourseSection = ({ state }) => {
                 description: module.description,
             });
         } else {
-            // Add new module - calculate next index
             const nextIndex = courseData.modules ? courseData.modules.length + 1 : 1;
             setCurrentModule({
                 id: null,
@@ -295,10 +356,8 @@ const CourseSection = ({ state }) => {
                 description: '',
             });
         }
-
         setOpenModuleDialog(true);
     };
-
 
     const handleCloseModuleDialog = () => {
         setCurrentModule({
@@ -312,27 +371,26 @@ const CourseSection = ({ state }) => {
 
     const handleSaveModule = () => {
         if (!currentModule.title.trim()) {
-            // Validate empty title
+            showNotice('error', 'Module title is required');
             return;
         }
 
         setCourseData(prev => {
             const newModule = currentModule.id
-                ? currentModule // Nếu đang update module cũ
+                ? currentModule
                 : {
                     id: Date.now(),
-                    index: currentModule.index, // Tự động tạo index
+                    index: currentModule.index,
                     title: currentModule.title.trim(),
-                    description: currentModule.description.trim(),  // Thêm description vào module
-                    moduleItems: [] // Khởi tạo mảng rỗng cho moduleItems
+                    description: currentModule.description.trim(),
+                    moduleItems: []
                 };
+
             const updatedData = currentModule.id
                 ? {
                     ...prev,
                     modules: prev.modules.map(m =>
-                        m.id === currentModule.id
-                            ? newModule
-                            : m
+                        m.id === currentModule.id ? newModule : m
                     )
                 }
                 : {
@@ -340,48 +398,33 @@ const CourseSection = ({ state }) => {
                     modules: [...(prev.modules || []), newModule]
                 };
 
-            // Log trong callback để xem giá trị mới
-            //console.log("Updated course data:", updatedData.modules);
             return updatedData;
         });
-        //console.log("course data: ", courseData)
-        //console.log("module data: ", courseData.modules)
+
         handleCloseModuleDialog();
+        showNotice('success', currentModule.id ? 'Module updated successfully' : 'Module added successfully');
     };
 
-
     const handleOpenModuleSection = (courseId, moduleindex) => {
-        // Ensure courseId and moduleindex are valid
-        console.log("courseId: ", courseId);
         if (!courseId || moduleindex == null) {
             console.error('Invalid courseId or moduleindex:', { courseId, moduleindex });
             return;
         }
 
-        // Create a URL-friendly slug from courseId
         const courseSlug = courseId.trim().toLowerCase().replace(/\s+/g, '-');
-
-        // Build the navigation path
         const path = moduleindex === 0
             ? `/course-management/${courseSlug}/module`
             : `/course-management/${courseSlug}/module/${moduleindex}`;
 
-        // Navigate to the constructed path
         navigate(path);
     };
 
     const handleFileChange = (file) => {
         if (file) {
-            // Kiểm tra xem file có phải là video không
             if (!file.type.startsWith('video/')) {
                 showNotice('error', 'Please select a video file');
                 return;
             }
-
-            const fileData = new FormData();
-            fileData.append('file', file);
-
-            // Tạo URL để preview video
 
             if (videoPreview) {
                 URL.revokeObjectURL(videoPreview);
@@ -390,9 +433,10 @@ const CourseSection = ({ state }) => {
             const videoURL = URL.createObjectURL(file);
             setVideoPreview(videoURL);
             setVideoKey(prevKey => prevKey + 1);
-
-
             setFileVideo(file);
+
+            // Mark media as valid since we have a video
+            validateForm('media', true);
         } else {
             setVideoPreview(null);
             setFileVideo('');
@@ -401,16 +445,10 @@ const CourseSection = ({ state }) => {
 
     const handleVideoLoad = () => {
         if (videoRef.current) {
+            // Store video duration if needed
             const duration = videoRef.current.duration;
-            // setFormData(prev => ({
-            //     ...prev,
-            //     duration: duration
-            // }));
         }
     };
-
-
-
 
     if (loading) {
         return (
@@ -420,369 +458,819 @@ const CourseSection = ({ state }) => {
         );
     }
 
-
     return (
-        <div className="h-screen flex flex-col overflow-hidden">
+        <div className="min-h-screen flex flex-col bg-gray-50">
             <header>
                 <Header />
                 <Divider />
-                <div className=" px-6">
-                    <Breadcrumb
-                        courseId={courseID}
-
-                    />
-                </div>
-
-
+                <Box sx={{ backgroundColor: '#f8f9fa', padding: '12px 24px' }}>
+                    <Breadcrumb courseId={courseID} />
+                </Box>
+                <Box
+                    sx={{
+                        backgroundColor: courseData.status === 'published' ? '#e3f2fd' : '#fff8e1',
+                        padding: '16px 24px',
+                        borderBottom: '1px solid #e0e0e0'
+                    }}
+                >
+                    <Typography variant="h5" fontWeight="bold">
+                        {state === 'edit' ? 'Edit Course: ' + (courseData.title || '') : 'Create New Course'}
+                    </Typography>
+                    {courseData.status && (
+                        <Chip
+                            label={courseData.status.toUpperCase()}
+                            color={courseData.status === 'published' ? 'success' : 'warning'}
+                            size="small"
+                            sx={{ ml: 2 }}
+                        />
+                    )}
+                </Box>
             </header>
 
-            <div className="flex h-full overflow-y-auto pt-5 px-6">
+            <Container maxWidth="lg" className="flex-1 py-6">
                 <form onSubmit={(e) => {
-                    e.preventDefault(); // Prevent form submission
+                    e.preventDefault();
                     handleSubmit('published', e);
-                }}
-                    className="w-full">
-                    <Grid container spacing={3}>
-                        {/* Course ID */}
-                        <Grid item xs={12}>
-                            <TextField
-                                fullWidth
-                                required
+                }} className="w-full">
 
-                                label="Course ID"
-                                name="courseId"
-                                value={courseData?.courseId || ''}
-                                onChange={handleInputChange}
-                                disabled={!!courseId}
-                            />
-                        </Grid>
-
-                        {/* Title */}
-                        <Grid item xs={12}>
-                            <TextField
-                                required
-                                fullWidth
-                                label="Course Title"
-                                name="title"
-                                value={courseData.title || ''}
-                                onChange={handleInputChange}
-                            />
-                        </Grid>
-
-                        {/* Description */}
-                        <Grid item xs={12}>
-                            <TextField
-                                required
-                                fullWidth
-                                multiline
-                                rows={4}
-                                label="Description"
-                                name="description"
-                                value={courseData.description || ''}
-                                onChange={handleInputChange}
-                            />
-                        </Grid>
-
-                        {/* Level price approved*/}
-
-                        <Grid item xs={12} md={4}>
-                            <TextField
-                                required
-                                fullWidth
-                                select
-                                label="Level"
-                                name="level"
-                                value={courseData.level || 'beginner'}
-                                onChange={handleInputChange}
+                    {/* Course Progress Preview */}
+                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+                        <Box sx={{ flex: 1, position: 'relative' }}>
+                            <Box
+                                sx={{
+                                    position: 'relative',
+                                    height: '8px',
+                                    backgroundColor: '#e0e0e0',
+                                    borderRadius: 4,
+                                    overflow: 'hidden'
+                                }}
                             >
-                                <MenuItem value="beginner">Beginner</MenuItem>
-                                <MenuItem value="intermediate">Intermediate</MenuItem>
-                                <MenuItem value="advanced">Advanced</MenuItem>
-                            </TextField>
-                        </Grid>
-
-                        <Grid item xs={12} md={4}>
-                            <TextField
-
-                                fullWidth
-                                type='number'
-                                label="Price"
-                                name="price"
-                                value={courseData.price || ''}
-                                onChange={handleInputChange}
-                            />
-                        </Grid>
-
-                        <Grid item xs={12} md={4}>
-                            <TextField
-                                fullWidth
-                                label="Approved By"
-                                value={courseData?.approvedBy?.email || 'Pending Approval'}
-                                disabled
-                            />
-                        </Grid>
-
-                        <div className="flex justify-between items-start w-full gap-3 mt-4 ml-4">
-
-                            <Grid item xs={6}>
-                                <Typography variant="h6" sx={{ marginBottom: '16px', marginLeft: '4px' }} gutterBottom> Video Sumary </Typography>
-                                <FileUpload
-                                    onFileChange={handleFileChange}
-                                    accept='.mp4,.webm'
+                                <Box
+                                    sx={{
+                                        position: 'absolute',
+                                        top: 0,
+                                        left: 0,
+                                        height: '100%',
+                                        width: `${Math.min(
+                                            (((formValidation.basicInfo ? 1 : 0) +
+                                                (formValidation.media ? 1 : 0) +
+                                                (formValidation.tags ? 1 : 0)) / 3) * 100,
+                                            100
+                                        )}%`,
+                                        backgroundColor: 'primary.main',
+                                        borderRadius: 4,
+                                        transition: 'width 0.5s ease'
+                                    }}
                                 />
-                                {videoPreview && (
-                                    <div>
-                                        <Box className="mt-4">
-                                            <video
-                                                key={videoKey}
-                                                ref={videoRef}
-                                                className="w-full max-h-[400px]"
-                                                controls
-                                                onLoadedMetadata={handleVideoLoad}
-                                            >
-                                                <source src={videoPreview} type="video/mp4" />
-                                                Your browser does not support the video tag.
-                                            </video>
+                            </Box>
+                        </Box>
+                        <Typography variant="body2" color="text.secondary" sx={{ ml: 2 }}>
+                            {Math.round(
+                                (((formValidation.basicInfo ? 1 : 0) +
+                                    (formValidation.media ? 1 : 0) +
+                                    (formValidation.tags ? 1 : 0)) / 3) * 100
+                            )}% complete
+                        </Typography>
+                    </Box>
 
+                    {/* Tab Navigation */}
+                    <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
+                        <Tabs
+                            value={activeTab}
+                            onChange={handleTabChange}
+                            variant="scrollable"
+                            scrollButtons="auto"
+                            aria-label="course creation tabs"
+                        >
+                            <Tab
+                                icon={<InfoIcon />}
+                                iconPosition="start"
+                                label="Basic Info"
+                                sx={{
+                                    color: formValidation.basicInfo ? 'success.main' : 'inherit',
+                                }}
+                            />
+                            <Tab
+                                icon={<VideoFileIcon />}
+                                iconPosition="start"
+                                label="Media"
+                                sx={{
+                                    color: formValidation.media ? 'success.main' : 'inherit',
+                                }}
+                            />
+                            <Tab
+                                icon={<TagIcon />}
+                                iconPosition="start"
+                                label="Tags"
+                                sx={{
+                                    color: formValidation.tags ? 'success.main' : 'inherit',
+                                }}
+                            />
+                            {courseId && <Tab icon={<SchoolIcon />} iconPosition="start" label="Modules" />}
+                        </Tabs>
+                    </Box>
+
+                    {/* Tab 1: Basic Info */}
+                    {activeTab === 0 && (
+                        <Box>
+                            <Card variant="outlined" sx={{ mb: 4 }}>
+                                <CardHeader
+                                    title={
+                                        <Box display="flex" alignItems="center">
+                                            <InfoIcon color="primary" sx={{ mr: 1 }} />
+                                            <Typography variant="h6">Course Information</Typography>
                                         </Box>
-
-                                    </div>
-                                )}
-                            </Grid>
-                            <Grid item xs={6}>
-                                <Typography variant="h6" sx={{ marginBottom: '16px', marginLeft: '4px' }} gutterBottom> Thumnail </Typography>
-
-                                <ImageUpload
-                                    initialImage={currentCourse?.photo}
-                                    setCourseData={setCourseData}
-                                    onFileSelect={setSelectedImageFile}
+                                    }
+                                    subheader="Basic details about your course"
                                 />
-                            </Grid>
-                        </div>
-
-
-
-                        <Grid item xs={12}>
-                            <Paper elevation={0} className="p-3 border rounded">
-                                <div className="flex flex-col gap-3">
-                                    <div className="flex gap-2">
-                                        <Autocomplete
-                                            value={currentTag}
-                                            onChange={handleTagChange}
-                                            inputValue={inputValue}
-                                            onInputChange={(event, newInputValue) => {
-                                                setInputValue(newInputValue);
-                                            }}
-                                            options={suggestedTags.filter(tag =>
-                                                !courseData.tags?.includes(tag)
-                                            )}
-                                            renderInput={(params) => (
-                                                <TextField
-                                                    {...params}
-                                                    size="small"
-                                                    label="Add Tag"
-                                                    placeholder="Type or select a tag"
-                                                    fullWidth
-                                                />
-                                            )}
-                                            freeSolo
-                                            style={{ minWidth: 250 }}
-                                        />
-                                    </div>
-                                    <div className="flex flex-wrap gap-2">
-                                        {courseData.tags?.map((tag, index) => (
-                                            <Chip
-                                                key={index}
-                                                label={tag}
-                                                onDelete={() => handleDeleteTag(tag)}
-                                                color="primary"
-                                                variant="outlined"
+                                <CardContent>
+                                    <Grid container spacing={3}>
+                                        {/* Course ID */}
+                                        <Grid item xs={12}>
+                                            <TextField
+                                                fullWidth
+                                                required
+                                                label="Course ID"
+                                                name="courseId"
+                                                value={courseData?.courseId || ''}
+                                                onChange={handleInputChange}
+                                                disabled={!!courseId}
+                                                helperText={!courseId && "This ID will be used for URL generation and cannot be changed later"}
+                                                InputProps={{
+                                                    startAdornment: <CourseIcon sx={{ color: 'text.secondary', mr: 1 }} />
+                                                }}
                                             />
-                                        ))}
-                                    </div>
-                                    {/* Tag Suggestions Section */}
-                                    {!courseData.tags?.length && (
-                                        <div className="mt-2">
-                                            <div className="text-sm text-gray-600 mb-2">Suggested tags:</div>
-                                            <div className="flex flex-wrap gap-1">
-                                                {suggestedTags.slice(0, 10).map((tag, index) => (
-                                                    <Chip
-                                                        key={index}
-                                                        label={tag}
-                                                        size="small"
-                                                        onClick={() => handleTagChange(null, tag)}
-                                                        style={{ cursor: 'pointer' }}
-                                                    />
-                                                ))}
-                                            </div>
-                                        </div>
-                                    )}
-                                </div>
-                            </Paper>
-                        </Grid>
+                                        </Grid>
 
-                        {/* Modules */}
-                        {courseId ?
-                            (
-                                <Grid item xs={12}>
-                                    <div className="flex justify-between items-center mb-2">
-                                        <h3
-                                            onClick={() => handleOpenModuleSection(courseId, 0)}
-                                            style={{
-                                                cursor: 'pointer',
-                                                textDecoration: 'none'
-                                            }}
-                                            onMouseEnter={(e) => e.target.style.textDecoration = 'underline'}
-                                            onMouseLeave={(e) => e.target.style.textDecoration = 'none'}
-                                        >
-                                            Modules
-                                        </h3>
+                                        {/* Title */}
+                                        <Grid item xs={12}>
+                                            <TextField
+                                                required
+                                                fullWidth
+                                                label="Course Title"
+                                                name="title"
+                                                value={courseData.title || ''}
+                                                onChange={handleInputChange}
+                                                placeholder="Enter an engaging title for your course"
+                                                InputProps={{
+                                                    startAdornment: <DescriptionIcon sx={{ color: 'text.secondary', mr: 1 }} />
+                                                }}
+                                            />
+                                        </Grid>
+
+                                        {/* Description */}
+                                        <Grid item xs={12}>
+                                            <TextField
+                                                required
+                                                fullWidth
+                                                multiline
+                                                rows={4}
+                                                label="Course Description"
+                                                name="description"
+                                                value={courseData.description || ''}
+                                                onChange={handleInputChange}
+                                                placeholder="Describe what students will learn in this course"
+                                                helperText={`${(courseData.description?.length || 0)} characters (min. recommended: 100)`}
+                                            />
+                                        </Grid>
+
+                                        {/* Level price approved*/}
+                                        <Grid item xs={12} md={4}>
+                                            <TextField
+                                                required
+                                                fullWidth
+                                                select
+                                                label="Course Level"
+                                                name="level"
+                                                value={courseData.level || 'beginner'}
+                                                onChange={handleInputChange}
+                                                helperText="Select the appropriate difficulty level"
+                                                InputProps={{
+                                                    startAdornment: <SchoolIcon sx={{ color: 'text.secondary', mr: 1 }} />
+                                                }}
+                                            >
+                                                <MenuItem value="beginner">Beginner</MenuItem>
+                                                <MenuItem value="intermediate">Intermediate</MenuItem>
+                                                <MenuItem value="advanced">Advanced</MenuItem>
+                                            </TextField>
+                                        </Grid>
+
+                                        <Grid item xs={12} md={4}>
+                                            <TextField
+                                                fullWidth
+                                                type='number'
+                                                label="Course Price ($)"
+                                                name="price"
+                                                value={courseData.price || ''}
+                                                onChange={handleInputChange}
+                                                placeholder="0 for free courses"
+                                                InputProps={{
+                                                    startAdornment: <PriceIcon sx={{ color: 'text.secondary', mr: 1 }} />
+                                                }}
+                                            />
+                                        </Grid>
+
+                                        <Grid item xs={12} md={4}>
+                                            <TextField
+                                                fullWidth
+                                                label="Approval Status"
+                                                value={courseData?.approvedBy?.email || 'Pending Approval'}
+                                                disabled
+                                                InputProps={{
+                                                    startAdornment: <CheckIcon sx={{ color: courseData?.approvedBy ? 'success.main' : 'text.disabled', mr: 1 }} />
+                                                }}
+                                            />
+                                        </Grid>
+                                    </Grid>
+                                </CardContent>
+                            </Card>
+
+                            {/* Tab Navigation Buttons */}
+                            <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
+                                <Button
+                                    variant="contained"
+                                    color="primary"
+                                    onClick={() => setActiveTab(1)}
+                                    endIcon={<ArrowForwardIcon />}
+                                    disabled={!formValidation.basicInfo}
+                                >
+                                    Next: Media
+                                </Button>
+                            </Box>
+                        </Box>
+                    )}
+
+                    {/* Tab 2: Media */}
+                    {activeTab === 1 && (
+                        <Box>
+                            <Card variant="outlined" sx={{ mb: 4 }}>
+                                <CardHeader
+                                    title={
+                                        <Box display="flex" alignItems="center">
+                                            <VideoIcon color="primary" sx={{ mr: 1 }} />
+                                            <Typography variant="h6">Course Media</Typography>
+                                        </Box>
+                                    }
+                                    subheader="Upload a thumbnail image and intro video for your course"
+                                />
+                                <CardContent>
+                                    <Grid container spacing={4}>
+                                        <Grid item xs={12} md={6}>
+                                            <Typography variant="subtitle1" fontWeight="medium" sx={{ mb: 2 }}>
+                                                <VideoIcon fontSize="small" sx={{ mr: 1, verticalAlign: 'middle' }} />
+                                                Course Preview Video
+                                            </Typography>
+                                            <Paper
+                                                elevation={0}
+                                                sx={{
+                                                    p: 3,
+                                                    border: '1px dashed #ccc',
+                                                    borderRadius: 2,
+                                                    backgroundColor: '#fafafa'
+                                                }}
+                                            >
+                                                <FileUpload
+                                                    onFileChange={handleFileChange}
+                                                    accept='.mp4,.webm'
+                                                />
+                                                {videoPreview ? (
+                                                    <Box className="mt-4" sx={{ border: '1px solid #eee', borderRadius: 1, overflow: 'hidden' }}>
+                                                        <video
+                                                            key={videoKey}
+                                                            ref={videoRef}
+                                                            className="w-full max-h-[400px]"
+                                                            controls
+                                                            onLoadedMetadata={handleVideoLoad}
+                                                        >
+                                                            <source src={videoPreview} type="video/mp4" />
+                                                            Your browser does not support the video tag.
+                                                        </video>
+                                                    </Box>
+                                                ) : (
+                                                    <Alert severity="info" sx={{ mt: 2 }}>
+                                                        A brief intro video can increase student engagement by 80%
+                                                    </Alert>
+                                                )}
+                                            </Paper>
+                                        </Grid>
+                                        <Grid item xs={12} md={6}>
+                                            <Typography variant="subtitle1" fontWeight="medium" sx={{ mb: 2 }}>
+                                                <CourseIcon fontSize="small" sx={{ mr: 1, verticalAlign: 'middle' }} />
+                                                Course Thumbnail Image
+                                            </Typography>
+                                            <Paper
+                                                elevation={0}
+                                                sx={{
+                                                    p: 3,
+                                                    border: '1px dashed #ccc',
+                                                    borderRadius: 2,
+                                                    backgroundColor: '#fafafa',
+                                                    height: '100%',
+                                                    display: 'flex',
+                                                    flexDirection: 'column'
+                                                }}
+                                            >
+                                                <ImageUpload
+                                                    initialImage={currentCourse?.photo}
+                                                    setCourseData={setCourseData}
+                                                    onFileSelect={setSelectedImageFile}
+                                                />
+                                                {!selectedImageFile && (
+                                                    <Alert severity="info" sx={{ mt: 'auto' }}>
+                                                        Recommended image size: 1280 x 720 pixels
+                                                    </Alert>
+                                                )}
+                                            </Paper>
+                                        </Grid>
+                                    </Grid>
+                                </CardContent>
+                            </Card>
+
+                            {/* Tab Navigation Buttons */}
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 2 }}>
+                                <Button
+                                    variant="outlined"
+                                    color="primary"
+                                    onClick={() => setActiveTab(0)}
+                                    startIcon={<ArrowBackIcon />}
+                                >
+                                    Back: Basic Info
+                                </Button>
+                                <Button
+                                    variant="contained"
+                                    color="primary"
+                                    onClick={() => setActiveTab(2)}
+                                    endIcon={<ArrowForwardIcon />}
+                                >
+                                    Next: Tags
+                                </Button>
+                            </Box>
+                        </Box>
+                    )}
+
+                    {/* Tab 3: Tags */}
+                    {activeTab === 2 && (
+                        <Box>
+                            <Card variant="outlined" sx={{ mb: 4 }}>
+                                <CardHeader
+                                    title={
+                                        <Box display="flex" alignItems="center">
+                                            <TagIcon color="primary" sx={{ mr: 1 }} />
+                                            <Typography variant="h6">Course Tags</Typography>
+                                        </Box>
+                                    }
+                                    subheader="Add relevant tags to help students find your course"
+                                />
+                                <CardContent>
+                                    <Paper elevation={0} sx={{ p: 3, border: '1px solid #e0e0e0', borderRadius: 2 }}>
+                                        <div className="flex flex-col gap-3">
+                                            <Box sx={{ mb: 3 }}>
+                                                <Autocomplete
+                                                    value={currentTag}
+                                                    onChange={handleTagChange}
+                                                    inputValue={inputValue}
+                                                    onInputChange={(event, newInputValue) => {
+                                                        setInputValue(newInputValue);
+                                                    }}
+                                                    options={suggestedTags.filter(tag =>
+                                                        !courseData.tags?.includes(tag)
+                                                    )}
+                                                    renderInput={(params) => (
+                                                        <TextField
+                                                            {...params}
+                                                            size="medium"
+                                                            label="Add Tag"
+                                                            placeholder="Type or select a tag"
+                                                            fullWidth
+                                                            InputProps={{
+                                                                ...params.InputProps,
+                                                                startAdornment: (
+                                                                    <>
+                                                                        <TagIcon sx={{ color: 'text.secondary', mr: 1 }} />
+                                                                        {params.InputProps.startAdornment}
+                                                                    </>
+                                                                )
+                                                            }}
+                                                        />
+                                                    )}
+                                                    freeSolo
+                                                />
+                                            </Box>
+
+                                            <Box sx={{ mb: 3 }}>
+                                                <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1 }}>
+                                                    Current tags ({courseData.tags?.length || 0}):
+                                                </Typography>
+                                                <Box sx={{
+                                                    p: courseData.tags?.length ? 2 : 0,
+                                                    border: courseData.tags?.length ? '1px dashed #e0e0e0' : 'none',
+                                                    borderRadius: 1,
+                                                    backgroundColor: courseData.tags?.length ? '#fafafa' : 'transparent',
+                                                    minHeight: courseData.tags?.length ? 'auto' : '60px'
+                                                }}>
+                                                    <div className="flex flex-wrap gap-2">
+                                                        {courseData.tags?.map((tag, index) => (
+                                                            <Chip
+                                                                key={index}
+                                                                label={tag}
+                                                                onDelete={() => handleDeleteTag(tag)}
+                                                                color="primary"
+                                                                variant="outlined"
+                                                                sx={{ m: 0.5 }}
+                                                            />
+                                                        ))}
+                                                        {!courseData.tags?.length && (
+                                                            <Typography variant="body2" color="text.disabled" sx={{ p: 2 }}>
+                                                                No tags added yet. Tags help improve course visibility.
+                                                            </Typography>
+                                                        )}
+                                                    </div>
+                                                </Box>
+                                            </Box>
+
+                                            {/* Tag Category Filter */}
+                                            <Box sx={{ mb: 2 }}>
+                                                <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1 }}>
+                                                    Browse tags by category:
+                                                </Typography>
+                                                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                                                    <Chip
+                                                        label="All"
+                                                        onClick={() => handleTagCategoryChange('all')}
+                                                        color={tagCategory === 'all' ? 'primary' : 'default'}
+                                                        variant={tagCategory === 'all' ? 'filled' : 'outlined'}
+                                                    />
+                                                    <Chip
+                                                        label="Languages"
+                                                        onClick={() => handleTagCategoryChange('languages')}
+                                                        color={tagCategory === 'languages' ? 'primary' : 'default'}
+                                                        variant={tagCategory === 'languages' ? 'filled' : 'outlined'}
+                                                    />
+                                                    <Chip
+                                                        label="Frameworks"
+                                                        onClick={() => handleTagCategoryChange('frameworks')}
+                                                        color={tagCategory === 'frameworks' ? 'primary' : 'default'}
+                                                        variant={tagCategory === 'frameworks' ? 'filled' : 'outlined'}
+                                                    />
+                                                    <Chip
+                                                        label="Databases"
+                                                        onClick={() => handleTagCategoryChange('database')}
+                                                        color={tagCategory === 'database' ? 'primary' : 'default'}
+                                                        variant={tagCategory === 'database' ? 'filled' : 'outlined'}
+                                                    />
+                                                    <Chip
+                                                        label="Development Tools"
+                                                        onClick={() => handleTagCategoryChange('tools')}
+                                                        color={tagCategory === 'tools' ? 'primary' : 'default'}
+                                                        variant={tagCategory === 'tools' ? 'filled' : 'outlined'}
+                                                    />
+                                                    <Chip
+                                                        label="Level"
+                                                        onClick={() => handleTagCategoryChange('level')}
+                                                        color={tagCategory === 'level' ? 'primary' : 'default'}
+                                                        variant={tagCategory === 'level' ? 'filled' : 'outlined'}
+                                                    />
+                                                </Box>
+                                            </Box>
+
+                                            {/* Suggested Tags Section */}
+                                            <Divider sx={{ my: 2 }}>
+                                                <Chip label="Suggested Tags" size="small" />
+                                            </Divider>
+
+                                            <Box sx={{ p: 2, backgroundColor: '#f5f7fa', borderRadius: 2 }}>
+                                                <div className="flex flex-wrap gap-1">
+                                                    {getFilteredTags(tagCategory).map((tag, index) => (
+                                                        <Chip
+                                                            key={index}
+                                                            label={tag}
+                                                            size="small"
+                                                            onClick={() => handleTagChange(null, tag)}
+                                                            disabled={courseData.tags?.includes(tag)}
+                                                            sx={{ m: 0.5, cursor: 'pointer' }}
+                                                        />
+                                                    ))}
+                                                </div>
+                                            </Box>
+                                        </div>
+                                    </Paper>
+                                </CardContent>
+                            </Card>
+
+                            {/* Tab Navigation Buttons */}
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 2 }}>
+                                <Button
+                                    variant="outlined"
+                                    color="primary"
+                                    onClick={() => setActiveTab(1)}
+                                    startIcon={<ArrowBackIcon />}
+                                >
+                                    Back: Media
+                                </Button>
+                                {courseId && (
+                                    <Button
+                                        variant="contained"
+                                        color="primary"
+                                        onClick={() => setActiveTab(3)}
+                                        endIcon={<ArrowForwardIcon />}
+                                    >
+                                        Next: Modules
+                                    </Button>
+                                )}
+                            </Box>
+                        </Box>
+                    )}
+
+                    {/* Tab 4: Modules (only visible when editing an existing course) */}
+                    {activeTab === 3 && courseId && (
+                        <Box>
+                            <Card variant="outlined" sx={{ mb: 4 }}>
+                                <CardHeader
+                                    title={
+                                        <Box display="flex" alignItems="center">
+                                            <SchoolIcon color="primary" sx={{ mr: 1 }} />
+                                            <Typography variant="h6">Course Modules</Typography>
+                                        </Box>
+                                    }
+                                    subheader="Organize your course content into modules"
+                                    action={
                                         <Button
+                                            variant="contained"
+                                            color="primary"
                                             startIcon={<AddIcon />}
                                             onClick={() => handleOpenModuleDialog()}
+                                            size="small"
+                                            sx={{ mt: 1 }}
                                         >
                                             Add Module
                                         </Button>
-                                    </div>
-                                    <List>
-                                        {courseData.modules?.map((module, index) => (
-                                            <ListItem
-                                                key={index}
-                                                divider
-                                                style={{ cursor: 'pointer' }}
-                                                onClick={() => handleOpenModuleSection(courseId, module.index)}
-                                                onMouseEnter={(e) => e.currentTarget.style.textDecoration = 'underline'}
-                                                onMouseLeave={(e) => e.currentTarget.style.textDecoration = 'none'}
-                                            >
-                                                <ListItemText
-                                                    primary={`${index + 1}. Module ${module.index}`}
-                                                    secondary={module.title}
-                                                />
-                                                <ListItemSecondaryAction>
-                                                    <IconButton edge="end" onClick={(e) => {
-                                                        e.stopPropagation(); // Ngăn sự kiện click lan tỏa
-                                                        handleOpenModuleDialog(module);
-                                                    }}>
-                                                        <EditIcon />
-                                                    </IconButton>
-                                                    {/* <IconButton edge="end" onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        handleDeleteModule(module.id);
-                                                    }}>
-                                                        <DeleteIcon />
-                                                    </IconButton> */}
-                                                    <IconButton edge="end" onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        handleOpenModuleSection(courseId, module.index);
-                                                    }}>
-                                                        <ArrowRightAltIcon />
-                                                    </IconButton>
-                                                </ListItemSecondaryAction>
-                                            </ListItem>
-                                        ))}
-                                    </List>
-                                </Grid>
-                            ) : (<p />)}
+                                    }
+                                />
+                                <CardContent>
+                                    <Paper elevation={0} sx={{ border: '1px solid #e0e0e0', borderRadius: 2 }}>
+                                        {courseData.modules && courseData.modules.length > 0 ? (
+                                            <List>
+                                                {courseData.modules?.map((module, index) => (
+                                                    <ListItem
+                                                        key={index}
+                                                        divider
+                                                        button
+                                                        onClick={() => handleOpenModuleSection(courseId, module.index)}
+                                                        sx={{
+                                                            '&:hover': {
+                                                                backgroundColor: '#f5f5f5',
+                                                            }
+                                                        }}
+                                                    >
+                                                        <Box sx={{ display: 'flex', alignItems: 'center', width: '100%' }}>
+                                                            <Box
+                                                                sx={{
+                                                                    backgroundColor: 'primary.main',
+                                                                    color: 'white',
+                                                                    width: 36,
+                                                                    height: 36,
+                                                                    display: 'flex',
+                                                                    alignItems: 'center',
+                                                                    justifyContent: 'center',
+                                                                    borderRadius: '50%',
+                                                                    mr: 2
+                                                                }}
+                                                            >
+                                                                {index + 1}
+                                                            </Box>
+                                                            <ListItemText
+                                                                primary={
+                                                                    <Typography variant="subtitle1" fontWeight="medium">
+                                                                        {module.title}
+                                                                    </Typography>
+                                                                }
+                                                                secondary={
+                                                                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                                                                        <Typography variant="body2" color="text.secondary" noWrap>
+                                                                            {module.description || 'No description available'}
+                                                                        </Typography>
+                                                                        {module.moduleItems && (
+                                                                            <Chip
+                                                                                label={`${module.moduleItems.length} items`}
+                                                                                size="small"
+                                                                                sx={{ ml: 1 }}
+                                                                            />
+                                                                        )}
+                                                                    </Box>
+                                                                }
+                                                            />
+                                                        </Box>
+                                                        <ListItemSecondaryAction>
+                                                            <Tooltip title="Edit Module">
+                                                                <IconButton
+                                                                    edge="end"
+                                                                    onClick={(e) => {
+                                                                        e.stopPropagation();
+                                                                        handleOpenModuleDialog(module);
+                                                                    }}
+                                                                >
+                                                                    <EditIcon />
+                                                                </IconButton>
+                                                            </Tooltip>
+                                                            <Tooltip title="Go to Module Details">
+                                                                <IconButton edge="end" onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    handleOpenModuleSection(courseId, module.index);
+                                                                }}>
+                                                                    <ArrowRightAltIcon />
+                                                                </IconButton>
+                                                            </Tooltip>
+                                                        </ListItemSecondaryAction>
+                                                    </ListItem>
+                                                ))}
+                                            </List>
+                                        ) : (
+                                            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', py: 6, px: 3 }}>
+                                                <CourseIcon sx={{ fontSize: 60, color: 'text.disabled', mb: 2 }} />
+                                                <Typography variant="h6" color="text.secondary" gutterBottom>
+                                                    No modules added yet
+                                                </Typography>
+                                                <Typography variant="body2" color="text.secondary" align="center" sx={{ maxWidth: 400, mb: 3 }}>
+                                                    Organize your course content by adding modules. Each module can contain lessons, quizzes and resources.
+                                                </Typography>
+                                                <Button
+                                                    variant="contained"
+                                                    color="primary"
+                                                    startIcon={<AddIcon />}
+                                                    onClick={() => handleOpenModuleDialog()}
+                                                >
+                                                    Create Your First Module
+                                                </Button>
+                                            </Box>
+                                        )}
+                                    </Paper>
+                                </CardContent>
+                            </Card>
 
-
-                        {/* Save Button */}
-                        <Grid item xs={12} md={6}>
-
-                            {courseId ? (courseData.status === "published" ?
-                                (<Button
-                                    type="button"
+                            {/* Tab Navigation Buttons */}
+                            <Box sx={{ display: 'flex', justifyContent: 'flex-start', mt: 2 }}>
+                                <Button
                                     variant="outlined"
-                                    color="secondary"
-                                    disabled={loading}
-                                    fullWidth
-                                    onClick={() => handleSubmit('delete')}
-                                    style={{ marginBottom: '10px' }}
+                                    color="primary"
+                                    onClick={() => setActiveTab(2)}
+                                    startIcon={<ArrowBackIcon />}
                                 >
-                                    Delete as Course
-                                </Button>) : (<Button
-                                    type="button"
-                                    variant="outlined"
-                                    color="secondary"
-                                    disabled={loading}
-                                    fullWidth
-                                    onClick={() => handleSubmit('published')}
-                                    style={{ marginBottom: '10px' }}
-                                >
-                                    Published as Course
-                                </Button>)) : (
+                                    Back: Tags
+                                </Button>
+                            </Box>
+                        </Box>
+                    )}
+
+                    {/* Action Buttons */}
+                    <Box sx={{ mt: 5, pt: 3, borderTop: '1px solid #e0e0e0', display: 'flex', justifyContent: 'space-between' }}>
+                        <Box>
+                            {courseId ? (
+                                courseData.status === "published" ? (
+                                    <Button
+                                        type="button"
+                                        variant="outlined"
+                                        color="error"
+                                        disabled={loading || isLoading}
+                                        startIcon={<DeleteIcon />}
+                                        onClick={() => handleSubmit('delete')}
+                                        sx={{ minWidth: 180 }}
+                                    >
+                                        Unpublish Course
+                                    </Button>
+                                ) : (
+                                    <Button
+                                        type="button"
+                                        variant="outlined"
+                                        color="success"
+                                        disabled={loading || isLoading}
+                                        startIcon={<CheckIcon />}
+                                        onClick={() => handleSubmit('published')}
+                                        sx={{ minWidth: 180 }}
+                                    >
+                                        Publish Course
+                                    </Button>
+                                )
+                            ) : (
                                 <Button
                                     type="button"
                                     variant="outlined"
                                     color="secondary"
-                                    disabled={loading}
-                                    fullWidth
+                                    disabled={loading || isLoading}
+                                    startIcon={<EditIcon />}
                                     onClick={() => handleSubmit('draft')}
-                                    style={{ marginBottom: '10px' }}
+                                    sx={{ minWidth: 180 }}
                                 >
                                     Save as Draft
                                 </Button>
                             )}
+                        </Box>
 
-
-                        </Grid>
-
-                        <Grid item xs={12} md={6} >
-                            <Button
-                                type="submit"
-                                variant="contained"
-                                color="primary"
-                                //disabled={loading}
-                                fullWidth
-                                style={{ marginBottom: '10px' }}
-                                onClick={(e) => handleSubmit('published', e)}
-                                disabled={isLoading}
-                            >
-                                {isLoading ? <CircularProgress size={24} /> : (courseId ? 'Update Course' : 'Create Course')}
-                            </Button>
-
-
-                        </Grid>
-                    </Grid>
+                        <Button
+                            type="submit"
+                            variant="contained"
+                            color="primary"
+                            size="large"
+                            fullWidth={false}
+                            sx={{ minWidth: 180 }}
+                            onClick={(e) => handleSubmit('published', e)}
+                            disabled={loading || isLoading}
+                        >
+                            {isLoading ? (
+                                <CircularProgress size={24} />
+                            ) : courseId ? (
+                                'Update Course'
+                            ) : (
+                                'Create Course'
+                            )}
+                        </Button>
+                    </Box>
                 </form>
-            </div>
+            </Container>
 
             {/* Module Dialog */}
-            <Dialog open={openModuleDialog} onClose={handleCloseModuleDialog}>
-                <DialogTitle>{currentModule.id ? 'Edit Module' : 'Add New Module'}</DialogTitle>
-                <DialogContent>
-                    <TextField
-                        autoFocus
-                        margin="dense"
-                        label="Module Title"
-                        type="text"
-                        fullWidth
-                        value={currentModule.title}
-                        onChange={(e) => setCurrentModule(prev => ({ ...prev, title: e.target.value }))}
-                    //sx={{ width: '300px' }}
-                    />
-                    <TextField
-                        margin="dense"
-                        label="Description"
-                        multiline
-                        rows={4}
-                        type="text"
-                        fullWidth
-                        value={currentModule.description}
-                        onChange={(e) => setCurrentModule(prev => ({ ...prev, description: e.target.value }))}
-                    //sx={{ width: '300px' }}
-                    />
-
+            <Dialog
+                open={openModuleDialog}
+                onClose={handleCloseModuleDialog}
+                maxWidth="sm"
+                fullWidth
+            >
+                <DialogTitle>
+                    <Box display="flex" alignItems="center">
+                        {currentModule.id ? (
+                            <>
+                                <EditIcon color="primary" sx={{ mr: 1 }} />
+                                Edit Module
+                            </>
+                        ) : (
+                            <>
+                                <AddIcon color="primary" sx={{ mr: 1 }} />
+                                Add New Module
+                            </>
+                        )}
+                    </Box>
+                </DialogTitle>
+                <DialogContent dividers>
+                    <Grid container spacing={3}>
+                        <Grid item xs={12}>
+                            <TextField
+                                autoFocus
+                                margin="dense"
+                                label="Module Title"
+                                type="text"
+                                fullWidth
+                                required
+                                value={currentModule.title}
+                                onChange={(e) => setCurrentModule(prev => ({ ...prev, title: e.target.value }))}
+                                placeholder="Enter a descriptive title for this module"
+                                helperText="Example: Introduction to JavaScript, Database Concepts, etc."
+                            />
+                        </Grid>
+                        <Grid item xs={12}>
+                            <TextField
+                                margin="dense"
+                                label="Module Description"
+                                multiline
+                                rows={4}
+                                type="text"
+                                fullWidth
+                                value={currentModule.description}
+                                onChange={(e) => setCurrentModule(prev => ({ ...prev, description: e.target.value }))}
+                                placeholder="Provide a brief overview of what will be covered in this module"
+                            />
+                        </Grid>
+                    </Grid>
                 </DialogContent>
-                <DialogActions sx={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
-                    <Button onClick={handleCloseModuleDialog}>Cancel</Button>
+                <DialogActions sx={{ display: 'flex', justifyContent: 'space-between', width: '100%', p: 2 }}>
+                    <Button
+                        onClick={handleCloseModuleDialog}
+                        variant="outlined"
+                    >
+                        Cancel
+                    </Button>
                     <div className='space-x-2'>
-                        <Button onClick={() => handleOpenModuleSection(courseId, currentModule.index)}>Detail</Button>
-                        <Button onClick={handleSaveModule}>Save</Button>
+                        {currentModule.id && (
+                            <Button
+                                onClick={() => handleOpenModuleSection(courseId, currentModule.index)}
+                                variant="outlined"
+                                color="primary"
+                                startIcon={<ArrowRightAltIcon />}
+                            >
+                                Go to Details
+                            </Button>
+                        )}
+                        <Button
+                            onClick={handleSaveModule}
+                            variant="contained"
+                            color="primary"
+                            startIcon={currentModule.id ? <EditIcon /> : <AddIcon />}
+                            disabled={!currentModule.title.trim()}
+                        >
+                            {currentModule.id ? 'Update' : 'Add Module'}
+                        </Button>
                     </div>
                 </DialogActions>
-
             </Dialog>
-        </div >
+        </div>
     );
 };
 

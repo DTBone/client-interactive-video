@@ -1,7 +1,6 @@
 import React, { useEffect } from 'react';
 import PropTypes from 'prop-types';
 import {
-    Paper,
     Chip,
     Avatar,
     Box,
@@ -20,7 +19,6 @@ import {
 import {
     CheckCircleOutline as CompletedIcon,
     HourglassEmpty as NotStartedIcon,
-    Close as CloseIcon,
     ExpandMore as ExpandMoreIcon,
     Quiz as QuizIcon,
     Code as CodeIcon,
@@ -34,7 +32,7 @@ import {
 import { useDispatch, useSelector } from 'react-redux';
 import { getModuleItemById } from '~/store/slices/ModuleItem/action';
 
-const ModuleItemProgress = ({ item }) => {
+const ModuleItemProgressEnhanced = ({ item }) => {
     const dispatch = useDispatch();
     useEffect(() => {
         const fetchData = async () => {
@@ -621,7 +619,7 @@ const ModuleItemProgress = ({ item }) => {
     );
 };
 
-ModuleItemProgress.propTypes = {
+ModuleItemProgressEnhanced.propTypes = {
     item: PropTypes.shape({
         moduleItemId: PropTypes.string,
         status: PropTypes.string,
@@ -640,4 +638,4 @@ ModuleItemProgress.propTypes = {
     }).isRequired
 };
 
-export default ModuleItemProgress;
+export default ModuleItemProgressEnhanced;
