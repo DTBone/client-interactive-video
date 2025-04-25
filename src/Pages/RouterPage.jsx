@@ -26,7 +26,7 @@ import Payment from '~/modules/EnrollToCourse/Payment'
 import PaymentStatus from '~/modules/EnrollToCourse/Payment/PaymentStatus'
 import LiveStream from '~/modules/LiveStream'
 import InstructorSection from '~/modules/Instructor/InstructorSection'
-import CourseSection from '~/modules/Instructor/Courses/CourseSection'
+import CourseSection from '~/modules/Instructor/Courses/CourseSectionEnhanced'
 import MyLearning from '~/modules/User/MyLearning/MyLearning'
 
 

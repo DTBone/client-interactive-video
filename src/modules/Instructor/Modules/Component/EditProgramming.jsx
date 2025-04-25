@@ -26,7 +26,7 @@ import { useDispatch } from 'react-redux';
 import { createModuleItemProgramming, editProgrammingByItemId } from '~/store/slices/ModuleItem/action';
 import { toggleRefresh } from '~/store/slices/Module/moduleSlice';
 import LanguageSelector from './LanguageSelector';
-
+import ConfirmAlert from '~/Components/Modal/ConfirmAlert';
 
 const programProblemSchema = Yup.object().shape({
     problemName: Yup.string()
@@ -408,10 +408,31 @@ const EditProgramming = ({ moduleItem }) => {
         }
     }
 
+    const [showConfirm, setShowConfirm] = useState({ type: '', index: null, open: false });
 
+    // Confirm delete code or testcase
+    const handleConfirmDelete = () => {
+        if (showConfirm.type === 'code') {
+            removeCode(showConfirm.index);
+        } else if (showConfirm.type === 'testcase') {
+            removeTestcase(showConfirm.index);
+        }
+        setShowConfirm({ type: '', index: null, open: false });
+    };
 
     return (
         <div className="space-y-6">
+            {/* Confirm Alert for delete actions */}
+            <ConfirmAlert
+                open={showConfirm.open}
+                onClose={() => setShowConfirm({ type: '', index: null, open: false })}
+                onConfirm={handleConfirmDelete}
+                title={showConfirm.type === 'code' ? 'Delete Code Sample' : 'Delete Testcase'}
+                message={`Are you sure you want to delete this ${showConfirm.type === 'code' ? 'code sample' : 'testcase'}? This action cannot be undone.`}
+                confirmText="Delete"
+                cancelText="Cancel"
+                type="warning"
+            />
             {/* Basic Problem Information */}
             <Card className="p-4" >
                 <CardContent>
@@ -423,6 +444,7 @@ const EditProgramming = ({ moduleItem }) => {
                             label="Title"
                             value={problemData.title}
                             onChange={handleProblemChange('title')}
+                            helperText="Enter a descriptive title for this programming assignment."
                         />
                         <TextField
                             fullWidth
@@ -431,6 +453,7 @@ const EditProgramming = ({ moduleItem }) => {
                             label="Description"
                             value={problemData.description}
                             onChange={handleProblemChange('description')}
+                            helperText="Describe the assignment for students."
                         />
 
                     </div>
@@ -458,7 +481,7 @@ const EditProgramming = ({ moduleItem }) => {
                             label="Problem Name"
                             value={problemData.problemName}
                             onChange={handleProblemChange('problemName')}
-                            helperText="Unique identifier for the problem"
+                            helperText="Unique identifier for the problem."
                         />
                         <div className="py-4 ">
                             <JoditEditor
@@ -499,6 +522,13 @@ const EditProgramming = ({ moduleItem }) => {
                                     value={newTag}
                                     onChange={(e) => setNewTag(e.target.value)}
                                     size="small"
+                                    onKeyDown={e => {
+                                        if (e.key === 'Enter' || e.key === ',') {
+                                            e.preventDefault();
+                                            handleAddTag();
+                                        }
+                                    }}
+                                    helperText="Press Enter or comma to add tag."
                                 />
                                 <Button
                                     onClick={handleAddTag}
@@ -514,6 +544,7 @@ const EditProgramming = ({ moduleItem }) => {
                                         key={index}
                                         label={tag}
                                         onDelete={() => handleRemoveTag(tag)}
+                                        color="primary"
                                     />
                                 ))}
                             </div>
@@ -535,6 +566,7 @@ const EditProgramming = ({ moduleItem }) => {
                             label="Constraints"
                             value={problemData.constraints}
                             onChange={handleProblemChange('constraints')}
+                            helperText="Specify the constraints for the problem."
                         />
                         <TextField
                             fullWidth
@@ -543,6 +575,7 @@ const EditProgramming = ({ moduleItem }) => {
                             label="Input Format"
                             value={problemData.inputFormat}
                             onChange={handleProblemChange('inputFormat')}
+                            helperText="Describe the input format."
                         />
                         <TextField
                             fullWidth
@@ -551,6 +584,7 @@ const EditProgramming = ({ moduleItem }) => {
                             label="Output Format"
                             value={problemData.outputFormat}
                             onChange={handleProblemChange('outputFormat')}
+                            helperText="Describe the output format."
                         />
 
                         <div className="grid grid-cols-2 gap-4">
@@ -561,6 +595,7 @@ const EditProgramming = ({ moduleItem }) => {
                                 label="Sample Input"
                                 value={problemData.sampleInput}
                                 onChange={handleProblemChange('sampleInput')}
+                                helperText="Provide a sample input."
                             />
                             <TextField
                                 fullWidth
@@ -569,6 +604,7 @@ const EditProgramming = ({ moduleItem }) => {
                                 label="Sample Output"
                                 value={problemData.sampleOutput}
                                 onChange={handleProblemChange('sampleOutput')}
+                                helperText="Provide the expected output for the sample input."
                             />
                         </div>
                         <TextField
@@ -578,14 +614,16 @@ const EditProgramming = ({ moduleItem }) => {
                             label="Explanation"
                             value={problemData.explanation}
                             onChange={handleProblemChange('explanation')}
+                            helperText="Explain the solution or sample."
                         />
                         <TextField
                             fullWidth
                             multiline
                             rows={3}
-                            label="Editorial"
+                            label="Editorial (optional)"
                             value={problemData.editorial}
                             onChange={handleProblemChange('editorial')}
+                            helperText="Provide an editorial or hints for the problem."
                         />
                     </div>
                 </CardContent>
@@ -595,7 +633,7 @@ const EditProgramming = ({ moduleItem }) => {
             <Card>
                 <CardContent>
                     <div className="flex justify-between items-center mb-4">
-                        <Typography variant="h6">Code Format</Typography>
+                        <Typography variant="h6">Sample Code</Typography>
                         <Button
                             startIcon={<AddIcon />}
                             onClick={addCode}
@@ -606,7 +644,7 @@ const EditProgramming = ({ moduleItem }) => {
                     </div>
 
                     {problemData.codeFormat.map((code, index) => (
-                        <div key={index} className="mb-6 p-4 border rounded">
+                        <div key={index} className="mb-6 p-4 border rounded bg-gray-50">
                             <div className="flex justify-between items-center mb-4">
 
                                 <LanguageSelector
@@ -616,15 +654,15 @@ const EditProgramming = ({ moduleItem }) => {
 
                                 <Typography variant="subtitle1">Code {index + 1}</Typography>
                                 <IconButton
-                                    onClick={() => removeCode(index)}
+                                    onClick={() => setShowConfirm({ type: 'code', index, open: true })}
                                     disabled={problemData.codeFormat.length === 1}
                                 >
                                     <DeleteIcon />
                                 </IconButton>
                             </div>
-                            <div className='flex flex-col'>
-                                <Typography>Code Default Show For Student</Typography>
-                                <div className="h-[30vh] w-[100vh]">
+                            <div className='flex flex-col gap-2'>
+                                <Typography fontWeight={500}>Default Code (shown to students)</Typography>
+                                <div className="h-[30vh] w-full">
                                     <Editor
                                         options={editorOptions}
                                         height="100%"
@@ -633,22 +671,22 @@ const EditProgramming = ({ moduleItem }) => {
                                         language={code.language ? code.language : selectedLanguage}
                                         value={code.codeDefault}
                                         defaultValue="# Enter your code here"
-                                        onChange={(newValue) => handleCodeDefaultChange(index, newValue, selectedLanguage)}
+                                        onChange={(newValue) => handleCodeDefaultChange(index, newValue, code.language || selectedLanguage)}
                                         loading={<div>Loading Editor...</div>}
                                     />
                                 </div>
-                                <Divider />
-                                <Typography>Code Execute</Typography>
-                                <div className="h-[30vh] w-[100vh]">
+                                <Divider sx={{ my: 2 }} />
+                                <Typography fontWeight={500}>Judge Code (used for evaluation)</Typography>
+                                <div className="h-[30vh] w-full">
                                     <Editor
                                         options={editorOptions}
                                         height="100%"
                                         width="100%"
                                         theme="vs-light"
-                                        language={selectedLanguage}
+                                        language={code.language ? code.language : selectedLanguage}
                                         value={code.codeExecute}
                                         defaultValue="# Enter your code here"
-                                        onChange={(newValue) => handleCodeExecuteChange(index, newValue, selectedLanguage)}
+                                        onChange={(newValue) => handleCodeExecuteChange(index, newValue, code.language || selectedLanguage)}
                                     />
                                 </div>
                             </div>
@@ -669,18 +707,21 @@ const EditProgramming = ({ moduleItem }) => {
                             label="Base Score"
                             value={problemData.baseScore}
                             onChange={handleProblemChange('baseScore')}
+                            helperText="Base score for solving the problem."
                         />
                         <TextField
                             type="number"
                             label="Time Bonus"
                             value={problemData.timeBonus}
                             onChange={handleProblemChange('timeBonus')}
+                            helperText="Bonus for fast solutions."
                         />
                         <TextField
                             type="number"
                             label="Memory Bonus"
                             value={problemData.memoryBonus}
                             onChange={handleProblemChange('memoryBonus')}
+                            helperText="Bonus for memory-efficient solutions."
                         />
                     </div>
                 </CardContent>
@@ -701,11 +742,11 @@ const EditProgramming = ({ moduleItem }) => {
                     </div>
 
                     {problemData.testcases.map((testcase, index) => (
-                        <div key={index} className="mb-6 p-4 border rounded">
+                        <div key={index} className="mb-6 p-4 border rounded bg-gray-50">
                             <div className="flex justify-between items-center mb-4">
                                 <Typography variant="subtitle1">Testcase {index + 1}</Typography>
                                 <IconButton
-                                    onClick={() => removeTestcase(index)}
+                                    onClick={() => setShowConfirm({ type: 'testcase', index, open: true })}
                                     disabled={problemData.testcases.length === 1}
                                 >
                                     <DeleteIcon />
@@ -721,6 +762,7 @@ const EditProgramming = ({ moduleItem }) => {
                                         label="Input"
                                         value={testcase.input}
                                         onChange={handleTestcaseChange(index, 'input')}
+                                        helperText="Input for this testcase."
                                     />
                                     <TextField
                                         fullWidth
@@ -729,6 +771,7 @@ const EditProgramming = ({ moduleItem }) => {
                                         label="Expected Output"
                                         value={testcase.expectedOutput}
                                         onChange={handleTestcaseChange(index, 'expectedOutput')}
+                                        helperText="Expected output for this testcase."
                                     />
                                 </div>
 
@@ -738,12 +781,14 @@ const EditProgramming = ({ moduleItem }) => {
                                         label="Time Limit (ms)"
                                         value={testcase.executeTimeLimit}
                                         onChange={handleTestcaseChange(index, 'executeTimeLimit')}
+                                        helperText="Execution time limit in milliseconds."
                                     />
                                     <TextField
                                         type="number"
                                         label="Weight"
                                         value={testcase.weight}
                                         onChange={handleTestcaseChange(index, 'weight')}
+                                        helperText="Weight for this testcase (0-100)."
                                     />
                                     <FormControlLabel
                                         control={
