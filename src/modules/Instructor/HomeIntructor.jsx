@@ -55,31 +55,14 @@ const HomeIntructor = () => {
                                     <Divider orientation="vertical" flexItem />
                                 </div>
                             </CustomScrollbar>
-                        </Grid>
-
-                        <Grid item xs={12} sm={9} md={8} lg={isExpanded ? 9.9 : 11.4}
-                            // sx={{
-                            //     width: isExpanded ? '80.5%' : '95%',
-                            //     transition: 'width 0.3s ease'
-                            // }}
-                            className=" relative ">
-                            <section className=' mx-6 mt-3 flex flex-row justify-between'>
-
-                                {/* <Breadcrumb
-                                //courseId={courseID}
-                                //moduleIndex={moduleID}
-                                /> */}
-
-                                <Button onClick={() => handleClickNewCourse()}>
-                                    <AddToPhotosIcon />
-                                    Add New Course</Button>
-                            </section>
-
-                            <div className="bg-white overflow-y-hide  h-[calc(100vh-150px)] pt-3 pl-3 pr-3">
-                                <Outlet />
+                        </Grid>                        <Grid item xs={12} sm={9} md={8} lg={isExpanded ? 9.9 : 11.4}
+                            className="relative h-full">
+                            
+                            <div className="bg-white overflow-y-auto h-[calc(100vh-80px)] pt-4 px-4 pb-6 ">
+                                <CustomScrollbar className="h-full">
+                                    <Outlet />
+                                </CustomScrollbar>
                             </div>
-                            {/* <CustomScrollbar className=''>
-                            </CustomScrollbar> */}
                         </Grid>
                     </Grid>
                 </div>

@@ -25,7 +25,7 @@ const Navbar = () => {
     const dispatch = useDispatch();
     const { problemId } = useParams();
     const [progressData, setProgressData] = useState(moduleItemProgress);
-    console.log("moduleItemProgress: ", moduleItemProgress);
+    //console.log("moduleItemProgress: ", moduleItemProgress);
     useEffect(() => {
         const fetchDat = async (req, res, next) => {
             await dispatch(getProgrammingProgressByProblemId({ problemId: problemId }));
@@ -37,7 +37,7 @@ const Navbar = () => {
     useEffect(() => {
         if (moduleItemProgress) {
             setProgressData(moduleItemProgress);
-            console.log("progressData: ", progressData)
+            //console.log("progressData: ", progressData)
         }
 
     }, [moduleItemProgress, moduleProgress, refresh])
@@ -47,10 +47,10 @@ const Navbar = () => {
                 const matchedFormat = problem.codeFormat.find(format => format.language === userLang);
 
                 if (matchedFormat) {
-                    console.log("matchedFormat: ", matchedFormat);
+                    // console.log("matchedFormat: ", matchedFormat);
                     setCodeExe(matchedFormat.codeExecute);
                 }
-                console.log("codeExecute: ", codeExe)
+                // console.log("codeExecute: ", codeExe)
             }
         }
         fetchData();

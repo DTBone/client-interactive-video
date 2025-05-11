@@ -30,15 +30,26 @@ const EnrollToCourse = () => {
     const { currentCourse } = useSelector((state) => state.course)
     const [isSubmit, setSubmit] = useState(false);
     const user = JSON.parse(localStorage.getItem('user'));
-    const navigate = useNavigate();
-    const handleDataFromButotnSubmit = async (data) => {
+    const navigate = useNavigate();    const handleDataFromButotnSubmit = async (data) => {
         const result = await dispatch(enroll({ courseId: courseId }));
         console.log(result);
         if (result.payload.success) {
             setSubmit(true);
-            setState(data);
-            setSubmit(data);
-            openSnackbar();
+            setState(true);
+            
+            // Only show notification for paid courses
+            if (course.price > 0) {
+                openSnackbar();
+            } else {
+                // For free courses, just update enrolled status without notification
+                if (user) {
+                    const updatedUser = JSON.parse(localStorage.getItem('user'));
+                    if (!updatedUser.enrolled_courses.includes(courseId)) {
+                        updatedUser.enrolled_courses.push(courseId);
+                        localStorage.setItem('user', JSON.stringify(updatedUser));
+                    }
+                }
+            }
         }
         else setSubmit(false)
     };

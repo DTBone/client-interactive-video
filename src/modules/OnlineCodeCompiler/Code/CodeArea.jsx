@@ -1,50 +1,289 @@
-import Editor from "@monaco-editor/react";
-import { light } from '@mui/material/styles/createPalette';
+import MonacoEditor from "@monaco-editor/react";
 import { useCode } from "../CodeContext";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useSelector } from "react-redux";
-import { Code } from 'lucide-react';
+import { debounce } from 'lodash';
+import axiosInstance from "~/Config/axiosInstance";
 
 const CodeArea = () => {
-    const { userLang, setUserCode } = useCode();
-
-    const { userInput, setUserInput, userOutput, setUserOutput } = useCode();
-
+    const { userLang, setUserCode, userInput, setUserInput, userOutput, setUserOutput } = useCode();
     const { problem, compile, loading, error } = useSelector(state => state.compile);
-    //console.log('code format: ', problem?.codeFormat)
-    const [language, setLanguage] = useState(problem?.codeLang || 'python');
 
+    const editorRef = useRef(null);
+    const monacoRef = useRef(null);
+    const ghostTextDecorationsRef = useRef([]);
+    const [language, setLanguage] = useState('python');
+    const [code, setCode] = useState("// Enter Your Code Here...");
+    const isFetchingRef = useRef(false); // Track if a fetch is already in progress
 
-    const [code, setCode] = useState(null);
+    // Update language when userLang changes
     useEffect(() => {
-        // console.log("format code: ", problem?.codeFormat);
-        // console.log("userLanguage", userLang);
-        // console.log("code format language: ", problem?.codeFromat?.language);
+        setLanguage(userLang || 'python');
+    }, [userLang]);
+
+    // Update code when problem or language changes
+    useEffect(() => {
         if (problem?.codeFormat && problem.codeFormat.length > 0) {
             const matchedFormat = problem.codeFormat.find(format => format.language === userLang);
-
-            if (matchedFormat) {
-                //console.log("matchedFormat: ", matchedFormat);
-                setCode(matchedFormat.codeDefault);
-            } else {
-                setCode("// Enter Your Code Here...");
-            }
+            setCode(matchedFormat ? matchedFormat.codeDefault : "// Enter Your Code Here...");
         } else {
             setCode("// Enter Your Code Here...");
         }
-
     }, [problem, userLang]);
 
-    // useEffect(() => {
-    //     setLanguage(problem?.codeLang || 'python');
-    //     setCode(problem?.codeDefault || '# Enter your code here');
-    // }, [problem])
-
+    // Save user input/output to localStorage
     useEffect(() => {
         localStorage.setItem('userInput', userInput);
         localStorage.setItem('userOutput', userOutput);
     }, [userInput, userOutput]);
 
+    // Create a fetchCompletions function that also handles ghost text
+    const createFetchCompletions = (monacoInstance, editor) => {
+        
+
+        return debounce(async (model, position) => {
+            if (isFetchingRef.current) return; // Prevent multiple simultaneous calls
+
+            isFetchingRef.current = true;
+            console.log('Fetching completions...');
+
+            const entireCode = model.getValue();
+            const textUntilPosition = model.getValueInRange({
+                startLineNumber: 1,
+                startColumn: 1,
+                endLineNumber: position.lineNumber,
+                endColumn: position.column
+            });
+
+            const textAfterPosition = model.getValueInRange({
+                startLineNumber: position.lineNumber,
+                startColumn: position.column,
+                endLineNumber: model.getLineCount(),
+                endColumn: model.getLineMaxColumn(model.getLineCount())
+            });
+
+            const currentLine = model.getLineContent(position.lineNumber);
+            const contextLineCount = 5;
+            const startLineForContext = Math.max(1, position.lineNumber - contextLineCount);
+            const lineContext = [];
+
+            for (let i = startLineForContext; i <= position.lineNumber; i++) {
+                lineContext.push(model.getLineContent(i));
+            }
+
+            try {
+                const response = await axiosInstance.post('/problem/code-completion', {
+                    fullCode: entireCode,
+                    codeBeforeCursor: textUntilPosition,
+                    codeAfterCursor: textAfterPosition,
+                    currentLine: currentLine,
+                    lineContext: lineContext.join('\n'),
+                    cursorPosition: {
+                        lineNumber: position.lineNumber,
+                        column: position.column
+                    },
+                    language
+                });
+
+                if (!response.data || !response.data.data || response.data.data.length === 0) {
+                    return [];
+                }
+
+                console.log('Completions fetched:', response.data.data);
+
+                // Show ghost text for the first suggestion
+                if (response.data.data.length > 0) {
+                    //showGhostText(editor, model, position, response.data.data[0].text);
+                }
+
+                return response.data.data.map(item => ({
+                    label: item.text,
+                    kind: monacoInstance.languages.CompletionItemKind.Snippet,
+                    insertText: item.text,
+                    detail: 'AI Suggestion',
+                    documentation: { value: 'Generated by Grok AI' }
+                }));
+            } catch (error) {
+                console.error('Error fetching completions:', error);
+                return [];
+            } finally {
+                isFetchingRef.current = false; // Reset the fetching state
+            }
+        }, 500);
+    };
+
+// Function to show ghost text
+// This function displays a ghost text suggestion in the editor at the specified position.
+// It clears any previous ghost text decorations and applies a new decoration with the provided text.
+const showGhostText = (editor, model, position, text) => {
+    if (!editor || !text) return;
+
+    // Clear previous ghost text decorations
+    if (ghostTextDecorationsRef.current.length) {
+        editor.deltaDecorations(ghostTextDecorationsRef.current, []);
+        ghostTextDecorationsRef.current = [];
+    }
+
+    // Create ghost text decoration
+    const ghostTextDecoration = {
+        range: new monacoRef.current.Range(
+            position.lineNumber,
+            position.column,
+            position.lineNumber,
+            position.column
+        ),
+        options: {
+            after: {
+                content: text,
+                inlineClassName: 'ghost-text-suggestion'
+            }
+        }
+    };
+
+    // Apply the decoration
+    ghostTextDecorationsRef.current = editor.deltaDecorations([], [ghostTextDecoration]);
+
+    // Add CSS styles for ghost text
+    const style = document.createElement('style');
+    style.innerHTML = `
+        .ghost-text-suggestion {
+            opacity: 0.6;
+            color: #888888;
+            font-style: italic;
+        }
+    `;
+    document.head.appendChild(style);
+};
+
+// Function to accept ghost text suggestion
+// This function inserts the ghost text suggestion into the editor at the current cursor position.
+// It ensures the text is not duplicated and moves the cursor to the end of the inserted text.
+const acceptGhostTextSuggestion = () => {
+    if (!editorRef.current || ghostTextDecorationsRef.current.length === 0) return;
+
+    const model = editorRef.current.getModel();
+    if (!model) return;
+
+    const decorations = model.getDecorationOptions(ghostTextDecorationsRef.current[0]);
+    if (!decorations || !decorations.after) return;
+
+    const position = editorRef.current.getPosition();
+    const text = decorations.after.content;
+
+    // Check if the text is already present at the current position
+    const existingText = model.getValueInRange({
+        startLineNumber: position.lineNumber,
+        startColumn: position.column,
+        endLineNumber: position.lineNumber,
+        endColumn: position.column + text.length
+    });
+
+    if (existingText === text) {
+        // If the text is already present, do not insert it again
+        editorRef.current.deltaDecorations(ghostTextDecorationsRef.current, []);
+        ghostTextDecorationsRef.current = [];
+        return;
+    }
+
+    // Insert the ghost text at current position
+    model.pushEditOperations([], [
+        {
+            range: new monacoRef.current.Range(
+                position.lineNumber,
+                position.column,
+                position.lineNumber,
+                position.column
+            ),
+            text: text
+        }
+    ], () => null);
+
+    // Clear ghost text decoration
+    editorRef.current.deltaDecorations(ghostTextDecorationsRef.current, []);
+    ghostTextDecorationsRef.current = [];
+
+    // Move the cursor to the end of the inserted text
+    editorRef.current.setPosition({
+        lineNumber: position.lineNumber,
+        column: position.column + text.length
+    });
+};
+
+    // Set up completion provider when editor is mounted
+    useEffect(() => {
+        if (!editorRef.current || !monacoRef.current) return;
+
+        console.log('Editor and Monaco instance are available');
+        const monacoInstance = monacoRef.current;
+        const editor = editorRef.current;
+        const fetchCompletions = createFetchCompletions(monacoInstance, editor);
+
+        const disposable = monacoInstance.languages.registerCompletionItemProvider(language, {
+            triggerCharacters: ['.', ' ', '\n', '(', '{', '[', ';'],
+            provideCompletionItems: async (model, position) => {
+                const suggestions = await fetchCompletions(model, position);
+                return { suggestions };
+            }
+        });
+
+        // Listen for Tab key to accept ghost text suggestion
+        editor.onKeyDown((e) => {
+            if (e.keyCode === monacoInstance.KeyCode.Tab && ghostTextDecorationsRef.current.length > 0) {
+                e.preventDefault();
+                e.stopPropagation();
+                //acceptGhostTextSuggestion();
+            }
+        });
+
+        return () => {
+            disposable.dispose();
+            fetchCompletions.cancel();
+            // Clear ghost text decorations
+            if (ghostTextDecorationsRef.current.length) {
+                editor.deltaDecorations(ghostTextDecorationsRef.current, []);
+                ghostTextDecorationsRef.current = [];
+            }
+        };
+    }, [language, editorRef.current, monacoRef.current]);
+
+    const handleEditorDidMount = (editor, monacoInstance) => {
+        // Save references to editor and monacoInstance
+        editorRef.current = editor;
+        monacoRef.current = monacoInstance;
+
+        console.log('Editor mounted');
+
+        // Set up key events
+        editor.onKeyUp((e) => {
+            console.log("Key pressed");
+
+            // If Escape key is pressed, clear ghost text
+            if (e.keyCode === monacoInstance.KeyCode.Escape && ghostTextDecorationsRef.current.length > 0) {
+                editor.deltaDecorations(ghostTextDecorationsRef.current, []);
+                ghostTextDecorationsRef.current = [];
+            }
+        });
+
+        // Add shortcut to trigger suggestions
+        editor.addCommand(
+            monacoInstance.KeyMod.CtrlCmd | monacoInstance.KeyCode.Space,
+            () => {
+                editor.trigger('', 'editor.action.triggerSuggest', {});
+            }
+        );
+       
+
+        // Add CSS for ghost text
+        const style = document.createElement('style');
+        style.innerHTML = `
+            .ghost-text-suggestion {
+                opacity: 0.6;
+                color: #888888;
+                font-style: italic;
+            }
+        `;
+        document.head.appendChild(style);
+    };
 
     const editorOptions = {
         minimap: { enabled: false },
@@ -52,24 +291,28 @@ const CodeArea = () => {
         fontSize: 16,
         lineNumbers: 'on',
         automaticLayout: true,
-
-
+        tabCompletion: 'on',
+        suggestOnTriggerCharacters: true,
+        quickSuggestions: true,
+        acceptSuggestionOnEnter: 'on'
     };
+
     return (
         <div className="h-full w-full">
-            <Editor
+            <MonacoEditor
                 options={editorOptions}
                 height="100%"
                 width="100%"
-                theme={"vs-light"}
+                theme="vs-light"
                 language={language}
                 defaultLanguage="python"
                 value={code}
                 defaultValue="#Enter your code here..."
-                onChange={(value) => { setUserCode(value) }}
+                onChange={(value) => setUserCode(value)}
+                onMount={handleEditorDidMount}
             />
         </div>
-    )
-}
+    );
+};
 
-export default CodeArea
+export default CodeArea;

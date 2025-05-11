@@ -25,24 +25,7 @@ const Sidebar = ({ handleSidebarButtonClick, isExpanded, isSubmitted = false }) 
     const dispatch = useDispatch()
     const { currentModule, loading } = useSelector((state) => state.module)
     const [module, setModule] = useState(locationState?.module);
-    // useEffect(() => {
-    //     const fetchData = async () => {
-    //         try {
-    //             await dispatch(getModuleByItemId({ itemId }));
-    //             console.log("itemId", itemId)
-    //         }
-    //         catch (err) {
-    //             console.error('Error:', err);
-    //         }
 
-    //     };
-    //     fetchData()
-    // }, [dispatch, itemId])
-
-    // useEffect(() => {
-    //     console.log("modules", currentModule)
-    //     setModule(currentModule)
-    // }, [currentModule])
     const getModuleByModuleId = async () => {
         const result = await dispatch(getModuleById({ moduleId }))
         if (result.payload.success) {
@@ -53,16 +36,9 @@ const Sidebar = ({ handleSidebarButtonClick, isExpanded, isSubmitted = false }) 
         getModuleByModuleId()
         console.log("render", isSubmitted)
     }, [isExpanded, isSubmitted]);
-
-    // if (loading || !currentModule) {
-    //     return <div>Loading...</div>
-    // }
-
     return (
         <div style={{
-            //width: isExpanded ? `${sidebarWidth}px` : '55px',
-            //minWidth: isExpanded ? `${sidebarWidth}px` : '55px',
-            //transition: 'width 0.01s, min-width 0.3s',
+
         }} className="flex flex-col ">
             <div onClick={handleSidebarButtonClick} className="flex items-center justify-center">
                 {isExpanded ?
