@@ -14,7 +14,7 @@ const CourseInfo = () => {
 
     if (!currentCourse) return null;
 
-    const { data } = currentCourse;
+    const data  = currentCourse;
     console.log(data.instructor.profile.fullname);
 
     const courseInfoItems = [

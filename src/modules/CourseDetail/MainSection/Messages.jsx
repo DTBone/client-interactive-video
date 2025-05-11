@@ -37,8 +37,8 @@ const Messages = () => {
         //     type: 'user'
         // }
     ]);
-    const courseId = currentCourse?.data._id;
-    const instructorId = currentCourse?.data.instructor._id;
+    const courseId = currentCourse?._id;
+    const instructorId = currentCourse?.instructor._id;
     const [limit, setLimit] = useState(50);
     const [page, setPage] = useState(1);
     

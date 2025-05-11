@@ -62,6 +62,7 @@ import MyLearning from './modules/User/MyLearning/MyLearning';
 import SearchPage from './modules/User/SearchPage/SearchPage';
 import Message from './modules/Instructor/Messages';
 import ScrollToTop from './Utils/scrollToTop';
+import ChatBot from './components/ChatBot/chatbot';
 // import Certificate from './modules/User/Certificate/Certificate';
 
 
@@ -346,9 +347,7 @@ function App() {
           </ProtectedRoute>
         } />
       </Routes>
-
-
-
+      <ChatBot />
     </div>
   );
 }
