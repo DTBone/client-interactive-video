@@ -103,7 +103,14 @@ function Course({ course }) {
               sx={{
                 fontWeight: 'bold',
                 fontSize: '1.5rem',
-
+                  color: 'text.secondary',
+                  display: '-webkit-box',
+                  WebkitBoxOrient: 'vertical',
+                  WebkitLineClamp: 1,
+                  width: '100%',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis'
+                
               }}
             >
               {course?.title}

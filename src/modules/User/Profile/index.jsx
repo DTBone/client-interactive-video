@@ -20,6 +20,10 @@ import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import SliderCourses from "~/components/SliderCourses";
 import ModalEditProfile from "./ModalEditProfile";
 import TransactionHistory from "./PaymentHistory";
+import { getAllCoursebyUser } from "~/store/slices/Course/action";
+import { useSelector } from "react-redux";
+import CourseList from "../HomeUser/components/CourseList";
+import Course from '~/components/SliderCourses/components/Course';
 
 function Profile() {
     const path = window.location.pathname;
@@ -74,6 +78,12 @@ function Profile() {
             fetchUser();
         }
     }, [dispatch, id, navigate, error, open]);
+    const { courses } = useSelector((state) => state.course);
+
+    useEffect(() => {
+        dispatch(getAllCoursebyUser());
+        console.log('courses', courses);
+    }, [courses])
 
     const handleChangeTab = (event, newValue) => {
         setActiveTab(newValue);
@@ -227,19 +237,20 @@ function Profile() {
                     </Box>
                     
                     <SliderCourses 
-                        title="Currently Learning" 
-                        course={user?.enrolled_courses?.filter(course => 
-                            course.progress && course.progress < 100
+                        title="Current Courses" 
+                        course={courses?.filter(course => 
+                            course.progress && course.progress.overallPercentage < 100
                         )} 
                         colunms={3}
                     />
+                
                     
                     <Divider sx={{ my: 4 }} />
                     
                     <SliderCourses 
                         title="Completed Courses" 
-                        course={user?.enrolled_courses?.filter(course => 
-                            course.progress && course.progress === 100
+                        course={courses?.filter(course => 
+                            course.progress && course.progress.overallPercentage === 100
                         )} 
                         colunms={3}
                     />
