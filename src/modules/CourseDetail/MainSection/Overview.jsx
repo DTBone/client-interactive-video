@@ -4,7 +4,7 @@ import { Book, Clock, Star, Calendar, Users, CheckCircle, PlayCircle, Lock, Awar
 import { motion } from 'framer-motion';
 import { useNavigate, useParams } from 'react-router-dom';
 import { getCertificateByCourseId, getCourseByID } from '~/store/slices/Course/action';
-import { getCheckProgress, getProgress } from '~/store/slices/Progress/action';
+import {  getProgress } from '~/store/slices/Progress/action';
 import { 
   Typography, 
   Chip, 
@@ -50,27 +50,30 @@ const Overview = () => {
   const { courseId } = useParams();
   const dispatch = useDispatch();
   const navigate = useNavigate();
-
+const params = useParams();
+console.log("params", params);
   useEffect(() => {
+    console.log("Effect running, courseId:", courseId);
     if (courseId) {
-      const fetchData = async () => {
-        await dispatch(getCheckProgress({ courseId }));
-        const progressResult = await dispatch(getProgress(courseId));
-        if (progressResult.payload?.success) {
-          setCourseProgress(progressResult.payload.data);
-          
-          // Calculate overall progress
-          const completedModules = progressResult.payload.data.filter(item => item.status === 'completed').length;
-          const totalModules = progressResult.payload.data.length;
-          setOverallProgress(totalModules ? Math.round((completedModules / totalModules) * 100) : 0);
-        }
-      };
-      fetchData();
+      dispatch(getProgress(courseId));
     }
   }, [courseId, currentCourse, dispatch]);
 
+  const progressData = useSelector((state) => state.progress);
+  // const courseCompletion = useSelector((state) => state.courseCompletion);
+  useEffect(() => {
+    if (progressData) {
+      console.log("Progress data:", progressData);
+      setCourseProgress(progressData.progress);
+    //const completedModules = progressData?.progress.filter(item => item.status === 'completed').length;
+      //const totalModules = progressData?.progress.length;
+      setOverallProgress(progressData.courseCompletion.percentage ? Math.round((progressData.courseCompletion.percentage)) : 0);
+    }
+   
+  }, [progressData]);
+
   const data = currentCourse ? currentCourse : "";
-  
+
   const handleCerClick = () => {
     console.log("Certificate Clicked");
     navigate(`/certificate/${courseId}`, { state: { courseId, course: currentCourse } });

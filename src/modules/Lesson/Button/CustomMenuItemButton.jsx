@@ -1,6 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
 import { CheckCircle, Checklist, RadioButtonChecked, RadioButtonUncheckedOutlined } from "@mui/icons-material";
+import theme from '~/theme';
 
 const StyledButton = styled.button`
   width: 100%;
@@ -53,9 +54,18 @@ const TimeWrapper = styled.span`
 `;
 
 const CustomMenuItemButton = ({ isActive, children, icon, time, isCompleted, ...props }) => {
+  
+  // console.log("isActive", isActive);
+  console.log("isCompleted", isCompleted);
+  // console.log("children", children);
+  // console.log("icon", icon);
+  // console.log("props", props);
+  // console.log("time", time);
   return (
     <StyledButton isActive={isActive} {...props}>
-      {isCompleted ? <CheckCircle /> : (icon && <IconWrapper>{icon}</IconWrapper>)}
+      {isCompleted ? <CheckCircle 
+      sx={{backgroundColor: theme.palette.primary.main, color: "white", borderRadius: "50%", padding: "2px", marginRight: "8px"}}
+      /> : (icon && <IconWrapper>{icon}</IconWrapper>)}
 
       <TextWrapper>
         <MainText>{children}</MainText>

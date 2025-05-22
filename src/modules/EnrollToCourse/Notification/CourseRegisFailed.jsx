@@ -23,7 +23,7 @@ const CourseRegisFailed = ({ openSnackbar, closeSnackbar, snackbarState }) => {
             key={vertical + horizontal}
         >
             <Alert onClose={handleClose} severity="error" sx={{ width: '100%' }}>
-                Đăng ký khóa học thất bại. Vui lòng thử lại!
+                Course registration failed. Please try again!
             </Alert>
         </Snackbar>
     )

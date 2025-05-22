@@ -49,6 +49,7 @@ const SideBar = () => {
 
     const fetchProgress = async () => {
         try {
+            console.log("courseID from sidebar",courseId);
             const rep = await dispatch(getProgress(courseId));
             if (rep.payload?.success) {
                 setModuleDatas(rep.payload.data);
