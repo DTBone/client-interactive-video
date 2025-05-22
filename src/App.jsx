@@ -192,7 +192,7 @@ function App() {
           </ProtectedRoute>
         }></Route>
         <Route path="/vnpay_return" element={<PaymentStatus />}></Route>
-        <Route path="/learns/:courseId/" element={
+        <Route path="/learns/:courseId" element={
           <ProtectedRoute allowedRoles={['student', 'instructor', 'admin']}>
             <CourseDetail />
           </ProtectedRoute>

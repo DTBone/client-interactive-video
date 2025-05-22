@@ -192,7 +192,7 @@ const EnrollToCourse = () => {
                             poster={course?.photo} // Ảnh thay thế khi video chưa tải
                         >
                             <source src={course.sumaryVideo} type="video/mp4" />
-                            Trình duyệt của bạn không hỗ trợ thẻ video.
+                           Your browser does not support the video tag.
                         </video>
                     ) : (
                         <Card sx={{ maxWidth: 600, minHeight: 350 }}>
@@ -203,7 +203,7 @@ const EnrollToCourse = () => {
                                     title="Course Image"
                                 />
                             ) : (
-                                <p className="text-center p-5">Không có hình ảnh</p>
+                                <p className="text-center p-5">NO Image</p>
                             )}
                         </Card>
                     )}
