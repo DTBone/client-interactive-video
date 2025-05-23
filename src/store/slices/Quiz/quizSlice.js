@@ -1,12 +1,13 @@
 ﻿// store/slices/Quiz/quizSlice.js
 import { createSlice } from '@reduxjs/toolkit';
-import { submitQuiz, getQuizById } from './action';
+import { submitQuiz, getQuizById, getLectureById } from './action';
 
 const initialState = {
     quizProgress: null,
     currentQuiz: null,
     loading: false,
     error: null,
+    lecture: null,
     moduleItems: [], // Add this to track module items
 };
 
@@ -65,7 +66,20 @@ const quizSlice = createSlice({
             .addCase(getQuizById.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.error.message;
-            });
+            })
+            .addCase(getLectureById.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(getLectureById.fulfilled, (state, action) => {
+                state.loading = false;
+                if (action.payload.success) {
+                    state.lecture = action.payload.data;
+                }
+            })
+            .addCase(getLectureById.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.error.message;
+            })
     },
 });
 
