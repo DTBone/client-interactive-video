@@ -596,7 +596,7 @@ const Video = () => {
          {!!currentQuestion && progress?.status !== "completed" && !isFullscreen && (
            <InteractiveQuestionDialog
           open={!!currentQuestion && progress?.status !== "completed"}
-          loading={loading}
+          loading={loading} //cmt
           currentQuestion={currentQuestion}
           selectedAnswer={selectedAnswer}
           handleMultipleChoiceChange={handleMultipleChoiceChange}
