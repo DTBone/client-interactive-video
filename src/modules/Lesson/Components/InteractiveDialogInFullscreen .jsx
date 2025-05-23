@@ -98,11 +98,7 @@ const InteractiveDialogInFullscreen = ({
       {loading && (
         <div
           style={{
-            position: "absolute",
-            top: 0,
           
-            justifyContent: "center",
-            background: "rgba(0,0,0,0.5)",
             zIndex: 1,
           }}
         >
