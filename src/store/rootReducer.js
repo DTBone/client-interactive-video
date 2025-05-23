@@ -11,7 +11,7 @@ import studentSlice from './slices/StudentEnrollCourse/StudentSlice';
 import searchSlice from './slices/SearchCourseForUser/searchSlice';
 import userSlice from "./slices/User/userSlice";
 import searchCourseAPI from './slices/SearchCourseForUser/searchCourseAPI';
-
+import quizSlice from './slices/Quiz/quizSlice';
 const appReducer = combineReducers({
     course: courseSlice,
     auth: authSlice,
@@ -24,6 +24,7 @@ const appReducer = combineReducers({
     student: studentSlice,
     search: searchSlice,
     user: userSlice,
+    quiz: quizSlice,
     [searchCourseAPI.reducerPath]: searchCourseAPI.reducer
 
 });

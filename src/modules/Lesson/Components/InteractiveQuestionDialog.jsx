@@ -16,7 +16,7 @@ const InteractiveQuestionDialog = ({
   handleSingleChoiceChange,
   handleAnswerSubmit,
   handleCloseDialog,
-  alert // Thêm prop alert để hiển thị thông báo
+  alert 
 }) => (
   <Dialog
     open={open}
@@ -66,8 +66,8 @@ const InteractiveQuestionDialog = ({
     ) : (
       <div>
         <DialogContent sx={{ mt: 2, minHeight: "300px" }}>
-          {alert && (
-            <Alert 
+          {alert && typeof alert === "string" && (
+            <Alert
               severity={alert.includes("correct") ? "success" : "error"}
               sx={{ mb: 2 }}
               onClose={() => {}}

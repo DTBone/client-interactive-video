@@ -88,7 +88,7 @@ const GeneralLessons = () => {
                         </section>
                         <CustomScrollbar className=''>
 
-                            <div className="bg-white overflow-y-scroll  h-[calc(100vh-150px)] pt-3 pl-3 pr-3 flex justify-center">
+                            <div className="bg-transparent overflow-y-scroll  h-[calc(100vh-150px)] pt-3 pl-3 pr-3 flex justify-center">
                                 <Outlet context={{ onQuizSubmit }} />
                             </div>
                         </CustomScrollbar>

@@ -1,6 +1,6 @@
+
 import { useState, useRef, useEffect, useCallback } from "react";
 import debounce from "lodash/debounce";
-
 /**
  * Enhanced hook for managing video progress with improved analytics
  * @param {Object} options - Hook options
@@ -22,7 +22,6 @@ const useVideoProgress = ({
     lastPosition: 0, // Last watched position
     completionPercentage: 0, // Completion percentage (0-100)
     notes: [], // User notes (if any)
-
     // Enhanced analytics data
     viewingSessions: [], // Array of viewing session data
     playbackEvents: [], // Track play/pause/seek events
@@ -48,7 +47,6 @@ const useVideoProgress = ({
     },
     engagementHotspots: {} // Map of video positions with high engagement
   });
-
   const [lastSyncTimestamp, setLastSyncTimestamp] = useState(Date.now());
   const [lastPercentage, setLastPercentage] = useState(0);
   const syncTimeoutRef = useRef(null);
@@ -94,7 +92,6 @@ const useVideoProgress = ({
     
     return { name: browserName, version: browserVersion };
   }
-
   // Track when component mounts and page visibility
   useEffect(() => {
     // Start a new viewing session
@@ -136,11 +133,9 @@ const useVideoProgress = ({
     };
     
     document.addEventListener("visibilitychange", handleVisibilityChange);
-
     return () => {
       // On unmount, add the current session to sessions array
       const sessionDuration = Date.now() - currentSessionStartRef.current;
-
       if (sessionDuration > 1000) {
         // Only track sessions longer than 1 second
         setProgressVideo((prev) => ({
@@ -161,7 +156,6 @@ const useVideoProgress = ({
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
   }, []);
-
   // Clear timeouts in case of unmounting
   const clearAllTimeouts = () => {
     if (syncTimeoutRef.current) {
@@ -171,7 +165,6 @@ const useVideoProgress = ({
       clearTimeout(syncRetryTimeoutRef.current);
     }
   };
-
   /**
    * Add a playback event to the tracking data
    * @param {string} eventType - Type of event (play, pause, seek)
@@ -190,7 +183,6 @@ const useVideoProgress = ({
         },
       ],
     }));
-
     // Track playback rate for average calculation
     if (videoRef.current) {
       playbackRatesRef.current.push({
@@ -219,7 +211,6 @@ const useVideoProgress = ({
       }
     }
   }, [videoRef]);
-
   /**
    * Track which segments of the video are being watched
    * @param {number} currentTime - Current video position
@@ -227,30 +218,24 @@ const useVideoProgress = ({
    */
   const trackSegmentWatchTime = useCallback((currentTime, duration) => {
     if (!duration) return;
-
     const currentPercent = Math.floor((currentTime / duration) * 100);
     let segment = "0-25";
-
     if (currentPercent >= 75) segment = "75-100";
     else if (currentPercent >= 50) segment = "50-75";
     else if (currentPercent >= 25) segment = "25-50";
-
     // Update time spent in this segment
     segmentWatchTimeRef.current[segment] +=
       currentTime - lastPositionRef.current;
     lastPositionRef.current = currentTime;
-
     // Calculate continuous watch time (no seeks or pauses)
     if (currentSegmentStartRef.current !== null) {
       continuousWatchTimeRef.current += currentTime - lastPositionRef.current;
     }
-
     // Update segment watch data in state periodically
     const totalTime = Object.values(segmentWatchTimeRef.current).reduce(
       (a, b) => a + b,
       0
     );
-
     if (totalTime > 0) {
       const watchPercent = {};
       Object.keys(segmentWatchTimeRef.current).forEach((key) => {
@@ -259,7 +244,6 @@ const useVideoProgress = ({
           Math.round((segmentWatchTimeRef.current[key] / (duration * 0.25)) * 100)
         );
       });
-
       setProgressVideo((prev) => ({
         ...prev,
         watchPercent,
@@ -269,7 +253,6 @@ const useVideoProgress = ({
     // Update engagement score
     calculateEngagementScore(currentTime, duration);
   }, []);
-
   /**
    * Calculate user engagement score based on multiple factors
    * @param {number} currentTime - Current video position
@@ -332,20 +315,17 @@ const useVideoProgress = ({
     // Lower variance means more even coverage
     return Math.min(10, Math.max(0, 10 - Math.sqrt(variance) / 10));
   };
-
   /**
    * Calculate average playback rate
    */
   const calculateAveragePlaybackRate = useCallback(() => {
     if (playbackRatesRef.current.length === 0) return 1;
-
     const sum = playbackRatesRef.current.reduce(
       (acc, item) => acc + item.rate,
       0
     );
     return sum / playbackRatesRef.current.length;
   }, []);
-
   /**
    * Synchronize progress with server
    * @param {Object} progressData - Progress data to sync
@@ -353,11 +333,9 @@ const useVideoProgress = ({
   const syncProgressToServer = useCallback(async (progressData) => {
     if (!videoId || !moduleItemId || progressData.completionPercentage < 1)
       return;
-
     try {
       // Calculate average playback rate before sending
       const averagePlaybackRate = calculateAveragePlaybackRate();
-
       // Prepare data summary to reduce payload size
       const analyticsSummary = {
         sessions: {
@@ -399,7 +377,6 @@ const useVideoProgress = ({
         device: progressData.deviceInfo || {},
         averagePlaybackRate
       };
-
       // Call API to sync progress with enhanced data
       await onCompleteVideo({
         ...progressData,
@@ -407,48 +384,37 @@ const useVideoProgress = ({
         analyticsSummary,
         sentAt: Date.now()
       });
-
       // Update time and percentage of last sync
       setLastSyncTimestamp(Date.now());
       setLastPercentage(progressData.completionPercentage);
-
       console.log("Progress successfully synced to server:", progressData);
     } catch (error) {
       console.error("Error syncing progress:", error);
-
       // Retry after 1 minute if failed
       if (syncRetryTimeoutRef.current) {
         clearTimeout(syncRetryTimeoutRef.current);
       }
-
       syncRetryTimeoutRef.current = setTimeout(() => {
         syncProgressToServer(progressData);
       }, 60000);
     }
   }, [videoId, moduleItemId, onCompleteVideo, calculateAveragePlaybackRate]);
-
   // Debounced version to avoid frequent calls
   const debouncedSyncProgressToServer = debounce((progressData) => {
     syncProgressToServer(progressData);
   }, 1000);
-
   /**
    * Update video progress with enhanced analytics
    */
   const updateVideoProgress = useCallback(() => {
     if (!videoRef.current) return;
-
     const currentTime = videoRef.current.currentTime;
     const videoDuration = videoRef.current.duration;
-
     if (!videoDuration) return;
-
     // Calculate completion percentage
     const percentage = Math.floor((currentTime / videoDuration) * 100);
-
     // Track segment watch time
     trackSegmentWatchTime(currentTime, videoDuration);
-
     // Update progress state with enhanced data
     const updatedProgress = {
       watchedDuration: currentTime,
@@ -478,9 +444,7 @@ const useVideoProgress = ({
       watchedSegments: watchedSegmentsRef.current,
       averagePlaybackRate: calculateAveragePlaybackRate(),
     };
-
     setProgressVideo(updatedProgress);
-
     // Save progress to localStorage for offline recovery
     localStorage.setItem(
       `video_progress_${videoId}`,
@@ -493,7 +457,6 @@ const useVideoProgress = ({
         engagementScore: updatedProgress.engagementScore
       })
     );
-
     // Improved logic for when to send progress updates to server
     const now = Date.now();
     const shouldSync =
@@ -501,13 +464,11 @@ const useVideoProgress = ({
       Math.abs(percentage - lastPercentage) >= 20 || // Major change (20% instead of 10%)
       percentage >= 95 || // Near completion
       percentage === 100; // Video completed
-
     // Use debounce to avoid too many calls
     if (shouldSync) {
       if (syncTimeoutRef.current) {
         clearTimeout(syncTimeoutRef.current);
       }
-
       syncTimeoutRef.current = setTimeout(() => {
         debouncedSyncProgressToServer(updatedProgress);
       }, 1000); // Delay 1 second before sending
@@ -523,7 +484,6 @@ const useVideoProgress = ({
     lastPercentage,
     debouncedSyncProgressToServer
   ]);
-
   // Add a method to record user interactions with the video
   const recordInteraction = useCallback((interactionType, data = {}) => {
     setProgressVideo((prev) => {
@@ -552,7 +512,6 @@ const useVideoProgress = ({
       };
     });
   }, [videoRef]);
-
   return {
     progressVideo,
     setProgressVideo,
@@ -564,5 +523,4 @@ const useVideoProgress = ({
     recordInteraction,
   };
 };
-
 export default useVideoProgress;
