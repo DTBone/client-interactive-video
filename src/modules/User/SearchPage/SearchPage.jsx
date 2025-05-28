@@ -57,30 +57,69 @@ const SearchPage = () => {
 
 
 
-    const tag = [  // Ngôn ngữ lập trình
-        'JavaScript', 'Python', 'Java', 'C++', 'C#', 'PHP', 'Ruby', 'Swift', 'Kotlin', 'Go', 'Rust',
-        // Framework & Libraries
-        'React', 'Angular', 'Vue.js', 'Node.js', 'Django', 'Flask', 'Spring Boot', 'Laravel', 'Express.js',
-        // Database
-        'MySQL', 'PostgreSQL', 'MongoDB', 'Redis', 'SQLite', 'Oracle', 'SQL Server',
-        // Development Tools
-        'Git', 'Docker', 'Kubernetes', 'Jenkins', 'AWS', 'Azure', 'Google Cloud',
-        // Mobile Development
-        'Android', 'iOS', 'React Native', 'Flutter', 'Xamarin',
-        // Web Development
-        'HTML', 'CSS', 'SASS', 'Bootstrap', 'Tailwind CSS', 'TypeScript', 'WebPack', 'REST API', 'GraphQL',
-        // Testing
-        'Unit Testing', 'Integration Testing', 'Jest', 'Selenium', 'Cypress',
-        // Development Concepts
-        'OOP', 'Design Patterns', 'Data Structures', 'Algorithms', 'Clean Code', 'Microservices',
-        'DevOps', 'Agile', 'TDD', 'CI/CD',
-        // Security
-        'Cybersecurity', 'Authentication', 'Authorization', 'OAuth', 'JWT',
-        // Level
-        'Beginner', 'Intermediate', 'Advanced',
-        // Course Type
-        'Frontend', 'Backend', 'Full Stack', 'Data Science', 'Machine Learning', 'AI',
+    // const tag = [  // Ngôn ngữ lập trình
+    //     'JavaScript', 'Python', 'Java', 'C++', 'C#', 'PHP', 'Ruby', 'Swift', 'Kotlin', 'Go', 'Rust',
+    //     // Framework & Libraries
+    //     'React', 'Angular', 'Vue.js', 'Node.js', 'Django', 'Flask', 'Spring Boot', 'Laravel', 'Express.js',
+    //     // Database
+    //     'MySQL', 'PostgreSQL', 'MongoDB', 'Redis', 'SQLite', 'Oracle', 'SQL Server',
+    //     // Development Tools
+    //     'Git', 'Docker', 'Kubernetes', 'Jenkins', 'AWS', 'Azure', 'Google Cloud',
+    //     // Mobile Development
+    //     'Android', 'iOS', 'React Native', 'Flutter', 'Xamarin',
+    //     // Web Development
+    //     'HTML', 'CSS', 'SASS', 'Bootstrap', 'Tailwind CSS', 'TypeScript', 'WebPack', 'REST API', 'GraphQL',
+    //     // Testing
+    //     'Unit Testing', 'Integration Testing', 'Jest', 'Selenium', 'Cypress',
+    //     // Development Concepts
+    //     'OOP', 'Design Patterns', 'Data Structures', 'Algorithms', 'Clean Code', 'Microservices',
+    //     'DevOps', 'Agile', 'TDD', 'CI/CD',
+    //     // Security
+    //     'Cybersecurity', 'Authentication', 'Authorization', 'OAuth', 'JWT',
+    //     // Level
+    //     'Beginner', 'Intermediate', 'Advanced',
+    //     // Course Type
+    //     'Frontend', 'Backend', 'Full Stack', 'Data Science', 'Machine Learning', 'AI',
 
+    //     'Game Development', 'Mobile Development', 'Desktop Development'
+    // ];
+
+    const tag = [
+        // Ngôn ngữ lập trình phổ biến nhất
+        'JavaScript', 'Python', 'Java', 'TypeScript', 'PHP', 'C#', 'C++', 'Go', 'Swift', 'Kotlin', 'Ruby', 'Rust',
+
+        // Web Development (phổ biến hàng đầu)
+        'HTML', 'CSS', 'React', 'Angular', 'Vue.js', 'Node.js', 'Bootstrap', 'Tailwind CSS', 'SASS', 'WebPack', 'REST API', 'GraphQL',
+
+        // Backend Frameworks
+        'Express.js', 'Django', 'Spring Boot', 'Laravel', 'Flask',
+
+        // Database
+        'MySQL', 'MongoDB', 'PostgreSQL', 'SQL Server', 'Redis', 'SQLite', 'Oracle',
+
+        // Development Tools
+        'Git', 'Docker', 'AWS', 'Azure', 'Google Cloud', 'Kubernetes', 'Jenkins',
+
+        // Mobile Development
+        'React Native', 'Flutter', 'Android', 'iOS', 'Xamarin',
+
+        // Level (phổ biến trong tìm kiếm khoá học)
+        'Beginner', 'Intermediate', 'Advanced',
+
+        // Course Type
+        'Frontend', 'Backend', 'Full Stack', 'DevOps', 'Data Science', 'Machine Learning', 'AI',
+
+        // Development Concepts
+        'OOP', 'Data Structures', 'Algorithms', 'Microservices', 'Design Patterns', 'Clean Code',
+        'Agile', 'CI/CD', 'TDD',
+
+        // Testing
+        'Unit Testing', 'Integration Testing', 'Jest', 'Cypress', 'Selenium',
+
+        // Security
+        'Cybersecurity', 'Authentication', 'Authorization', 'JWT', 'OAuth',
+
+        // Other Development Fields
         'Game Development', 'Mobile Development', 'Desktop Development'
     ];
 
@@ -885,7 +924,7 @@ const SearchPage = () => {
                         </div>
                     ) : (
                         <InfiniteScroll
-                            dataLength={(displayedCourses || []).length }
+                            dataLength={(displayedCourses || []).length}
                             next={fetchMoreData}
                             hasMore={hasMore}
                             loader={
