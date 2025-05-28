@@ -29,7 +29,7 @@ TabButton.propTypes = {
 
 const MyLearning = () => {
     const [activeTab, setActiveTab] = useState("progress");
-    const { courses, loading, error } = useSelector((state) => state.course);
+    const { courses, loading } = useSelector((state) => state.course);
     const dispatch = useDispatch();
 
     useEffect(() => {
@@ -78,10 +78,6 @@ const MyLearning = () => {
                 {loading ? (
                     <Box display="flex" justifyContent="center" py={8}>
                         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
-                    </Box>
-                ) : error ? (
-                    <Box p={2} bgcolor="#fff0f0" color="#f44336" borderRadius={2}>
-                        Failed to load courses. Please try again later.
                     </Box>
                 ) : filteredCourses?.length === 0 ? (
                     <Box textAlign="center" py={8}>

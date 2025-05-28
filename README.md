@@ -122,6 +122,54 @@ The platform is fully responsive and works seamlessly across:
 - Protected course content
 - Safe code execution environment
 
+## Admin Course Management
+
+The admin course management interface provides a comprehensive set of tools for reviewing and managing courses on the platform:
+
+### Features:
+
+- **Course Review System**: Admins can review courses before they are published to ensure quality content.
+- **Approval Workflow**: 
+  - Review course details, content, pricing, and other metadata
+  - Preview course content before making approval decisions
+  - Approve courses that meet platform standards
+  - Reject courses with detailed feedback for instructors
+  
+- **Course Management**:
+  - Filter courses by level, status, and approval status
+  - Search for specific courses
+  - View enrollment statistics
+  - Manage course lifecycle
+
+### Usage:
+
+1. Navigate to the Admin > Course Management section
+2. Use filters to find courses requiring review
+3. Click the "Review" button to open the course review interface
+4. Review course details and content in the tabbed interface
+5. Provide feedback to instructors
+6. Approve or reject the course with appropriate feedback
+
+## Development
+
+This project is built with:
+
+- React
+- Material UI
+- Redux Toolkit
+- Vite
+
+To run the development server:
+
+```bash
+npm install
+npm run dev
+```
+
+## Contributing
+
+Contributions are welcome! Please follow the project's code style and submit pull requests for review.
+
 ---
 
 © 2025 CodeChef Interactive Learning Platform. All rights reserved.

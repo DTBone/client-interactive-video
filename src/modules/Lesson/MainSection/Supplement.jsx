@@ -53,9 +53,15 @@ const Supplement = () => {
         try {
             setLoading(true);
             const response = await axios({
-                url: item.reading,
+                url: item.reading?.toString(),
                 method: 'GET',
-                responseType: 'blob'
+                responseType: 'blob',
+                timeout: 30000,
+                headers: {
+                    'Content-Type': 'application/pdf',
+                    'Access-Control-Allow-Origin': '*',
+                    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, PATCH, OPTIONS',
+                }
             });
 
             const filename = item.title + '.pdf';
@@ -80,11 +86,17 @@ const Supplement = () => {
     const loadPDF = async () => {
         try {
             setLoading(true);
+            console.log('item.reading', item.reading)
             const response = await axios({
-                url: item.reading,
+                url: item.reading?.toString(),
                 method: 'GET',
                 responseType: 'blob',
-                timeout: 30000
+                timeout: 30000,
+                headers: {
+                    'Content-Type': 'application/pdf',
+                    'Access-Control-Allow-Origin': '*',
+                    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, PATCH, OPTIONS',
+                }
             });
 
             const pdfBlob = new Blob([response.data], { type: 'application/pdf' });
@@ -280,14 +292,14 @@ const Supplement = () => {
                         {/* PDF Document */}
                         <div className="relative" style={{ height: isFullscreen ? 'calc(100vh - 50px)' : '550px' }}>
                             <iframe
-                                src={`${pdfUrl}#page=${currentPage}&zoom=${zoom}`}
+                                src={pdfUrl}
                                 width="100%"
                                 height="100%"
                                 title={`${item.title} PDF`}
                                 className="bg-white"
                             >
                                 Your browser does not support PDFs.
-                                <a href={pdfUrl}>Download the PDF</a>
+                                <a href={item.reading?.toString()}>Download the PDF</a>
                             </iframe>
                         </div>
                     </motion.div>

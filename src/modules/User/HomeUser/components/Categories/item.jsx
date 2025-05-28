@@ -1,10 +1,12 @@
 /* eslint-disable react/prop-types */
 import { Box, Paper, Typography } from "@mui/material";
 import React from "react";
+import { useNavigate } from "react-router-dom";
 
 function Category({
     category
 }) {
+    const navigate = useNavigate();
     let Icon = category.icon;
     Icon = React.cloneElement(Icon, { style: { fontSize: '2.8rem', color: category.color } });
     return (
@@ -25,7 +27,9 @@ function Category({
                 background: `linear-gradient(135deg, ${category.color}22 0%, #fff 100%)`,
             },
         }}>
-            <Box display="flex" flexDirection="column" alignItems="center" gap={1}>
+            <Box display="flex" flexDirection="column" alignItems="center" gap={1}
+                onClick={() => navigate(`/search?q=${category.slug}`)}
+            >
                 {Icon}
                 <Typography variant="h6" sx={{ fontWeight: 700, color: '#222', mb: 0.5, textAlign: 'center' }}>
                     {category.name}

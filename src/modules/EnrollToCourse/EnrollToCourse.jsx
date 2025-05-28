@@ -1,4 +1,4 @@
-import { Avatar, Button, Card, CardContent, CardMedia, Chip, Divider, Stack, Typography } from '@mui/material'
+import { Avatar, Button, Card, CardMedia, Chip, Divider, Stack, Typography, Box, Dialog, DialogTitle, DialogContent, DialogActions, TextField, IconButton, CircularProgress, Snackbar } from '@mui/material'
 import { useEffect, useState } from 'react'
 import HeaderCourse from '../../Components/Common/Header/HeaderCourse'
 import Breadcrumb from '../../Components/Common/Breadcrumbs/Breadcrumb'
@@ -18,7 +18,10 @@ import PeopleAltIcon from '@mui/icons-material/PeopleAlt';
 import StarIcon from '@mui/icons-material/Star';
 import LocalOfferIcon from '@mui/icons-material/LocalOffer';
 import Footer from '~/Components/Footer'
-
+import ReactMarkdown from 'react-markdown';
+import ShareIcon from '@mui/icons-material/Share';
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import { api } from '~/Config/api';
 const EnrollToCourse = () => {
 
     const dispatch = useDispatch();
@@ -30,6 +33,10 @@ const EnrollToCourse = () => {
     const { currentCourse } = useSelector((state) => state.course)
     const [isSubmit, setSubmit] = useState(false);
     const user = JSON.parse(localStorage.getItem('user'));
+    const [dialogOpen, setDialogOpen] = useState(false);
+    const [shortLink, setShortLink] = useState('');
+    const [snackbar, setSnackbar] = useState({ open: false, message: '' });
+    const [shareLoading, setShareLoading] = useState(false);
     const navigate = useNavigate();    const handleDataFromButotnSubmit = async (data) => {
         const result = await dispatch(enroll({ courseId: courseId }));
         console.log(result);
@@ -87,6 +94,25 @@ const EnrollToCourse = () => {
     const closeSnackbar = () => {
         setSnackbarState({ ...snackbarState, open: false });
     };
+    const handleShare = async () => {
+        try {
+            setShareLoading(true);
+            const shortLinkObj = await api.post(`/shortlinks`, {
+                courseId: courseId,
+            });
+            const url = `${window.location.origin}/s/${shortLinkObj.data.data.code}`;
+            setShortLink(url);
+            setDialogOpen(true);
+        } catch (err) {
+            console.error(err);
+        } finally {
+            setShareLoading(false);
+        }
+    }
+    const handleCopy = async () => {
+        await navigator.clipboard.writeText(shortLink);
+        setSnackbar({ open: true, message: 'Đã copy link!' });
+    }
     return (
         <div className='space-y-2 min-h-screen'>
             <section className='p-0 w-full m-0 '>
@@ -104,12 +130,84 @@ const EnrollToCourse = () => {
             <section className="bg-[#f2f6fd] w-full  mt-2 flex flex-row justify-center items-center px-6">
                 <div className="flex-grow-[6]  ml-5 max-w-4xl ">
                     <div className='flex flex-col gap-2 justify-start items-start h-[400px]'>
-                        <Typography
+                        <Box sx={{ display: 'flex', marginTop: "16px", justifyContent: 'center', flexDirection: 'row', alignItems: 'center', gap: 2 }}>
+                            <Typography
                             variant='h2'
                             className='text-start font-bold'
-                            sx={{ fontWeight: 500, marginTop: "16px" }}
+                            sx={{ fontWeight: 500 }}
                             noWrap={false}>{course?.title}
                         </Typography>
+                        <ShareIcon color="primary" 
+                            sx={{
+                            transition: 'all ease 0.3s',
+                            ":hover": {
+                                scale: 1.1,
+                                cursor: 'pointer',
+                            }
+                            }}
+                            onClick={handleShare}
+                            disabled={shareLoading}
+                        />
+                        <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)}>
+                        <DialogTitle>Chia sẻ khóa học</DialogTitle>
+                        <DialogContent>
+                        {shareLoading ? (
+                            <CircularProgress />
+                        ) : (
+                            <Box
+                            sx={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: 1,
+                            width: '100%',
+                            minWidth: '300px',
+                            }}
+                            >
+                  <img src={course.photo} alt="course" width={200} height={200} 
+                  style={{
+                    borderRadius: '10px',
+                    objectFit: 'cover',
+                  }}
+                  />
+                  <Typography variant="body1" color="black" sx={{ fontWeight: 'bold' }}>
+                    Link khóa học:
+                  </Typography>
+                        <TextField
+                        value={shortLink}
+                        fullWidth
+                        InputProps={{
+                            endAdornment: (
+                            <IconButton onClick={handleCopy} edge="end">
+                                <ContentCopyIcon />
+                            </IconButton>
+                            ),
+                            readOnly: true,
+                        }}
+                        margin="dense"
+                        />
+                        </Box>
+                    )}
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={() => setDialogOpen(false)}>Đóng</Button>
+                    </DialogActions>
+                    </Dialog>
+
+                    <Snackbar
+                    open={snackbar.open}
+                    autoHideDuration={2000}
+                    onClose={() => setSnackbar({ ...snackbar, open: false })}
+                    message={snackbar.message}
+                    sx={{
+                        width: '100%',
+                        position: 'absolute',
+                        bottom: 0,
+                        left: 0,
+                    }}
+                    />
+                        </Box>
                         {/* Course Stats */}
                         <Stack direction="row" spacing={2} sx={{ mb: 3 }}>
                             {/* <Chip
@@ -137,8 +235,19 @@ const EnrollToCourse = () => {
                                 sx={{ bgcolor: 'white' }}
                             />
                         </Stack>
-                        <Typography noWrap={false} >{course?.description}
-                        </Typography>
+                            <Typography noWrap={false}
+                            sx={{
+                                maxHeight: '200px',
+                                overflow: 'hidden',
+                                whiteSpace: 'pre-wrap',
+                                wordWrap: 'break-word',
+                                textOverflow: 'ellipsis',
+                                display: '-webkit-box',
+                                WebkitLineClamp: '3',
+                                WebkitBoxOrient: 'vertical',
+                            }
+                            } >{course?.description}
+                            </Typography>
                         <div className="flex flex-row gap-4 align-items-center">
                             <Avatar
                                 alt={intructor?.profile?.fullname}

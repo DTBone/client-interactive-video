@@ -21,7 +21,7 @@ export const getAllModules = createAsyncThunk(
     async (courseId, { rejectWithValue }) => {
         try {
             const { data } = await axiosInstance.get(`/learns/${courseId}/modules`);
-            return data;
+            return data.data;
         } catch (error) {
             return rejectWithValue(error.message);
         }

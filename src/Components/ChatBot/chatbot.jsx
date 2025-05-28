@@ -3,7 +3,9 @@ import React, { useState, useEffect, useRef } from 'react';
 import {api} from '~/Config/api';
 import { PsychologyAlt } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 const ChatBot = () => {
+  const isAdmin = useSelector(state => state.auth.user?.role === 'admin');
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState('');
@@ -11,6 +13,11 @@ const ChatBot = () => {
   const [loading, setLoading] = useState(false);
   const [courseInfo, setCourseInfo] = useState({}); // { [id]: {title, image} }
   const messagesEndRef = useRef(null);
+  const [page, setPage] = useState(1);
+  const [limit] = useState(20);
+  const [hasMore, setHasMore] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  
   // Lấy userId từ localStorage
   const userId = React.useMemo(() => {
     try {
@@ -29,36 +36,62 @@ const ChatBot = () => {
       })
       .catch(() => {});
   }
-  // Lấy lịch sử chat khi mở chatbot
+  // Lấy lịch sử chat khi mở chatbot (phân trang)
   useEffect(() => {
     if (open && userId) {
-      api.get(`/chatbot/history`)
-        .then(res => {
-          setMessages(res.data.data || []);
-          console.log(res.data.data)
-        })
-        .catch(() => setMessages([]));
+      setPage(1);
+      fetchMessages(1, true);
     }
   }, [open, userId]);
+
+  // Hàm lấy tin nhắn phân trang
+  const fetchMessages = async (pageToLoad = 1, reset = false) => {
+    if (!userId) return;
+    if (pageToLoad === 1) setLoading(true);
+    else setLoadingMore(true);
+    try {
+      const res = await api.get(`/chatbot/history?page=${pageToLoad}&limit=${limit}`);
+      const { data, total } = res.data;
+      if (reset) {
+        setMessages(data);
+      } else {
+        setMessages(prev => [...data, ...prev]);
+      }
+      setHasMore((pageToLoad - 1) * limit + data.length < total);
+    } catch {
+      if (pageToLoad === 1) setMessages([]);
+    }
+    setLoading(false);
+    setLoadingMore(false);
+  };
+
+  // Hàm load thêm khi scroll lên đầu
+  const handleLoadMore = () => {
+    if (hasMore && !loadingMore) {
+      const nextPage = page + 1;
+      setPage(nextPage);
+      fetchMessages(nextPage);
+    }
+  };
 
   // Scroll to bottom khi có tin nhắn mới
   useEffect(() => {
     if (open && messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
     }
-  }, [messages, open]);
+  }, [open]);
 
   const handleSend = async () => {
     if (!input.trim()) return;
     const userMsg = { sender: 'user', content: input };
-    setMessages(prev => [...prev, userMsg]);
+    setMessages(prev => [userMsg, ...prev]);
     setInput('');
     setLoading(true);
     try {
       const res = await api.post('/chatbot/ask', { message: input });
       setMessages(prev => [...prev, { sender: 'bot', content: res.data?.answer || '...' }]);
     } catch {
-      setMessages(prev => [...prev, { sender: 'bot', content: 'Đã có lỗi xảy ra.' }]);
+      setMessages(prev => [...prev, { sender: 'bot', content: 'Have an error.' }]);
     }
     setLoading(false);
   };
@@ -68,15 +101,18 @@ const ChatBot = () => {
   };
 
   return (
+    
     <>
       {/* Nút nổi */}
-      <button
+      {!isAdmin && (
+        <button
         className="fixed bottom-6 right-6 z-50 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg p-3 flex items-center justify-center focus:outline-none"
         onClick={() => setOpen(o => !o)}
         aria-label="Open chatbot"
       >
         <PsychologyAlt/>    
       </button>
+      )}
       {/* Khung chat */}
       {open && (
         <div className="fixed bottom-10 right-6 z-50 w-80 max-w-sm bg-white rounded-lg shadow-2xl flex flex-col border border-gray-200">
@@ -84,9 +120,18 @@ const ChatBot = () => {
             <span className="text-white font-semibold">ChatBot</span>
             <button onClick={() => setOpen(false)} className="text-white text-xl font-bold">×</button>
           </div>
-          <div className="flex-1 overflow-y-auto p-3 space-y-2" style={{ maxHeight: 350 }}>
+          <div
+            className="flex-1 overflow-y-auto p-3 space-y-2"
+            style={{ maxHeight: 350 }}
+            onScroll={e => {
+              if (e.target.scrollTop === 0 && hasMore && !loadingMore) {
+                handleLoadMore();
+              }
+            }}
+          >
+            {loadingMore && <div className="text-center text-xs text-gray-400">Đang tải thêm...</div>}
             {messages.length === 0 && (
-              <div className="text-gray-400 text-center">Chưa có tin nhắn nào.</div>
+              <div className="text-gray-400 text-center">No messages yet.</div>
             )}
             {messages.length > 0 && messages.map((msg, idx) => {
               if (msg.role === 'bot') {
@@ -111,7 +156,7 @@ const ChatBot = () => {
                       <div>{answer}</div>
                       {courses && Array.isArray(courses) && courses.length > 0 && (
                         <div className="mt-2 text-xs text-blue-700">
-                          <div>Khóa học gợi ý:</div>
+                          <div>Recommended Courses:</div>
                           <ul className="list-disc ml-4">
                             {courses.map((c, i) => {
                               const info = courseInfo[c];
@@ -144,14 +189,14 @@ const ChatBot = () => {
               );
             })}
             {loading && (
-              <div className="flex justify-start"><div className="px-3 py-2 rounded-lg bg-gray-100 text-gray-800 text-sm animate-pulse">Đang trả lời...</div></div>
+              <div className="flex justify-start"><div className="px-3 py-2 rounded-lg bg-gray-100 text-gray-800 text-sm animate-pulse">Repling...</div></div>
             )}
             <div ref={messagesEndRef} />
           </div>
           <div className="p-3 border-t flex gap-2">
             <input
               type="text"
-              className="flex-1 border text-white rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-300"
+              className="flex-1 border text-black rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-300"
               placeholder="Enter your message..."
               value={input}
               onChange={e => setInput(e.target.value)}

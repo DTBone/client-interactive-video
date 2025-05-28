@@ -308,7 +308,7 @@ const Sidebar = () => {
         findModuleData(moduleId);
         // Auto expand the current module when page loads
         if (moduleId) {
-            const moduleIndex = allModules.findIndex(
+            const moduleIndex = allModules?.length > 0 && allModules?.findIndex(
                 module => module.index === String(moduleId)
             );
             if (moduleIndex !== -1) {
@@ -318,7 +318,7 @@ const Sidebar = () => {
     }, [allModules, courseId, moduleId]);
 
     const findModuleData = (index) => {
-        const findModuleData1 = allModules.find(module => module.index === String(index));
+        const findModuleData1 = allModules?.length > 0 && allModules?.find(module => module.index === String(index));
         setModuleData(findModuleData1);
     };
 
@@ -391,7 +391,7 @@ const Sidebar = () => {
 
             <Divider sx={{ mb: 2 }} />
 
-            {allModules && allModules.map((module, index) => (
+            {allModules && allModules?.length > 0 && allModules?.map((module, index) => (
                 <ModuleAccordion
                     key={index}
                     expanded={expandedModule === `panel${index}`}

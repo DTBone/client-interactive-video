@@ -26,8 +26,9 @@ import { useNotification } from '~/hooks/useNotification';
 import { uploadToCloudnary } from '~/Utils/uploadToCloudnary';
 import Header from '~/Components/Header';
 import FileUpload from '../Modules/Component/FileUpload';
+import { api } from '~/Config/api';
 
-const suggestedTags = [
+const tags = [
     // Ngôn ngữ lập trình
     'JavaScript', 'Python', 'Java', 'C++', 'C#', 'PHP', 'Ruby', 'Swift', 'Kotlin', 'Go', 'Rust',
     // Framework & Libraries
@@ -66,6 +67,7 @@ const CourseSection = ({ state }) => {
     const [activeStep, setActiveStep] = useState(0);
     const [activeTab, setActiveTab] = useState(0);
     const [openModuleDialog, setOpenModuleDialog] = useState(false);
+    const [suggestedTags, setSuggestedTags] = useState(tags);
     const [currentModule, setCurrentModule] = useState({
         id: null,
         index: 1,
@@ -139,6 +141,19 @@ const CourseSection = ({ state }) => {
             validateForm('tags', true);
         }
     }, [courseData.tags]);
+
+    useEffect(() => {
+        const fetchTags = async () => {
+            try {
+                const response = await api.get('/categories');
+                const tags = response.data.map(tag => tag.name);
+                setSuggestedTags(tags);
+            } catch (error) {
+                console.error('Error fetching tags:', error);
+            }
+        };
+        fetchTags();
+    }, []);
 
     // Các hàm điều hướng stepper
     const handleNext = () => {
@@ -318,6 +333,13 @@ const CourseSection = ({ state }) => {
 
             // Submit to API
             if (courseId) {
+                // Đảm bảo modules là mảng, nếu không có thì là []
+                const modulesArray = Array.isArray(courseData.modules)
+                    ? courseData.modules
+                    : (courseData.modules ? Object.values(courseData.modules) : []);
+
+                formData.set('modules', JSON.stringify(modulesArray));
+
                 await dispatch(updateCourse({
                     courseId,
                     formData: formData

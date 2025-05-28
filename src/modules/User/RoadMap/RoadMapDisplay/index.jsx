@@ -40,6 +40,7 @@ import StorageIcon from '@mui/icons-material/Storage';
 import BoltIcon from '@mui/icons-material/Bolt';
 import ChipTest from '../RoadMapTest/Chip';
 import { api } from '~/Config/api';
+import { useNavigate } from 'react-router-dom';
 
 // Styled components for enhanced UI
 const RoadmapHeader = styled(Paper)(({ theme }) => ({
@@ -176,6 +177,7 @@ function CustomStepIcon(props) {
 const RoadmapDisplay = ({data, setRoadmapOutSide}) => {
   const [expanded, setExpanded] = useState('panel0');
   const theme = useTheme();
+  const navigate = useNavigate();
 
   const handleChange = (panel) => (event, newExpanded) => {
     setExpanded(newExpanded ? panel : false);
@@ -421,7 +423,9 @@ const RoadmapDisplay = ({data, setRoadmapOutSide}) => {
                   </AccordionSummary>
                   <AccordionDetails sx={{ p: 2 }}>
                     {phase.items.map((item, itemIndex) => (
-                      <ItemPaper key={itemIndex} completed={item.completed} elevation={1}>
+                      <ItemPaper key={itemIndex} completed={item.completed} elevation={1}
+                        onClick={() => navigate(`/search?q=${item.tags}`)}
+                      >
                         <Box sx={{ display: 'flex', alignItems: 'flex-start' }}>
                           <Box sx={{ mr: 2, pt: 0.5 }}>
                             {item.completed ? 

@@ -154,7 +154,9 @@ function Login( { isLoginForm } ) {
                 const user = data.data.user;
                 submitBtn.current.disabled = true;
                 // Chuyển hướng đến trang chính sau khi đăng nhập thành công
-                navigate(`/homeuser?userid=${user.userId}`, {state: {user: user}});
+                setTimeout(() => {
+                    navigate(`/homeuser?userid=${user.userId}`, {state: {user: user}});
+                }, 2000);
             } catch (err) {
                 setMessage('Login failed. Please check your credentials.');
                 throw err;

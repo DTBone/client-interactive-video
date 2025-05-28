@@ -43,8 +43,8 @@ const Lecture = () => {
     //     console.log('isExpandedRedux', isExpandedRedux);
     // }, [isExpandedRedux])
 
-    const lectureId = location.state.item.video;
-    // console.log('location', lectureId);
+    const lectureId = location.state.item.video._id;
+    console.log('location', lectureId);
 
     const { onQuizSubmit } = useOutletContext();
     const [value, setValue] = React.useState('1');
@@ -53,8 +53,6 @@ const Lecture = () => {
     const [alert, setAlert] = React.useState('');
 
     const [openNote, setOpenNote] = React.useState(false);
-
-    console.log('progress', progress)
 
     const getLecture = async () => {
         const result = await dispatch(getLectureById(lectureId))
