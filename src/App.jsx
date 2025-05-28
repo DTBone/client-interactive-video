@@ -4,7 +4,7 @@ import { Route, Routes, useNavigate, Navigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import Login from './modules/Authentication/Authentication';
 import { checkAuthStatus } from '~/store/slices/Auth/action'; // You'll need to create this action
-
+import ShortLink from './pages/ShortLink/shortLink.jsx';
 import HomeSection from './pages/Home/index';
 import HomeUser from '~/modules/User/HomeUser'
 import DashboardLayout from '~/components/Layout/DashBoardLayout'
@@ -34,6 +34,8 @@ import PaymentStatus from './modules/EnrollToCourse/Payment/PaymentStatus';
 import DefaultLayoutV2 from '~/components/Layout/DefaultLayoutV2';
 import ProtectedRoute from '~/components/ProtectedRoute';
 import HomeAdmin from '~/modules/Admin/Home';
+import AdminRoutes from '~/modules/Admin/AdminRoutes';
+import AdminLayout from '~/modules/Admin/AdminLayout';
 import AccountManager from './modules/Admin/AccountMg';
 import CourseManager from './modules/Admin/CourseMg';
 import InstructorManager from './modules/Admin/IntructorMg';
@@ -63,6 +65,8 @@ import SearchPage from './modules/User/SearchPage/SearchPage';
 import Message from './modules/Instructor/Messages';
 import ScrollToTop from './Utils/scrollToTop';
 import ChatBot from './components/ChatBot/chatbot';
+import Codespace from './modules/User/Codespace/codespace';
+import GithubAuth from './pages/GithubAuth/githubAuth';
 // import Certificate from './modules/User/Certificate/Certificate';
 
 
@@ -118,6 +122,7 @@ function App() {
         <Route path="/verify-account" element={<VerifyEmailAccount />} />
         <Route path="/error" element={<ErrorPage />} />
         <Route path="/unauthorized" element={<UnauthorizedPage />} />
+        <Route path="/github/callback" element={<GithubAuth />} />
 
 
         {/* Protected routes */}
@@ -205,7 +210,13 @@ function App() {
           <Route path="info" element={<CourseInfo />} />
           <Route path="module/:moduleId" element={<Module />}></Route>
         </Route>
-
+        <Route path="/codespace" element={
+          <ProtectedRoute allowedRoles={['student', 'instructor', 'admin']}>
+            <DashboardLayout>
+              <Codespace />
+            </DashboardLayout>
+          </ProtectedRoute>
+        } />
         <Route path="learns/lessons" element={
           <ProtectedRoute allowedRoles={['student', 'instructor', 'admin']}>
             <GeneralLessons />
@@ -277,7 +288,8 @@ function App() {
             <ListStudent />
           </ProtectedRoute>
         } />
-
+        
+        <Route path="/s/:code" element={<ShortLink />} />
         <Route path="/course-management/:courseId/module" element={
           <ProtectedRoute allowedRoles={['instructor', 'admin']}>
             <ModuleSection />
@@ -291,46 +303,20 @@ function App() {
         </Route>
 
         {/* Admin */}
-        <Route path="/admin" element={
-          <ProtectedRoute allowedRoles={['admin']}>
-            <DashboardLayout>
-              <HomeAdmin />
-            </DashboardLayout>
-          </ProtectedRoute>
-        } />
-        <Route path="/account-manager" element={
-          <ProtectedRoute allowedRoles={['admin']}>
-            <DashboardLayout>
-              <AccountManager />
-            </DashboardLayout>
-          </ProtectedRoute>
-        } />
-        <Route path="/course-manager" element={
-          <ProtectedRoute allowedRoles={['admin']}>
-            <DashboardLayout>
-              <CourseManager />
-            </DashboardLayout>
-          </ProtectedRoute>
-        } > </Route>
-        <Route path="/instructor-manager" element={
-          <ProtectedRoute allowedRoles={['admin']}>
-            <DashboardLayout>
-              <InstructorManager />
-            </DashboardLayout>
-          </ProtectedRoute>
-        } />
-        <Route path="/chat" element={
-          <ProtectedRoute allowedRoles={['student', 'instructor', 'admin']}>
-            <DashboardLayout>
-              <Chat />
-            </DashboardLayout>
-          </ProtectedRoute>
-        } />
-        <Route path="/video-call" element={
-          <ProtectedRoute allowedRoles={['student', 'instructor', 'admin']}>
-            <VideoCall />
-          </ProtectedRoute>
-        } />
+        {AdminRoutes.map((route, index) => (
+          <Route
+            key={index}
+            path={route.path}
+            element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <AdminLayout>
+
+                  <route.element />
+                </AdminLayout>
+              </ProtectedRoute>
+            }
+          />
+      ))}
         {/* <Route path="/test" element={
 
           // <Certificate />

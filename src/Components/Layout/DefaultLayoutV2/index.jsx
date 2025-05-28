@@ -47,7 +47,8 @@ export default function MiniDrawer({ children }) {
   const token = localStorage.getItem('token');
   const [error, setError] = React.useState(null);
   const dispatch = useDispatch();
-  var user = null  // Lấy user từ Redux store
+  var user = useSelector(state => state.auth.user);
+  console.log('Header user', user);
   if (!user) {
     const localUser = localStorage.getItem('user');
     user = localUser ? JSON.parse(localUser) : null;

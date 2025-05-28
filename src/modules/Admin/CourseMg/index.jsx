@@ -17,56 +17,59 @@ import {
   MenuItem,
   FormControl,
   InputLabel,
-  Tooltip
+  Tooltip,
+  Badge,
+  Alert
 } from '@mui/material'
-import { Check, Close, Delete, Edit, FactCheck, Search } from '@mui/icons-material';
-import { useDispatch, useSelector } from 'react-redux';
+import { Cancel, Check, Delete, FactCheck, Search, Visibility } from '@mui/icons-material';
+import { useDispatch } from 'react-redux';
 import { getAllCourse } from '~/store/slices/Course/action'
-import ApproveCourseModal from "~/modules/Admin/CourseMg/ApproveModal";
+import ReviewCourseModal from "~/modules/Admin/CourseMg/ReviewModal";
 
 const CourseManager = () => {
   const dispatch = useDispatch();
   const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(5);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterLevel, setFilterLevel] = useState('all');
   const [filterStatus, setFilterStatus] = useState('all');
-  const [openApprove, setOpenApprove] = useState(false);
+  const [filterApproval, setFilterApproval] = useState('all');
+  const [openReview, setOpenReview] = useState(false);
   const [courseData, setCourseData] = useState(null);
-
-  // Sample data from your JSON
-  const [courses, setCourses] = useState(useSelector(state => state.course.courses))
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [courses, setCourses] = useState([]);
+  const [total, setTotal] = useState(0);
 
   useEffect(() => {
-    const getCourse = async () => {
-      const result = await dispatch(getAllCourse());
-      if (getAllCourse.fulfilled.match(result)) {
-        setCourses(result.payload.data);
-      } else {
-        console.log("error");
+    const fetchCourses = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const result = await dispatch(getAllCourse({
+          page: page + 1,
+          limit: rowsPerPage,
+          search: searchTerm,
+          level: filterLevel,
+          status: filterStatus,
+          approval: filterApproval,
+        }));
+        if (getAllCourse.fulfilled.match(result)) {
+          setCourses(result.payload.data);
+          setTotal(result.payload.total || result.payload.count || 0);
+        } else {
+          setError("Failed to fetch courses");
+        }
+      } catch (err) {
+        setError("Error loading courses: " + err.message);
+      } finally {
+        setLoading(false);
       }
     };
+    fetchCourses();
+  }, [dispatch, page, rowsPerPage, searchTerm, filterLevel, filterStatus, filterApproval, openReview]);
 
-    if (courses.length === 0) {
-      getCourse();
-    }
-  }, [dispatch, courses, openApprove]);
-
-
-  // Filter and search logic
-
-  const filteredCourses = courses.length > 0 ? courses.filter(course => {
-
-    const matchesSearch = course.title.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesLevel = filterLevel === 'all' || course.level === filterLevel;
-    const matchesStatus = filterStatus === 'all' || course.status === filterStatus;
-    return matchesSearch && matchesLevel && matchesStatus;
-  }) : null;
-
-  const handleChangePage = (event, newPage) => {
-    setPage(newPage);
-  };
-
+  const handleChangePage = (event, newPage) => setPage(newPage);
   const handleChangeRowsPerPage = (event) => {
     setRowsPerPage(parseInt(event.target.value, 10));
     setPage(0);
@@ -75,36 +78,65 @@ const CourseManager = () => {
   const getLevelColor = (level) => {
     switch (level) {
       case 'beginner':
-        return 'bg-green-100 text-green-800';
+        return 'success';
       case 'intermediate':
-        return 'bg-blue-100 text-blue-800';
+        return 'primary';
       case 'advanced':
-        return 'bg-red-100 text-red-800';
+        return 'error';
       default:
-        return 'bg-gray-100 text-gray-800';
+        return 'primary';
     }
   };
 
   const getStatusColor = (status) => {
     switch (status) {
       case 'published':
-        return 'bg-green-100 text-green-800';
+        return 'success';
       case 'unpublished':
-        return 'bg-yellow-100 text-yellow-800';
+        return 'warning';
       default:
-        return 'bg-gray-100 text-gray-800';
+        return 'primary';
     }
   };
-  const handleApprove = (courseData) => {
-    setOpenApprove(true);
+
+  const handleReviewCourse = (courseData) => {
+    setOpenReview(true);
     setCourseData(courseData);
   }
 
+  const pendingReviewCount = courses.filter(course => !course.isApproved).length;
+
   return (
     <Box className="p-6">
-      <Typography variant="h4" className="mb-6">
-        Course Management
-      </Typography>
+      <Box className="mb-6 flex justify-between items-center">
+        <Typography variant="h4">
+          Course Management
+        </Typography>
+        
+        <Badge 
+          badgeContent={pendingReviewCount} 
+          color="warning"
+          max={99}
+          anchorOrigin={{
+            vertical: 'top',
+            horizontal: 'left',
+          }}
+        >
+          <Chip
+            label="Pending Reviews"
+            color="primary"
+            variant={filterApproval === 'pending' ? 'filled' : 'outlined'}
+            onClick={() => setFilterApproval(filterApproval === 'pending' ? 'all' : 'pending')}
+            className="ml-2"
+          />
+        </Badge>
+      </Box>
+
+      {error && (
+        <Alert severity="error" className="mb-4" onClose={() => setError(null)}>
+          {error}
+        </Alert>
+      )}
 
       {/* Filters and Search */}
       <Box className="flex flex-wrap gap-4 mb-6">
@@ -113,7 +145,7 @@ const CourseManager = () => {
           variant="outlined"
           placeholder="Search courses..."
           value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
+          onChange={(e) => { setSearchTerm(e.target.value); setPage(0); }}
           InputProps={{
             startAdornment: <Search size={20} className="mr-2" />
           }}
@@ -124,7 +156,7 @@ const CourseManager = () => {
           <InputLabel>Level</InputLabel>
           <Select
             value={filterLevel}
-            onChange={(e) => setFilterLevel(e.target.value)}
+            onChange={(e) => { setFilterLevel(e.target.value); setPage(0); }}
             label="Level"
           >
             <MenuItem value="all">All Levels</MenuItem>
@@ -138,12 +170,25 @@ const CourseManager = () => {
           <InputLabel>Status</InputLabel>
           <Select
             value={filterStatus}
-            onChange={(e) => setFilterStatus(e.target.value)}
+            onChange={(e) => { setFilterStatus(e.target.value); setPage(0); }}
             label="Status"
           >
             <MenuItem value="all">All Status</MenuItem>
             <MenuItem value="published">Published</MenuItem>
             <MenuItem value="unpublished">Unpublished</MenuItem>
+          </Select>
+        </FormControl>
+
+        <FormControl size="small" variant="outlined" className="w-48">
+          <InputLabel>Approval</InputLabel>
+          <Select
+            value={filterApproval}
+            onChange={(e) => { setFilterApproval(e.target.value); setPage(0); }}
+            label="Approval"
+          >
+            <MenuItem value="all">All Courses</MenuItem>
+            <MenuItem value="approved">Approved</MenuItem>
+            <MenuItem value="pending">Pending Review</MenuItem>
           </Select>
         </FormControl>
       </Box>
@@ -154,6 +199,7 @@ const CourseManager = () => {
           <TableHead>
             <TableRow>
               <TableCell>Title</TableCell>
+              <TableCell>Instructor</TableCell>
               <TableCell>Level</TableCell>
               <TableCell>Price</TableCell>
               <TableCell>Status</TableCell>
@@ -163,55 +209,80 @@ const CourseManager = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-
-            {filteredCourses && filteredCourses.length > 0 ? (
-              filteredCourses
-                .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                .map((course) => (
-                  <TableRow key={course._id}>
-                    <TableCell>{course.title}</TableCell>
-                    <TableCell>
-                      <Chip
-                        label={course.level}
-                        className={`${getLevelColor(course.level)}`}
+            {loading ? (
+              <TableRow>
+                <TableCell colSpan={8} align="center" className="py-8">
+                  <Typography>Loading courses...</Typography>
+                </TableCell>
+              </TableRow>
+            ) : courses.length > 0 ? (
+              courses.map((course) => (
+                <TableRow key={course._id}>
+                  <TableCell>{course.title}</TableCell>
+                  <TableCell>{course.instructor?.profile?.fullname || 'Unknown'}</TableCell>
+                  <TableCell>
+                    <Chip
+                      label={course.level}
+                      color={getLevelColor(course.level)}
+                    />
+                  </TableCell>
+                  <TableCell>
+                    ${course.price}
+                  </TableCell>
+                  <TableCell>
+                    <Chip
+                      label={course.status}
+                      color={getStatusColor(course.status.toLowerCase())}
+                    />
+                  </TableCell>
+                  <TableCell>{course.enrollmentCount}</TableCell>
+                  <TableCell>
+                    {course.isApproved ? (
+                      <Chip 
+                        icon={<Check />} 
+                        label="Approved" 
+                        color="success" 
+                        variant="outlined" 
+                        size="small"
                       />
-                    </TableCell>
-                    <TableCell>
-                      ${course.price}
-                    </TableCell>
-                    <TableCell>
-                      <Chip
-                        label={course.status}
-                        className={`${getStatusColor(course.status)}`}
+                    ) : (
+                      <Chip 
+                        icon={<Cancel />} 
+                        label="Pending" 
+                        color="warning" 
+                        variant="outlined"
+                        size="small"
                       />
-                    </TableCell>
-                    <TableCell>{course.enrollmentCount}</TableCell>
-                    <TableCell>
-                      {course.isApproved ? (
-                        <Check className="text-green-600" />
-                      ) : (
-                        <Close className="text-red-600" />
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <Box className="flex gap-2">
-                        {!course.isApproved ? (
-                          <IconButton onClick={() => handleApprove(course)} size="small" className="text-blue-600">
-                            <Tooltip title="Approve"><FactCheck size={20} /></Tooltip>
-                          </IconButton>
-                        ) : ''}
-                        {openApprove ? (<ApproveCourseModal courseData={courseData} setOpen={setOpenApprove} open={openApprove} />) : ''}
-                        <IconButton size="small" className="text-blue-600">
-                          <Tooltip title="Edit"><Edit size={20} /></Tooltip>
-                        </IconButton>
-                        <IconButton size="small" className="text-red-600">
-                          <Tooltip title="Delete"><Delete size={20} /></Tooltip>
-                        </IconButton>
-                      </Box>
-                    </TableCell>
-                  </TableRow>
-                ))) : ('')}
-
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    <Box className="flex gap-2">
+                      <IconButton onClick={() => handleReviewCourse(course)} size="small" className="text-blue-600">
+                        <Tooltip title={course.isApproved ? "View Details" : "Review Course"}>
+                          <FactCheck size={20} />
+                        </Tooltip>
+                      </IconButton>
+                      <IconButton size="small" className="text-blue-600">
+                        <Tooltip title="View Course">
+                          <Visibility size={20} />
+                        </Tooltip>
+                      </IconButton>
+                      <IconButton size="small" className="text-red-600">
+                        <Tooltip title="Delete">
+                          <Delete size={20} />
+                        </Tooltip>
+                      </IconButton>
+                    </Box>
+                  </TableCell>
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell colSpan={8} align="center" className="py-8">
+                  <Typography>No courses found</Typography>
+                </TableCell>
+              </TableRow>
+            )}
           </TableBody>
         </Table>
       </TableContainer>
@@ -219,13 +290,22 @@ const CourseManager = () => {
       {/* Pagination */}
       <TablePagination
         component="div"
-        count={filteredCourses?.length || 0}
+        count={total}
         rowsPerPage={rowsPerPage}
         page={page}
         onPageChange={handleChangePage}
         onRowsPerPageChange={handleChangeRowsPerPage}
-        rowsPerPageOptions={[5, 10, 25]}
+        rowsPerPageOptions={[10, 25, 50]}
       />
+
+      {/* Review Course Modal */}
+      {openReview && courseData && (
+        <ReviewCourseModal 
+          courseData={courseData} 
+          setOpen={setOpenReview} 
+          open={openReview} 
+        />
+      )}
     </Box>
   );
 };

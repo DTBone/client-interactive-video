@@ -46,22 +46,6 @@ function Header({ isLogin, user, setSearch }) {
         isLogin = true;
     }
 
-    if (!user && localStorage.getItem("user")) {
-        user = JSON.parse(localStorage.getItem('user'));
-
-    }
-    else {
-        user =
-        {
-            username: 'Guest',
-            email: '',
-            profile: {
-                picture: ''
-            },
-
-        }
-    }
-
 
     const handleClick = () => {
         window.location.href = '/homeuser';

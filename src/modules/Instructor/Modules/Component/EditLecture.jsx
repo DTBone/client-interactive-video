@@ -554,11 +554,9 @@ const EditLecture = ({ moduleItem }) => {
             // Add cache control to prevent caching issues
             const response = await fetch(url, {
                 headers: {
-                    'Cache-Control': 'no-cache, no-store, must-revalidate',
-                    'Pragma': 'no-cache',
-                    'Expires': '0'
-                },
-                credentials: 'include' // Include credentials if needed for auth
+                    'Content-Type': 'video/mp4',
+                    'Access-Control-Allow-Origin': '*',
+                }
             });
             
             if (!response.ok) {
@@ -1061,7 +1059,7 @@ const EditLecture = ({ moduleItem }) => {
                                                 ref={videoRef}
                                                 controls
                                                 key={videoKey}
-                                                src={videoPreview}
+                                                src={videoPreview?.toString()}
                                                 onLoadedMetadata={handleVideoLoad}
                                                 onTimeUpdate={handleTimeUpdate}
                                             >

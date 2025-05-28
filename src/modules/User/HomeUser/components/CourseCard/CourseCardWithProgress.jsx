@@ -71,7 +71,7 @@ const CourseCardWithProgress = ({ course }) => {
                     onClick={() => navigate(`/learns/${course?._id}`)}
                     sx={{ borderRadius: 3, fontWeight: 600 }}
                 >
-                    Tiếp tục học
+                    Continue Learning
                 </Button>
             </CardActions>
         </Card>
