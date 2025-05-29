@@ -15,6 +15,7 @@ import axios from "axios";
 import { useOutletContext } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import {
+  getModuleItemProgress,
   getProgress,
   updateSupplementProgress,
 } from "~/store/slices/Progress/action.js";
@@ -22,11 +23,13 @@ import { motion } from "framer-motion"; // You'll need to install framer-motion
 
 const Supplement = () => {
   const location = useLocation();
-  const { module, item } = location.state || {};
+  const { item } = location.state || {};
   const dispatch = useDispatch();
   const [loading, setLoading] = useState(false);
   const [pdfUrl, setPdfUrl] = useState(null);
   const { onQuizSubmit } = useOutletContext();
+  const module = location.state?.module;
+  const course = useSelector((state) => state.course.currentCourse);
   //const progress = useSelector((state) => state.progress.progress);
 
   // New state for enhanced UI
@@ -39,9 +42,10 @@ const Supplement = () => {
   const requireMinimumTime = 10000; // 10 seconds minimum time to complete the supplement
   const [timeSpent, setTimeSpent] = useState(0);
   const [startTime, setStartTime] = useState(Date.now());
-
+  const moduleProgress = useSelector(
+    (state) => state.module.currentModule?.data?.progress
+  );
   const { progress } = useSelector((state) => state.progress);
-  const course = useSelector((state) => state.course.currentCourse);
 
   const apiCallRef = useRef(false);
   useEffect(() => {
@@ -51,6 +55,29 @@ const Supplement = () => {
     }, 1000); // Update every second
     return () => clearInterval(timeTracker);
   }, []);
+
+  // Load all module item statuses
+  const loadAllModuleItemStatuses = async () => {
+    const statusPromises = module.moduleItems.map(async (item) => {
+      try {
+        await dispatch(getModuleItemProgress({ moduleItemId: item?._id }));
+        await dispatch(getProgress({ courseId: course?._id }));
+      } catch (error) {
+        console.error(`Error loading status for item ${item?._id}:`, error);
+      }
+    });
+
+    await Promise.all(statusPromises);
+  };
+
+  useEffect(() => {
+    loadAllModuleItemStatuses();
+    console.log("progress", progress);
+    console.log("module", module);
+    console.log("course", course);
+    console.log("item", item);
+    console.log("moduleProgress supplement", moduleProgress);
+  }, [dispatch, module, course]);
 
   const handleCompleteSupplement = useCallback(async () => {
     // Đảm bảo lấy đúng ID của supplement hiện tại
@@ -64,13 +91,14 @@ const Supplement = () => {
     }
     console.log("progress", progress);
     console.log("Sending update for supplement ID:", currentItemId.toString());
+    console.log("moduleProgress supplement", moduleProgress);
 
     try {
-      if (progress) {
+      if (moduleProgress && moduleProgress !== null) {
         apiCallRef.current = true; // Set flag to prevent multiple calls
         const rep = await dispatch(
           updateSupplementProgress({
-            progressId: progress?._id,
+            progressId: moduleProgress?._id,
             progressSupplement: {
               status: "completed",
               supplementId: currentItemId,
@@ -101,7 +129,7 @@ const Supplement = () => {
       apiCallRef.current = false; // Reset flag on error
       console.error("Error in handleCompleteSupplement:", error);
     }
-  }, [item, dispatch, onQuizSubmit]);
+  }, [item, dispatch, onQuizSubmit, moduleProgress]);
   useEffect(() => {
     apiCallRef.current = false; // Reset flag on every render
     // Check if progress already exists and is completed

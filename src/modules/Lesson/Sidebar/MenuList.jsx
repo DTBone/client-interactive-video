@@ -20,6 +20,7 @@ import {
 } from "~/store/slices/Progress/action";
 import { getAllModules } from "~/store/slices/Module/action";
 import { ArrowForward } from "@mui/icons-material";
+import { useCallback } from "react";
 
 const MenuList = ({ module }) => {
   const { itemId } = useParams();
@@ -165,6 +166,16 @@ const MenuList = ({ module }) => {
       });
     }
   };
+  const fetch = useCallback(async () => {
+    loadAllModuleItemStatuses();
+    //dispatch(getModuleItemProgress({ moduleItemId: item?._id }));
+    dispatch(getProgress({ courseId: course?._id }));
+    console.log("moduleProgress fetch menuList", moduleProgress);
+  }, [dispatch, module, course, moduleProgress]);
+
+  useEffect(() => {
+    fetch();
+  }, [fetch, dispatch, module, course, moduleProgress]);
 
   return (
     <div
