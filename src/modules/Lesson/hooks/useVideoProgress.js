@@ -1,526 +1,530 @@
-
 import { useState, useRef, useEffect, useCallback } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import debounce from "lodash/debounce";
+import throttle from "lodash/throttle";
+import {
+  updateLocalProgress as updateLocalProgressAction,
+  markMilestoneSent,
+  resetVideoProgress,
+  selectVideoProgress,
+  selectVideoLoading,
+  selectVideoError,
+  selectSentMilestones,
+  selectProgressMilestones,
+} from "~/store/slices/Progress/progressSlice.js";
+
+import { updateVideoProgress } from "~/store/slices/Progress/action.js";
+
 /**
- * Enhanced hook for managing video progress with improved analytics
- * @param {Object} options - Hook options
- * @param {React.MutableRefObject} options.videoRef - Reference to video element
- * @param {string|number} options.moduleItemId - Module item ID
- * @param {string|number} options.videoId - Video ID
- * @param {Function} options.onCompleteVideo - Function to mark video as completed
+ * OPTIMIZED VIDEO PROGRESS TRACKING HOOK
+ * 
+ * COMPLETED VIDEO HANDLING:
+ * - Khi video đã completed (100%), ngăn chặn mọi progress updates
+ * - Preserve completion state (100%, status: "completed") 
+ * - Cho phép xem lại từ đầu mà không làm mất trạng thái completed
+ * - Không auto-seek về cuối video khi completed để user có thể review
+ * 
+ * OPTIMIZATION FEATURES:
+ * 1. THROTTLE API CALLS: Sử dụng throttle 1s cho timeupdate events
+ * 2. MILESTONE-BASED UPDATES: Chỉ gửi API khi đạt mốc 10%, 25%, 50%... 
+ * 3. SEPARATED LOGIC: Tách logic local update và server update
+ * 4. REF-BASED TRACKING: Sử dụng useRef thay vì state để tránh re-render
+ * 5. OPTIMIZED DEPENDENCIES: Loại bỏ dependencies gây loop trong useCallback
  */
+
 const useVideoProgress = ({
   videoRef,
-  moduleItemId,
+  progress,
   videoId,
-  onCompleteVideo,
+  progressId, // ID của progress record
+  onTimeUpdate, // Callback để đồng bộ với component cha
 }) => {
-  // Basic progress state
-  const [progressVideo, setProgressVideo] = useState({
-    watchedDuration: 0, // Current position in seconds
-    totalDuration: 0, // Total video duration
-    lastPosition: 0, // Last watched position
-    completionPercentage: 0, // Completion percentage (0-100)
-    notes: [], // User notes (if any)
-    // Enhanced analytics data
-    viewingSessions: [], // Array of viewing session data
-    playbackEvents: [], // Track play/pause/seek events
-    interactionPoints: [], // Points where user interacted with video
-    deviceInfo: { // Device information
-      screenSize: `${window.innerWidth}x${window.innerHeight}`,
-      userAgent: navigator.userAgent,
-      connectionType: navigator.connection ? navigator.connection.effectiveType : 'unknown',
-      deviceType: /Mobi|Android/i.test(navigator.userAgent) ? 'mobile' : 'desktop',
-      browserInfo: detectBrowserInfo(),
-      timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone
-    },
-    watchPercent: {}, // Percentage watched of each video segment (0-25%, 25-50%, etc.)
-    averagePlaybackRate: 1, // Average playback rate
-    
-    // New analytics fields
-    engagementScore: 0, // Score from 0-100 based on interactions and watch percentage
-    watchedSegments: [], // Array of segments watched (start/end times)
-    attentionMetrics: {
-      focusLosses: 0,
-      tabSwitches: 0,
-      lastFocusTime: Date.now()
-    },
-    engagementHotspots: {} // Map of video positions with high engagement
-  });
-  const [lastSyncTimestamp, setLastSyncTimestamp] = useState(Date.now());
-  const [lastPercentage, setLastPercentage] = useState(0);
-  const syncTimeoutRef = useRef(null);
-  const syncRetryTimeoutRef = useRef(null);
-  const currentSessionStartRef = useRef(Date.now());
-  const playbackRatesRef = useRef([]);
-  const segmentWatchTimeRef = useRef({
-    "0-25": 0,
-    "25-50": 0,
-    "50-75": 0,
-    "75-100": 0
-  });
-  const lastPositionRef = useRef(0);
-  const watchedSegmentsRef = useRef([]);
-  const currentSegmentStartRef = useRef(null);
-  const continuousWatchTimeRef = useRef(0);
-  
-  // Detect browser information
-  function detectBrowserInfo() {
-    const userAgent = navigator.userAgent;
-    let browserName = "Unknown";
-    let browserVersion = "";
-    
-    if (userAgent.indexOf("Firefox") > -1) {
-      browserName = "Firefox";
-      browserVersion = userAgent.match(/Firefox\/([0-9.]+)/)[1];
-    } else if (userAgent.indexOf("Edge") > -1) {
-      browserName = "Edge";
-      browserVersion = userAgent.match(/Edge\/([0-9.]+)/)[1];
-    } else if (userAgent.indexOf("Edg") > -1) {
-      browserName = "Edge Chromium";
-      browserVersion = userAgent.match(/Edg\/([0-9.]+)/)[1];
-    } else if (userAgent.indexOf("Chrome") > -1) {
-      browserName = "Chrome";
-      browserVersion = userAgent.match(/Chrome\/([0-9.]+)/)[1];
-    } else if (userAgent.indexOf("Safari") > -1) {
-      browserName = "Safari";
-      browserVersion = userAgent.match(/Version\/([0-9.]+)/)[1];
-    } else if (userAgent.indexOf("MSIE") > -1 || userAgent.indexOf("Trident") > -1) {
-      browserName = "Internet Explorer";
-      browserVersion = userAgent.match(/(?:MSIE |rv:)([0-9.]+)/)[1];
-    }
-    
-    return { name: browserName, version: browserVersion };
-  }
-  // Track when component mounts and page visibility
-  useEffect(() => {
-    // Start a new viewing session
-    currentSessionStartRef.current = Date.now();
-    currentSegmentStartRef.current = null;
-    
-    // Track page visibility changes
-    const handleVisibilityChange = () => {
-      if (document.hidden) {
-        setProgressVideo(prev => ({
-          ...prev,
-          attentionMetrics: {
-            ...prev.attentionMetrics,
-            tabSwitches: prev.attentionMetrics.tabSwitches + 1,
-            lastFocusTime: Date.now()
-          }
-        }));
-        
-        // If we were tracking a segment, end it when losing visibility
-        if (currentSegmentStartRef.current !== null && videoRef.current) {
-          const currentTime = videoRef.current.currentTime;
-          watchedSegmentsRef.current.push({
-            start: currentSegmentStartRef.current,
-            end: currentTime,
-            duration: currentTime - currentSegmentStartRef.current
-          });
-          currentSegmentStartRef.current = null;
-        }
-      } else {
-        // Reset focus time when returning to the page
-        setProgressVideo(prev => ({
-          ...prev,
-          attentionMetrics: {
-            ...prev.attentionMetrics,
-            lastFocusTime: Date.now()
-          }
-        }));
-      }
-    };
-    
-    document.addEventListener("visibilitychange", handleVisibilityChange);
-    return () => {
-      // On unmount, add the current session to sessions array
-      const sessionDuration = Date.now() - currentSessionStartRef.current;
-      if (sessionDuration > 1000) {
-        // Only track sessions longer than 1 second
-        setProgressVideo((prev) => ({
-          ...prev,
-          viewingSessions: [
-            ...prev.viewingSessions,
-            {
-              startTime: currentSessionStartRef.current,
-              endTime: Date.now(),
-              duration: sessionDuration,
-              date: new Date().toISOString(),
-            },
-          ],
-          watchedSegments: [...watchedSegmentsRef.current]
-        }));
-      }
-      
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
-    };
-  }, []);
-  // Clear timeouts in case of unmounting
-  const clearAllTimeouts = () => {
-    if (syncTimeoutRef.current) {
-      clearTimeout(syncTimeoutRef.current);
-    }
-    if (syncRetryTimeoutRef.current) {
-      clearTimeout(syncRetryTimeoutRef.current);
-    }
-  };
-  /**
-   * Add a playback event to the tracking data
-   * @param {string} eventType - Type of event (play, pause, seek)
-   * @param {number} position - Current position in video
-   */
-  const trackPlaybackEvent = useCallback((eventType, position) => {
-    setProgressVideo((prev) => ({
-      ...prev,
-      playbackEvents: [
-        ...prev.playbackEvents,
-        {
-          type: eventType,
-          position: position,
-          timestamp: Date.now(),
-          playbackRate: videoRef.current ? videoRef.current.playbackRate : 1,
-        },
-      ],
-    }));
-    // Track playback rate for average calculation
-    if (videoRef.current) {
-      playbackRatesRef.current.push({
-        rate: videoRef.current.playbackRate,
-        timestamp: Date.now(),
-      });
-    }
-    
-    // When playing, start tracking a new watched segment
-    if (eventType === 'play' && currentSegmentStartRef.current === null) {
-      currentSegmentStartRef.current = position;
-    } 
-    // When pausing or seeking, end the current segment if one is being tracked
-    else if ((eventType === 'pause' || eventType === 'seek') && currentSegmentStartRef.current !== null) {
-      watchedSegmentsRef.current.push({
-        start: currentSegmentStartRef.current,
-        end: position,
-        duration: position - currentSegmentStartRef.current
-      });
-      
-      if (eventType === 'pause') {
-        currentSegmentStartRef.current = null;
-      } else if (eventType === 'seek') {
-        // For seek, start a new segment at the new position
-        currentSegmentStartRef.current = position;
-      }
-    }
-  }, [videoRef]);
-  /**
-   * Track which segments of the video are being watched
-   * @param {number} currentTime - Current video position
-   * @param {number} duration - Total video duration
-   */
-  const trackSegmentWatchTime = useCallback((currentTime, duration) => {
-    if (!duration) return;
-    const currentPercent = Math.floor((currentTime / duration) * 100);
-    let segment = "0-25";
-    if (currentPercent >= 75) segment = "75-100";
-    else if (currentPercent >= 50) segment = "50-75";
-    else if (currentPercent >= 25) segment = "25-50";
-    // Update time spent in this segment
-    segmentWatchTimeRef.current[segment] +=
-      currentTime - lastPositionRef.current;
-    lastPositionRef.current = currentTime;
-    // Calculate continuous watch time (no seeks or pauses)
-    if (currentSegmentStartRef.current !== null) {
-      continuousWatchTimeRef.current += currentTime - lastPositionRef.current;
-    }
-    // Update segment watch data in state periodically
-    const totalTime = Object.values(segmentWatchTimeRef.current).reduce(
-      (a, b) => a + b,
-      0
-    );
-    if (totalTime > 0) {
-      const watchPercent = {};
-      Object.keys(segmentWatchTimeRef.current).forEach((key) => {
-        watchPercent[key] = Math.min(
-          100,
-          Math.round((segmentWatchTimeRef.current[key] / (duration * 0.25)) * 100)
-        );
-      });
-      setProgressVideo((prev) => ({
-        ...prev,
-        watchPercent,
-      }));
-    }
-    
-    // Update engagement score
-    calculateEngagementScore(currentTime, duration);
-  }, []);
-  /**
-   * Calculate user engagement score based on multiple factors
-   * @param {number} currentTime - Current video position
-   * @param {number} duration - Total video duration 
-   */
-  const calculateEngagementScore = useCallback((currentTime, duration) => {
-    if (!duration) return;
-    
-    setProgressVideo(prev => {
-      // Calculate base factors
-      const watchFactors = {
-        // How much of the video is watched (0-40 points)
-        completion: Math.min(40, Math.floor((currentTime / duration) * 40)),
-        
-        // How consistently the user watches without interruption (0-20 points)
-        continuity: Math.min(20, Math.floor((continuousWatchTimeRef.current / duration) * 20)),
-        
-        // How much the user interacts with the video (0-20 points)
-        interaction: Math.min(20, Math.floor(prev.interactionPoints.length / 3)),
-        
-        // How often the user changes the playback speed (0-10 points)
-        speedAdjustment: Math.min(10, playbackRatesRef.current.length * 2),
-        
-        // How evenly the user watches all segments (0-10 points)
-        coverage: calculateCoverageScore(prev.watchPercent)
+  const dispatch = useDispatch();
+
+  // Selectors
+  const videoProgress = useSelector((state) =>
+    selectVideoProgress(state, videoId)
+  );
+  const isLoading = useSelector((state) => selectVideoLoading(state, videoId));
+  const error = useSelector((state) => selectVideoError(state, videoId));
+  const sentMilestones = useSelector((state) =>
+    selectSentMilestones(state, videoId)
+  );
+  const progressMilestones = useSelector(selectProgressMilestones);
+
+  // Local state
+  const [isPlayingProgress, setisPlayingProgress] = useState(false);
+  const [hasStarted, setHasStarted] = useState(false);
+
+  // Refs for tracking and optimization
+  const intervalRef = useRef(null);
+  const startTimeRef = useRef(null);
+  const lastSyncTimeRef = useRef(Date.now());
+  const lastUpdateTimeRef = useRef(0);
+  const lastMilestoneCheckRef = useRef(0);
+  const progressDataRef = useRef(null);
+
+  // Refs to prevent duplicate API calls
+  const pendingApiCallsRef = useRef(new Set()); // Track pending API calls
+  const lastApiCallTimeRef = useRef({}); // Track last call time for each milestone
+  const API_COOLDOWN = 2000; // 2 seconds cooldown between same type calls
+
+  // Hàm tính toán tiến độ - tối ưu dependencies
+  const calculateProgress = useCallback(() => {
+    if (!videoRef.current) return null;
+
+    const video = videoRef.current;
+    const currentTime = video.currentTime;
+    const duration = video.duration;
+
+    if (!duration || duration === 0) return null;
+
+    // Sử dụng ref để lấy timeSpent thay vì dependency
+    const currentVideoProgress = progressDataRef.current || videoProgress;
+    const timeSpent = currentVideoProgress?.timeSpent || 0;
+
+    let completionPercentage = Math.round((currentTime / duration) * 100);
+
+    // Nếu progress đã completed, luôn giữ ở 100% và lastPosition ở cuối video
+    if (progress?.status === "completed") {
+      completionPercentage = 100;
+      const progressData = {
+        completionPercentage: 100,
+        watchedDuration: duration, // Full duration khi completed
+        totalDuration: duration,
+        lastPosition: duration, // Vị trí cuối video
+        timeSpent,
+        videoId,
+        status: "completed"
       };
-      
-      // Calculate total engagement score
-      const totalScore = Object.values(watchFactors).reduce((sum, val) => sum + val, 0);
-      
-      // Track engagement hotspots
-      const roundedTime = Math.floor(currentTime / 5) * 5;  // Group by 5-second chunks
-      const hotspotKey = `t_${roundedTime}`;
-      
-      const updatedHotspots = {...prev.engagementHotspots};
-      updatedHotspots[hotspotKey] = (updatedHotspots[hotspotKey] || 0) + 1;
-      
-      return {
-        ...prev,
-        engagementScore: totalScore,
-        engagementHotspots: updatedHotspots
-      };
-    });
-  }, []);
-  
-  /**
-   * Calculate how evenly the user has watched all segments of the video
-   * @param {Object} watchPercent - Object with segment watch percentages 
-   * @returns {number} Coverage score between 0-10
-   */
-  const calculateCoverageScore = (watchPercent) => {
-    if (!watchPercent || Object.keys(watchPercent).length === 0) return 0;
-    
-    const percentValues = Object.values(watchPercent);
-    const avgPercent = percentValues.reduce((sum, val) => sum + val, 0) / percentValues.length;
-    
-    // Higher score for more evenly distributed watching
-    const variance = percentValues.reduce((sum, val) => sum + Math.pow(val - avgPercent, 2), 0) / percentValues.length;
-    
-    // Lower variance means more even coverage
-    return Math.min(10, Math.max(0, 10 - Math.sqrt(variance) / 10));
-  };
-  /**
-   * Calculate average playback rate
-   */
-  const calculateAveragePlaybackRate = useCallback(() => {
-    if (playbackRatesRef.current.length === 0) return 1;
-    const sum = playbackRatesRef.current.reduce(
-      (acc, item) => acc + item.rate,
-      0
-    );
-    return sum / playbackRatesRef.current.length;
-  }, []);
-  /**
-   * Synchronize progress with server
-   * @param {Object} progressData - Progress data to sync
-   */
-  const syncProgressToServer = useCallback(async (progressData) => {
-    if (!videoId || !moduleItemId || progressData.completionPercentage < 1)
-      return;
-    try {
-      // Calculate average playback rate before sending
-      const averagePlaybackRate = calculateAveragePlaybackRate();
-      // Prepare data summary to reduce payload size
-      const analyticsSummary = {
-        sessions: {
-          count: progressData.viewingSessions?.length || 0,
-          totalDuration: progressData.viewingSessions?.reduce((acc, session) => acc + session.duration, 0) || 0,
-          lastSessionStart: progressData.viewingSessions?.length > 0 ? 
-            progressData.viewingSessions[progressData.viewingSessions.length - 1].startTime : null
-        },
-        interactions: {
-          total: progressData.interactionPoints?.length || 0,
-          byType: progressData.interactionPoints?.reduce((acc, point) => {
-            acc[point.type] = (acc[point.type] || 0) + 1;
-            return acc;
-          }, {}) || {}
-        },
-        playbackEvents: {
-          plays: progressData.playbackEvents?.filter(e => e.type === 'play').length || 0,
-          pauses: progressData.playbackEvents?.filter(e => e.type === 'pause').length || 0,
-          seeks: progressData.playbackEvents?.filter(e => e.type === 'seek').length || 0,
-          lastEvent: progressData.playbackEvents?.length > 0 ? 
-            progressData.playbackEvents[progressData.playbackEvents.length - 1].type : null
-        },
-        segments: progressData.watchPercent || {},
-        engagementScore: progressData.engagementScore || 0,
-        engagement: {
-          hotspots: Object.entries(progressData.engagementHotspots || {})
-            .sort((a, b) => b[1] - a[1])
-            .slice(0, 5) // Top 5 hotspots
-            .map(([time, count]) => ({
-              time: time.replace('t_', ''),
-              count
-            }))
-        },
-        attention: {
-          tabSwitches: progressData.attentionMetrics?.tabSwitches || 0,
-          focusLosses: progressData.attentionMetrics?.focusLosses || 0
-        },
-        watchedSegmentCount: progressData.watchedSegments?.length || 0,
-        device: progressData.deviceInfo || {},
-        averagePlaybackRate
-      };
-      // Call API to sync progress with enhanced data
-      await onCompleteVideo({
-        ...progressData,
-        videoId: videoId,
-        analyticsSummary,
-        sentAt: Date.now()
-      });
-      // Update time and percentage of last sync
-      setLastSyncTimestamp(Date.now());
-      setLastPercentage(progressData.completionPercentage);
-      console.log("Progress successfully synced to server:", progressData);
-    } catch (error) {
-      console.error("Error syncing progress:", error);
-      // Retry after 1 minute if failed
-      if (syncRetryTimeoutRef.current) {
-        clearTimeout(syncRetryTimeoutRef.current);
-      }
-      syncRetryTimeoutRef.current = setTimeout(() => {
-        syncProgressToServer(progressData);
-      }, 60000);
+
+      // Cache progress data
+      progressDataRef.current = progressData;
+      return progressData;
     }
-  }, [videoId, moduleItemId, onCompleteVideo, calculateAveragePlaybackRate]);
-  // Debounced version to avoid frequent calls
-  const debouncedSyncProgressToServer = debounce((progressData) => {
-    syncProgressToServer(progressData);
-  }, 1000);
-  /**
-   * Update video progress with enhanced analytics
-   */
-  const updateVideoProgress = useCallback(() => {
-    if (!videoRef.current) return;
-    const currentTime = videoRef.current.currentTime;
-    const videoDuration = videoRef.current.duration;
-    if (!videoDuration) return;
-    // Calculate completion percentage
-    const percentage = Math.floor((currentTime / videoDuration) * 100);
-    // Track segment watch time
-    trackSegmentWatchTime(currentTime, videoDuration);
-    // Update progress state with enhanced data
-    const updatedProgress = {
+
+    const progressData = {
+      completionPercentage,
       watchedDuration: currentTime,
-      totalDuration: videoDuration,
+      totalDuration: duration,
       lastPosition: currentTime,
-      completionPercentage: percentage,
-      notes: progressVideo?.notes || [],
-      viewingSessions: progressVideo?.viewingSessions || [],
-      playbackEvents: progressVideo?.playbackEvents || [],
-      interactionPoints: progressVideo?.interactionPoints || [],
-      deviceInfo: progressVideo?.deviceInfo || {
-        screenSize: `${window.innerWidth}x${window.innerHeight}`,
-        userAgent: navigator.userAgent,
-        connectionType: navigator.connection ? navigator.connection.effectiveType : 'unknown',
-        deviceType: /Mobi|Android/i.test(navigator.userAgent) ? 'mobile' : 'desktop',
-        browserInfo: detectBrowserInfo(),
-        timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone
-      },
-      watchPercent: progressVideo?.watchPercent || {},
-      engagementScore: progressVideo?.engagementScore || 0,
-      engagementHotspots: progressVideo?.engagementHotspots || {},
-      attentionMetrics: progressVideo?.attentionMetrics || {
-        focusLosses: 0,
-        tabSwitches: 0,
-        lastFocusTime: Date.now()
-      },
-      watchedSegments: watchedSegmentsRef.current,
-      averagePlaybackRate: calculateAveragePlaybackRate(),
+      timeSpent,
+      videoId,
     };
-    setProgressVideo(updatedProgress);
-    // Save progress to localStorage for offline recovery
-    localStorage.setItem(
-      `video_progress_${videoId}`,
-      JSON.stringify({
-        percentage,
-        currentTime,
-        timestamp: Date.now(),
-        moduleItemId,
-        deviceInfo: updatedProgress.deviceInfo,
-        engagementScore: updatedProgress.engagementScore
-      })
-    );
-    // Improved logic for when to send progress updates to server
-    const now = Date.now();
-    const shouldSync =
-      now - lastSyncTimestamp > 60000 || // Only send every 60 seconds instead of 30 seconds
-      Math.abs(percentage - lastPercentage) >= 20 || // Major change (20% instead of 10%)
-      percentage >= 95 || // Near completion
-      percentage === 100; // Video completed
-    // Use debounce to avoid too many calls
-    if (shouldSync) {
-      if (syncTimeoutRef.current) {
-        clearTimeout(syncTimeoutRef.current);
+
+    // Cache progress data
+    progressDataRef.current = progressData;
+    return progressData;
+  }, [videoId]); // Chỉ dependency cần thiết
+
+  // Debounced function để cập nhật local progress - tăng delay
+  const debouncedLocalUpdate = useCallback(
+    debounce((progressData) => {
+      if (progressData) {
+        dispatch(
+          updateLocalProgressAction({
+            videoId,
+            progress: progressData,
+          })
+        );
       }
-      syncTimeoutRef.current = setTimeout(() => {
-        debouncedSyncProgressToServer(updatedProgress);
-      }, 1000); // Delay 1 second before sending
+    }, 1000), // Tăng từ 500ms lên 1000ms
+    [dispatch, videoId]
+  );
+
+  // Hàm gửi milestone lên server - tối ưu dependencies
+  const sendMilestoneUpdate = useCallback(
+    async (progressData, milestone) => {
+      // Kiểm tra progressId hợp lệ
+      if (!progressId) {
+        console.warn("progressId is not available, skipping update");
+        return;
+      }
+
+      // Tạo unique key cho API call
+      const callKey = `${videoId}-${milestone}`;
+      const now = Date.now();
+
+      // Kiểm tra nếu đang có pending call cho milestone này
+      if (pendingApiCallsRef.current.has(callKey)) {
+        console.log(`API call for ${milestone} already pending, skipping`);
+        return;
+      }
+
+      // Kiểm tra cooldown period (trừ first-time milestones)
+      const allowedRepeatedUpdates = ["periodic", "position", "started"];
+      const lastCallTime = lastApiCallTimeRef.current[callKey] || 0;
+
+      if (allowedRepeatedUpdates.includes(milestone) && now - lastCallTime < API_COOLDOWN) {
+        console.log(`Cooldown period active for ${milestone}, skipping (${now - lastCallTime}ms ago)`);
+        return;
+      }
+
+      // Cho phép các loại update đặc biệt luôn được gửi
+      const currentSentMilestones = sentMilestones;
+
+      // Kiểm tra milestone đã gửi (chỉ cho milestones phần trăm)
+      if (!allowedRepeatedUpdates.includes(milestone) && currentSentMilestones.includes(milestone)) {
+        console.log(`Milestone ${milestone}% already sent, skipping`);
+        return;
+      }
+
+      // Đánh dấu API call đang pending
+      pendingApiCallsRef.current.add(callKey);
+      lastApiCallTimeRef.current[callKey] = now;
+
+      try {
+        console.log(`Sending milestone update: ${milestone}`, {
+          progressId,
+          progressData,
+        });
+
+        await dispatch(
+          updateVideoProgress({
+            progressId,
+            progressVideo: {
+              ...progressData,
+              milestone, // Đánh dấu milestone này
+              updatedAt: now,
+            },
+          })
+        ).unwrap();
+
+        // Đánh dấu milestone đã gửi (chỉ cho milestones phần trăm, không cho periodic)
+        if (!allowedRepeatedUpdates.includes(milestone)) {
+          dispatch(markMilestoneSent({ videoId, milestone }));
+        }
+
+        console.log(
+          `Milestone ${milestone}% sent successfully for video ${videoId}`
+        );
+      } catch (error) {
+        console.error(`Failed to send milestone ${milestone}%:`, error);
+      } finally {
+        // Xóa pending call
+        pendingApiCallsRef.current.delete(callKey);
+      }
+    },
+    [dispatch, progressId, videoId, sentMilestones, API_COOLDOWN]
+  );
+
+  // Logic kiểm tra và gửi milestones - tách riêng
+  const checkAndSendMilestones = useCallback((progressData) => {
+    // Ngăn chặn gửi milestone nếu progress đã completed (trừ khi đang complete lần đầu)
+    if (progress?.status === "completed" && progressData.completionPercentage !== 100) {
+      console.log("Video already completed, skipping milestone updates");
+      return;
     }
-  }, [
-    videoRef,
-    videoId, 
-    moduleItemId, 
-    progressVideo,
-    calculateAveragePlaybackRate,
-    trackSegmentWatchTime,
-    lastSyncTimestamp,
-    lastPercentage,
-    debouncedSyncProgressToServer
-  ]);
-  // Add a method to record user interactions with the video
-  const recordInteraction = useCallback((interactionType, data = {}) => {
-    setProgressVideo((prev) => {
-      // Calculate hotspot for this interaction
-      let updatedHotspots = {...prev.engagementHotspots};
-      
-      if (videoRef.current) {
-        const currentTime = videoRef.current.currentTime;
-        const roundedTime = Math.floor(currentTime / 5) * 5;
-        const hotspotKey = `t_${roundedTime}`;
-        updatedHotspots[hotspotKey] = (updatedHotspots[hotspotKey] || 0) + 2; // Interactions count double
+
+    const currentPercentage = progressData.completionPercentage;
+
+    // Gửi update ban đầu khi vừa bắt đầu xem (0-5% đầu tiên)
+    if (currentPercentage > 0 && currentPercentage <= 5 && hasStarted && !sentMilestones.includes("started")) {
+      console.log("Sending initial video start update");
+      sendMilestoneUpdate(progressData, "started");
+    }
+
+    // Kiểm tra milestone theo phần trăm - chỉ gửi khi đạt mốc 10%, 25%, 50%...
+    const milestoneToSend = progressMilestones?.find(
+      (milestone) =>
+        currentPercentage >= milestone && !sentMilestones.includes(milestone)
+    );
+
+    if (milestoneToSend) {
+      console.log(`Sending milestone update: ${milestoneToSend}%`);
+      sendMilestoneUpdate(progressData, milestoneToSend);
+    }
+
+    // Gửi update định kỳ mỗi 60 giây khi đang phát (tăng từ 30s lên 60s để giảm tần suất hơn nữa)
+    const now = Date.now();
+    if (isPlayingProgress && now - lastSyncTimeRef.current >= 60000) {
+      console.log("Sending periodic update");
+      sendMilestoneUpdate(progressData, "periodic");
+      lastSyncTimeRef.current = now;
+    }
+
+    // Gửi update mỗi khi currentTime thay đổi đáng kể (mỗi 120 giây video thay vì 60s)
+    const currentVideoProgress = progressDataRef.current;
+    const lastReportedTime = currentVideoProgress?.lastPosition || 0;
+    if (Math.abs(progressData.lastPosition - lastReportedTime) >= 120) {
+      console.log("Sending position update due to significant time change");
+      sendMilestoneUpdate(progressData, "position");
+    }
+  }, [hasStarted, isPlayingProgress, progressMilestones, sentMilestones, sendMilestoneUpdate]);
+
+  // Hàm cập nhật local progress - tách riêng khỏi server logic
+  const updateLocalProgress = useCallback(() => {
+    // Kiểm tra xem progress đã completed chưa - nếu rồi thì không cập nhật gì thêm
+    if (progress?.status === "completed") {
+      console.log("Video already completed, skipping progress updates");
+      return;
+    }
+
+    const now = Date.now();
+
+    // Chỉ cập nhật local mỗi 2 giây để giảm tần suất hơn nữa
+    if (now - lastUpdateTimeRef.current < 2000) return;
+    lastUpdateTimeRef.current = now;
+
+    const progressData = calculateProgress();
+    if (!progressData) return;
+
+    // Nếu video đã đạt 100% HOẶC gần hết (95%+) và progress hiện tại chưa completed, đánh dấu completed
+    // Điều này xử lý trường hợp video có thể không load được 100% do buffering
+    const isNearlyComplete = progressData.completionPercentage >= 95;
+    const isAtEnd = Math.abs(progressData.lastPosition - progressData.totalDuration) <= 1; // trong vòng 1 giây cuối
+
+    if ((progressData.completionPercentage >= 100 || isNearlyComplete || isAtEnd) && progress?.status !== "completed") {
+      progressData.completionPercentage = 100; // Đảm bảo exactly 100%
+      console.log(`Video reached completion (${progressData.completionPercentage >= 100 ? '100%' : 'nearly complete at ' + progressData.completionPercentage + '%'}), marking as completed`);
+
+      // Cập nhật local với trạng thái completed
+      debouncedLocalUpdate({
+        ...progressData,
+        completionPercentage: 100,
+        watchedDuration: progressData.totalDuration, // Full duration
+        lastPosition: progressData.totalDuration, // End position
+        status: "completed"
+      });
+
+      // Gọi callback với completed status
+      if (onTimeUpdate) {
+        onTimeUpdate({
+          ...progressData,
+          completionPercentage: 100,
+          watchedDuration: progressData.totalDuration,
+          lastPosition: progressData.totalDuration,
+          status: "completed"
+        });
       }
-      
-      return {
-        ...prev,
-        interactionPoints: [
-          ...prev.interactionPoints,
-          {
-            type: interactionType, // e.g., "seek", "speed-change", "volume-change", "fullscreen"
-            timestamp: Date.now(),
-            position: videoRef.current ? videoRef.current.currentTime : 0,
-            data: data,
-          },
-        ],
-        engagementHotspots: updatedHotspots
-      };
-    });
-  }, [videoRef]);
+
+      // Gửi milestone 100% cuối cùng
+      checkAndSendMilestones(progressData);
+      return;
+    }
+
+    // Cập nhật thời gian đã xem nếu video đang phát
+    if (isPlayingProgress && startTimeRef.current) {
+      const timeSpentInThisSession = Math.floor(
+        (now - startTimeRef.current) / 1000
+      );
+      const currentVideoProgress = progressDataRef.current || videoProgress;
+      progressData.timeSpent =
+        (currentVideoProgress?.timeSpent || 0) + timeSpentInThisSession;
+      startTimeRef.current = now;
+    }
+
+    // Cập nhật local state với debounce
+    debouncedLocalUpdate(progressData);
+
+    // Gọi callback để đồng bộ với component cha
+    if (onTimeUpdate) {
+      onTimeUpdate(progressData);
+    }
+
+    // Kiểm tra milestone mỗi 10 giây để giảm tần suất kiểm tra hơn nữa
+    if (now - lastMilestoneCheckRef.current >= 10000) {
+      checkAndSendMilestones(progressData);
+      lastMilestoneCheckRef.current = now;
+    }
+  }, []); // Loại bỏ tất cả dependencies gây loop
+
+  // Throttled function để cập nhật progress - tăng interval
+  const throttledUpdateProgress = useCallback(
+    throttle(() => {
+      updateLocalProgress();
+    }, 2000), // Tăng từ 1000ms lên 2000ms - chỉ chạy tối đa 1 lần/2 giây
+    [updateLocalProgress]
+  );
+
+  // Event handlers
+  const handlePlay = useCallback(() => {
+    setisPlayingProgress(true);
+    if (!hasStarted) {
+      setHasStarted(true);
+      startTimeRef.current = Date.now();
+    } else {
+      startTimeRef.current = Date.now();
+    }
+  }, [hasStarted]);
+
+  const handlePause = useCallback(() => {
+    setisPlayingProgress(false);
+    updateLocalProgress(); // Cập nhật khi pause
+  }, [updateLocalProgress]);
+
+  const handleTimeUpdate = useCallback(() => {
+    throttledUpdateProgress();
+  }, [throttledUpdateProgress]);
+
+  const handleEnded = useCallback(() => {
+    setisPlayingProgress(false);
+
+    // Khi video ended, tự động mark là completed bất kể percentage hiện tại
+    // Điều này xử lý trường hợp duration không chính xác hoặc video buffer issues
+    if (progress?.status !== "completed") {
+      console.log("Video ended event - marking as completed");
+
+      const video = videoRef.current;
+      if (video) {
+        const finalProgressData = {
+          completionPercentage: 100,
+          watchedDuration: video.duration || 0,
+          totalDuration: video.duration || 0,
+          lastPosition: video.duration || 0,
+          timeSpent: (progressDataRef.current?.timeSpent || 0),
+          videoId,
+          status: "completed"
+        };
+
+        // Cập nhật local với trạng thái completed
+        dispatch(
+          updateLocalProgressAction({
+            videoId,
+            progress: finalProgressData,
+          })
+        );
+
+        // Gọi callback với completed status
+        if (onTimeUpdate) {
+          onTimeUpdate(finalProgressData);
+        }
+
+        // Gửi milestone 100% cuối cùng
+        if (progressId) {
+          sendMilestoneUpdate(finalProgressData, 100);
+        }
+      }
+    } else {
+      // Nếu đã completed rồi, chỉ cần update local progress
+      updateLocalProgress();
+    }
+  }, [updateLocalProgress, progress?.status, videoId, onTimeUpdate, dispatch, progressId, sendMilestoneUpdate]);
+
+  const handleLoadedMetadata = useCallback(() => {
+    // Reset khi load video mới
+    if (videoProgress && !videoProgress.totalDuration) {
+      const video = videoRef.current;
+      if (video && video.duration) {
+        dispatch(
+          updateLocalProgressAction({
+            videoId,
+            progress: {
+              totalDuration: video.duration,
+              lastPosition: videoProgress.lastPosition || 0,
+            },
+          })
+        );
+
+        // Chỉ seek đến vị trí cuối cùng nếu video chưa completed và có lastPosition
+        // Nếu đã completed, để user tự chọn xem từ đầu hay tiếp tục
+        if (progress?.status !== "completed" && videoProgress.lastPosition > 0) {
+          video.currentTime = videoProgress.lastPosition;
+          console.log(`Resuming video at ${videoProgress.lastPosition}s`);
+        } else if (progress?.status === "completed") {
+          console.log("Video completed - starting from beginning for review");
+          video.currentTime = 0; // Bắt đầu từ đầu khi xem lại video completed
+        }
+      }
+    }
+  }, [dispatch, videoId, videoProgress, videoRef]);
+
+  // Setup event listeners
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    video.addEventListener("play", handlePlay);
+    video.addEventListener("pause", handlePause);
+    video.addEventListener("timeupdate", handleTimeUpdate);
+    video.addEventListener("ended", handleEnded);
+    video.addEventListener("loadedmetadata", handleLoadedMetadata);
+
+    return () => {
+      video.removeEventListener("play", handlePlay);
+      video.removeEventListener("pause", handlePause);
+      video.removeEventListener("timeupdate", handleTimeUpdate);
+      video.removeEventListener("ended", handleEnded);
+      video.removeEventListener("loadedmetadata", handleLoadedMetadata);
+    };
+  }, [
+    handlePlay,
+    handlePause,
+    handleTimeUpdate,
+    handleEnded,
+    handleLoadedMetadata,
+    videoRef,
+  ]);
+
+  // Sync progressDataRef with videoProgress
+  useEffect(() => {
+    if (videoProgress) {
+      progressDataRef.current = videoProgress;
+    }
+  }, [videoProgress]);
+
+  // Cleanup khi unmount
+  useEffect(() => {
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+      // Gửi update cuối cùng khi component unmount
+      if (isPlayingProgress) {
+        updateLocalProgress();
+      }
+    };
+  }, [isPlayingProgress, updateLocalProgress]);
+
+  // Public methods
+  const resetProgress = useCallback(() => {
+    dispatch(resetVideoProgress({ videoId }));
+    setHasStarted(false);
+    setisPlayingProgress(false);
+    startTimeRef.current = null;
+    progressDataRef.current = null;
+    lastUpdateTimeRef.current = 0;
+    lastMilestoneCheckRef.current = 0;
+
+    // Clear API call tracking
+    pendingApiCallsRef.current.clear();
+    lastApiCallTimeRef.current = {};
+    lastSyncTimeRef.current = Date.now();
+
+    console.log("Progress reset - cleared all tracking data");
+  }, [dispatch, videoId]);
+
+  const forceSync = useCallback(() => {
+    const progressData = calculateProgress();
+    if (progressData && progressId) {
+      return sendMilestoneUpdate(progressData, "manual");
+    }
+  }, [calculateProgress, progressId, sendMilestoneUpdate]);
+
   return {
-    progressVideo,
-    setProgressVideo,
-    syncProgressToServer,
-    debouncedSyncProgressToServer,
-    updateVideoProgress,
-    clearAllTimeouts,
-    trackPlaybackEvent,
-    recordInteraction,
+    // State
+    videoProgress,
+    isLoading,
+    error,
+    isPlayingProgress,
+    hasStarted,
+
+    // Progress info
+    completionPercentage: videoProgress?.completionPercentage || 0,
+    watchedDuration: videoProgress?.watchedDuration || 0,
+    totalDuration: videoProgress?.totalDuration || 0,
+    timeSpent: videoProgress?.timeSpent || 0,
+    lastPosition: videoProgress?.lastPosition || 0,
+
+    // Milestone info
+    sentMilestones,
+    progressMilestones,
+
+    // Methods
+    resetProgress,
+    forceSync,
+    updateProgress: updateLocalProgress,
   };
 };
+
 export default useVideoProgress;

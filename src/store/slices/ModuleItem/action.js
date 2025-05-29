@@ -178,18 +178,18 @@ export const editProgrammingByItemId = createAsyncThunk(
     }
 )
 
-export const createNewInteractiveQuestion = createAsyncThunk(
-    'module/moduleItem/createNewQuestionInteractive',
-    async ({ moduleItemId, currentQuestion, videoId, selectedAnswer }, { rejectWithValue }) => {
-        console.log('questionData', currentQuestion)
+export const preloadInteractiveQuestion = createAsyncThunk(
+    'module/moduleItem/preloadInteractiveQuestion',
+    async ({ moduleItemId, videoId }, { rejectWithValue }) => {
+
         console.log('videoId', videoId)
         console.log('moduleItemId', moduleItemId)
-        console.log('selectedAnswer', selectedAnswer)
+
         try {
-            const { data } = await axiosInstance.post(`/moduleitem/lecture/${moduleItemId}/interactive`,
-                currentQuestion,
+            const { data } = await axiosInstance.post(`/moduleitem/lecture/${videoId}/interactive`,
+                
                 {
-                    params: { videoId, selectedAnswer }
+                    params: { videoId }
                 });
             return data;
         } catch (error) {
@@ -197,3 +197,20 @@ export const createNewInteractiveQuestion = createAsyncThunk(
         }
     }
 )
+
+export const updateInteractiveQuestion = createAsyncThunk(
+    'progress/updateInteractiveQuestion',
+    async ({ moduleItemId, currentQuestion, selectedAnswer, status, videoId }, { rejectWithValue }) => {
+        try {
+            const res = await axiosInstance.put(`/moduleitem/lecture/${moduleItemId}/interactive/${currentQuestion._id}`, {
+                currentQuestion,
+                selectedAnswer,
+                status,
+                videoId
+            });
+            return res.data;
+        } catch (error) {
+            return rejectWithValue(error || 'Update interactive question failed');
+        }
+    }
+);

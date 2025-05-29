@@ -129,14 +129,14 @@ function App() {
         <Route path="/" element={
           <ProtectedRoute allowedRoles={['student', 'instructor', 'admin']}>
             <DefaultLayout>
-              <HomeSection />
+              <HomeUser />
             </DefaultLayout>
           </ProtectedRoute>
         } />
         <Route path="/home" element={
           <ProtectedRoute allowedRoles={['student', 'instructor', 'admin']}>
             <DefaultLayout>
-              <HomeSection />
+              <HomeUser />
             </DefaultLayout>
           </ProtectedRoute>
         } />

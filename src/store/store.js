@@ -23,7 +23,7 @@ const store = configureStore({
             }
         })
             .concat(logger, searchCourseAPI.middleware)
-            .concat(logger)
+            
 
 });
 setupListeners(store.dispatch);

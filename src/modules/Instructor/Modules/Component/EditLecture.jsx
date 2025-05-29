@@ -1245,6 +1245,7 @@ const EditLecture = ({ moduleItem }) => {
                                                                         >
                                                                             <MenuItem value="multiple-choice">Multiple Choice</MenuItem>
                                                                             <MenuItem value="single-choice">Single Choice</MenuItem>
+                                                                            <MenuItem value="true-false">True/False</MenuItem>
                                                                         </Select>
                                                                     </FormControl>
                                                                 </Grid>
