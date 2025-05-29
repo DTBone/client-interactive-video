@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useLocation } from "react-router-dom";
+import { useLocation, useOutletContext } from "react-router-dom";
 import {
   Box,
   Button,
@@ -60,6 +60,7 @@ const Video = () => {
     moduleItemId
   );
 
+  const { onQuizSubmit } = useOutletContext();
   // const moduleProgress = useSelector(
   //   (state) => state.module.currentModule?.data?.progress
   // );
@@ -126,9 +127,10 @@ const Video = () => {
     handleSingleChoiceChange,
     checkQuestionHistory,
   } = useVideoQuestions(questions, progress, videoRef);
-  console.log("progress", progress);
-  console.log("progressId", progress?._id);
-  console.log("videoId", lectureId || location.state?.item?.video);
+  // console.log("progress", progress);
+  // console.log("progressId", progress?._id);
+  // console.log("videoId", lectureId || location.state?.item?.video);
+  // console.log("location", location.state);
   const {
     videoProgress,
     isLoading,
@@ -144,9 +146,10 @@ const Video = () => {
   } = useVideoProgress({
     videoRef,
     progress,
-    videoId: lectureId || location.state?.item?.video,
-    progressId: progress?._id || moduleItemId,
+    videoId: location.state?.item?.video,
+    progressId: progress?.moduleItemId?._id || moduleItemId,
     onTimeUpdate: handleProgressTimeUpdate,
+    onQuizSubmit,
   });
   const progressStats = useMemo(
     () => ({

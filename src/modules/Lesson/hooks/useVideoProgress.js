@@ -13,7 +13,8 @@ import {
   selectProgressMilestones,
 } from "~/store/slices/Progress/progressSlice.js";
 
-import { updateVideoProgress } from "~/store/slices/Progress/action.js";
+import { getModuleItemProgress, getProgress, updateVideoProgress } from "~/store/slices/Progress/action.js";
+import { useLocation } from "react-router-dom";
 
 /**
  * OPTIMIZED VIDEO PROGRESS TRACKING HOOK
@@ -38,8 +39,12 @@ const useVideoProgress = ({
   videoId,
   progressId, // ID của progress record
   onTimeUpdate, // Callback để đồng bộ với component cha
+  onQuizSubmit, // Callback để đồng bộ với component cha
 }) => {
   const dispatch = useDispatch();
+  const location = useLocation();
+  const module = location.state?.module;
+  const course = useSelector((state) => state.course.currentCourse);
 
   // Selectors
   const videoProgress = useSelector((state) =>
@@ -117,6 +122,53 @@ const useVideoProgress = ({
     return progressData;
   }, [videoId]); // Chỉ dependency cần thiết
 
+
+  // Load all module item statuses
+  const moduleProgress = useSelector(
+    (state) => state.module.currentModule?.data?.progress
+  );
+
+  const loadAllModuleItemStatuses = useCallback(async () => {
+    // Helper function để delay
+    const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+    // Chờ 100ms trước khi bắt đầu
+    await delay(2000);
+
+    // Kiểm tra data trước khi thực hiện
+    if (!module?.moduleItems?.length || !course?._id) {
+      console.warn('Missing required data for loading module items');
+      return;
+    }
+
+    try {
+      const statusPromises = module.moduleItems.map(async (item) => {
+        if (!item?._id) return null;
+
+        try {
+          await dispatch(getModuleItemProgress({ moduleItemId: item._id }));
+          console.log("Loaded item:", item._id);
+          return item._id;
+        } catch (error) {
+          console.error(`Error loading status for item ${item._id}:`, error);
+          return null;
+        }
+      });
+
+      // Chờ tất cả items load xong
+      const results = await Promise.all(statusPromises);
+      console.log('All items processed:', results.filter(Boolean));
+
+      // Load progress một lần cuối
+      await dispatch(getProgress({ courseId: course._id }));
+      console.log('Progress updated');
+      console.log("moduleProgress useVideoProgress", moduleProgress);
+
+    } catch (error) {
+      console.error('Error in loadAllModuleItemStatuses:', error);
+    }
+  }, [dispatch, module, course, moduleProgress]);// dependencies
+
   // Debounced function để cập nhật local progress - tăng delay
   const debouncedLocalUpdate = useCallback(
     debounce((progressData) => {
@@ -127,8 +179,9 @@ const useVideoProgress = ({
             progress: progressData,
           })
         );
+        loadAllModuleItemStatuses();
       }
-    }, 1000), // Tăng từ 500ms lên 1000ms
+    }, 2000), // Tăng từ 500ms lên 1000ms
     [dispatch, videoId]
   );
 
@@ -194,10 +247,14 @@ const useVideoProgress = ({
         if (!allowedRepeatedUpdates.includes(milestone)) {
           dispatch(markMilestoneSent({ videoId, milestone }));
         }
-
+        if (milestone === 100 && onQuizSubmit) {
+          console.log("Video completed, triggering onQuizSubmit");
+          onQuizSubmit(true);
+        }
         console.log(
           `Milestone ${milestone}% sent successfully for video ${videoId}`
         );
+        loadAllModuleItemStatuses();
       } catch (error) {
         console.error(`Failed to send milestone ${milestone}%:`, error);
       } finally {
@@ -297,7 +354,11 @@ const useVideoProgress = ({
           status: "completed"
         });
       }
-
+      // THÊM: Trigger onQuizSubmit khi video hoàn thành
+      if (onQuizSubmit) {
+        console.log("Video locally completed, triggering onQuizSubmit");
+        onQuizSubmit(true);
+      }
       // Gửi milestone 100% cuối cùng
       checkAndSendMilestones(progressData);
       return;
@@ -389,7 +450,11 @@ const useVideoProgress = ({
         if (onTimeUpdate) {
           onTimeUpdate(finalProgressData);
         }
-
+        // THÊM: Trigger onQuizSubmit khi video ended
+        if (onQuizSubmit) {
+          console.log("Video ended, triggering onQuizSubmit");
+          onQuizSubmit(true);
+        }
         // Gửi milestone 100% cuối cùng
         if (progressId) {
           sendMilestoneUpdate(finalProgressData, 100);
