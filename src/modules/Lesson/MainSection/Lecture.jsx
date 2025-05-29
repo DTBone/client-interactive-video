@@ -26,7 +26,6 @@ import {
 import { useLocation, useParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { getLectureById } from "~/store/slices/Quiz/action";
-import { updateLectureProgress } from "~/store/slices/Progress/action";
 import { useOutletContext } from "react-router-dom";
 import { gridColumnsTotalWidthSelector } from "@mui/x-data-grid";
 import EditNoteIcon from "@mui/icons-material/EditNote";
@@ -34,6 +33,8 @@ import { setSidebar } from "~/store/slices/ModuleItem/moduleItemSlice";
 import NoteVideo from "./NoteVideo";
 import { getModuleItemProgress } from "~/store/slices/Progress/action";
 import Video from "../Components/VideoPlayer/Video";
+import { preloadInteractiveQuestion } from "~/store/slices/ModuleItem/action";
+import { useVideoQuestionPreloader } from "../hooks/usePreloadVideo";
 
 const Lecture = () => {
   const dispatch = useDispatch();
@@ -48,7 +49,7 @@ const Lecture = () => {
   //     console.log('isExpandedRedux', isExpandedRedux);
   // }, [isExpandedRedux])
 
-  const lectureId = location.state.item.video;
+  const lectureId = location.state?.item?.video;
   //console.log('location', location.state.item);
   //   const moduleItemId = useParams().itemId;
   //   console.log("moduleItemId", moduleItemId);
@@ -68,6 +69,8 @@ const Lecture = () => {
 
   console.log("progress", progress);
 
+
+
   const getLecture = async () => {
     const result = await dispatch(getLectureById(lectureId));
     if (result.payload.success) {
@@ -78,22 +81,7 @@ const Lecture = () => {
     }
   };
 
-  const onCompleteVideo = async (progressVideo) => {
-    const rep = await dispatch(
-      updateLectureProgress({
-        progressId: progress._id,
-        progressVideo: { ...progressVideo, videoId: lectureId },
-      })
-    );
-    if (rep.payload.success) {
-      setAlert("Completed video");
-      if (onQuizSubmit) {
-        onQuizSubmit(true);
-      }
-    } else {
-      console.log("update progress failed");
-    }
-  };
+  
 
   React.useEffect(() => {
     getLecture();

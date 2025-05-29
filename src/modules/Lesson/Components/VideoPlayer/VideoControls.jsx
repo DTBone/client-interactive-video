@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo } from "react";
+import React, { useState, useCallback, useMemo, useEffect } from "react";
 import {
   Box,
   IconButton,
@@ -10,6 +10,7 @@ import {
   Tooltip,
   useTheme,
   alpha,
+  CircularProgress,
 } from "@mui/material";
 import {
   PlayArrow,
@@ -17,16 +18,12 @@ import {
   Fullscreen,
   FullscreenExit,
   Speed,
-  VolumeUp,
-  VolumeDown,
-  VolumeMute,
   Forward10,
   Replay10,
-  Settings,
 } from "@mui/icons-material";
 import PropTypes from "prop-types";
 
-// Subcomponent for Progress Bar with Question Markers
+// Enhanced Progress Bar Component with Simplified Question States
 const VideoProgressBar = ({
   currentTime,
   duration,
@@ -36,6 +33,7 @@ const VideoProgressBar = ({
   handleTimeSeek,
   formatTime,
   lastAllowedTime,
+  onQuestionClick,
 }) => {
   const theme = useTheme();
   const [isHovering, setIsHovering] = useState(false);
@@ -65,6 +63,31 @@ const VideoProgressBar = ({
     [handleTimeSeek]
   );
 
+  // Simplified question status checking - only answered or unanswered
+  const isQuestionAnswered = useCallback(
+    (question) => {
+      // Check by _id (primary method)
+      if (answeredQuestions.has(question._id)) {
+        return true;
+      }
+
+      // Check by startTime (fallback method)
+      if (answeredQuestions.has(question.startTime)) {
+        return true;
+      }
+
+      // Check question history for correct answers
+      if (question.history && Array.isArray(question.history)) {
+        return question.history.some(
+          (record) => record.isCorrect === true || record.status === "completed"
+        );
+      }
+
+      return false;
+    },
+    [answeredQuestions]
+  );
+
   // Render buffered segments
   const bufferedElements = useMemo(() => {
     return buffered.map((range, index) => {
@@ -87,16 +110,40 @@ const VideoProgressBar = ({
     });
   }, [buffered, duration, theme]);
 
-  // Render question markers
+  // Simplified question markers - only two states
   const questionMarkers = useMemo(() => {
     return questions?.map((question) => {
       const position = (question.startTime / duration) * 100;
-      const isAnswered = answeredQuestions.has(question.startTime);
+      const isAnswered = isQuestionAnswered(question);
+      const isActive =
+        currentTime >= question.startTime &&
+        currentTime < (question.endTime || question.startTime + 30);
+
+      // Determine marker appearance
+      let markerColor,
+        tooltipText,
+        markerSize = 12,
+        pulseAnimation = false;
+
+      if (isAnswered) {
+        markerColor = theme.palette.success.main;
+        tooltipText = `✓ Question answered at ${formatTime(question.startTime)}`;
+        pulseAnimation = true;
+      } else if (isActive) {
+        markerColor = theme.palette.warning.main;
+        tooltipText = `▶ Active question at ${formatTime(question.startTime)}`;
+        markerSize = 16;
+        pulseAnimation = true;
+      } else {
+        markerColor = theme.palette.grey[400];
+        tooltipText = `❓ Unanswered question at ${formatTime(question.startTime)}`;
+      }
 
       return (
         <Tooltip
-          key={question.startTime}
-          title={`Question at ${formatTime(question.startTime)}`}
+          key={question._id || question.startTime}
+          title={tooltipText}
+          placement="top"
         >
           <Box
             sx={{
@@ -104,23 +151,54 @@ const VideoProgressBar = ({
               left: `${position}%`,
               top: "50%",
               transform: "translate(-50%, -50%)",
-              width: 12,
-              height: 12,
+              width: markerSize,
+              height: markerSize,
               borderRadius: "50%",
-              backgroundColor: isAnswered
-                ? theme.palette.success.main
-                : theme.palette.warning.main,
+              backgroundColor: markerColor,
               border: `2px solid ${theme.palette.common.white}`,
               cursor: "pointer",
-              zIndex: 3,
+              zIndex: isActive ? 4 : 3,
+              transition: "all 0.3s ease",
               "&:hover": {
-                transform: "translate(-50%, -50%) scale(1.2)",
+                transform: "translate(-50%, -50%) scale(1.3)",
+                boxShadow: `0 0 12px ${alpha(markerColor, 0.6)}`,
               },
+              // Pulse animation for answered and active questions
+              ...(pulseAnimation && {
+                animation: `pulse-${isAnswered ? "answered" : "active"} 2s infinite`,
+                "@keyframes pulse-answered": {
+                  "0%": {
+                    boxShadow: `0 0 0 0 ${alpha(theme.palette.success.main, 0.7)}`,
+                  },
+                  "70%": {
+                    boxShadow: `0 0 0 6px ${alpha(theme.palette.success.main, 0)}`,
+                  },
+                  "100%": {
+                    boxShadow: `0 0 0 0 ${alpha(theme.palette.success.main, 0)}`,
+                  },
+                },
+                "@keyframes pulse-active": {
+                  "0%": {
+                    boxShadow: `0 0 0 0 ${alpha(theme.palette.warning.main, 0.7)}`,
+                  },
+                  "70%": {
+                    boxShadow: `0 0 0 8px ${alpha(theme.palette.warning.main, 0)}`,
+                  },
+                  "100%": {
+                    boxShadow: `0 0 0 0 ${alpha(theme.palette.warning.main, 0)}`,
+                  },
+                },
+              }),
             }}
             onClick={(e) => {
               e.stopPropagation();
               const percentage = (question.startTime / duration) * 100;
               handleTimeSeek(e, percentage);
+
+              // Notify parent component about question click
+              if (onQuestionClick) {
+                onQuestionClick(question);
+              }
             }}
           />
         </Tooltip>
@@ -129,10 +207,12 @@ const VideoProgressBar = ({
   }, [
     questions,
     duration,
-    answeredQuestions,
+    isQuestionAnswered,
+    currentTime,
     formatTime,
     theme,
     handleTimeSeek,
+    onQuestionClick,
   ]);
 
   return (
@@ -217,8 +297,30 @@ const VideoProgressBar = ({
   );
 };
 
-// Main VideoControls Component
+// Add PropTypes for VideoProgressBar
+VideoProgressBar.propTypes = {
+  currentTime: PropTypes.number.isRequired,
+  duration: PropTypes.number.isRequired,
+  buffered: PropTypes.array,
+  questions: PropTypes.array,
+  answeredQuestions: PropTypes.instanceOf(Set),
+  handleTimeSeek: PropTypes.func.isRequired,
+  formatTime: PropTypes.func.isRequired,
+  lastAllowedTime: PropTypes.number,
+  onQuestionClick: PropTypes.func,
+};
+
+VideoProgressBar.defaultProps = {
+  buffered: [],
+  questions: [],
+  answeredQuestions: new Set(),
+  lastAllowedTime: Infinity,
+  onQuestionClick: null,
+};
+
+// Enhanced Main VideoControls Component
 const VideoControls = ({
+  progressStats,
   showControls,
   isPlaying,
   handlePlayPause,
@@ -236,18 +338,66 @@ const VideoControls = ({
   handleSpeedChange,
   handleFullscreenToggle,
   isFullscreen,
-  buffered,
+  batteredRegions,
   questions,
   answeredQuestions,
   handleTimeSeek,
   lastAllowedTime,
   isOnline = true,
+  onQuestionClick,
+  getCurrentQuestion,
+  completionPercentage,
+  getQuestionToShow,
+  videoProgress,
+  isProgressLoading,
+  progressError,
+  hasStartedWatching,
+  totalTimeSpent,
+  progressMilestones,
 }) => {
   const theme = useTheme();
   const [showVolumeSlider, setShowVolumeSlider] = useState(false);
 
   // Speed options
   const speedOptions = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 2];
+
+  // Calculate question statistics - simplified to answered/unanswered
+  const questionStats = useMemo(() => {
+    if (!questions?.length) return { total: 0, answered: 0, correctAnswers: 0 };
+
+    let answered = 0;
+    let correctAnswers = 0;
+
+    questions.forEach((question) => {
+      const isAnswered =
+        answeredQuestions.has(question._id) ||
+        answeredQuestions.has(question.startTime);
+
+      if (isAnswered) {
+        answered++;
+      }
+
+      // Check for correct answers in history
+      if (question.history && Array.isArray(question.history)) {
+        const hasCorrectAnswer = question.history.some(
+          (record) => record.isCorrect === true || record.status === "completed"
+        );
+        if (hasCorrectAnswer) {
+          correctAnswers++;
+        }
+      } else if (isAnswered) {
+        // If no history but marked as answered, assume correct
+        correctAnswers++;
+      }
+    });
+
+    return {
+      total: questions.length,
+      answered,
+      correctAnswers,
+      unanswered: questions.length - answered,
+    };
+  }, [questions, answeredQuestions]);
 
   // Skip functions
   const handleSkipBackward = useCallback(() => {
@@ -262,8 +412,48 @@ const VideoControls = ({
     handleTimeSeek(null, percentage);
   }, [currentTime, duration, handleTimeSeek]);
 
+  // Get current active question
+  const activeQuestion = useMemo(() => {
+    if (getCurrentQuestion) {
+      return getCurrentQuestion();
+    }
+
+    return questions?.find(
+      (q) =>
+        currentTime >= q.startTime &&
+        currentTime < (q.endTime || q.startTime + 30)
+    );
+  }, [questions, currentTime, getCurrentQuestion]);
+
+  // Get question to display based on logic
+  const questionToShow = useMemo(() => {
+    if (getQuestionToShow) {
+      return getQuestionToShow();
+    }
+
+    // Default logic: show active question or first unanswered
+    if (activeQuestion) {
+      return activeQuestion;
+    }
+
+    // Find first unanswered question
+    return questions?.find(
+      (q) =>
+        !answeredQuestions.has(q._id) && !answeredQuestions.has(q.startTime)
+    );
+  }, [activeQuestion, questions, answeredQuestions, getQuestionToShow]);
+
+  // Sync current time with video progress if available
+  const displayCurrentTime = useMemo(() => {
+    return videoProgress?.lastPosition ?? currentTime;
+  }, [videoProgress?.lastPosition, currentTime]);
+
+  const displayDuration = useMemo(() => {
+    return videoProgress?.totalDuration ?? duration;
+  }, [videoProgress?.totalDuration, duration]);
+
   // Keyboard shortcuts
-  React.useEffect(() => {
+  useEffect(() => {
     const handleKeyPress = (event) => {
       if (event.target.tagName === "INPUT") return;
 
@@ -318,16 +508,17 @@ const VideoControls = ({
           color: theme.palette.common.white,
         }}
       >
-        {/* Progress Bar */}
+        {/* Enhanced Progress Bar */}
         <VideoProgressBar
-          currentTime={currentTime}
-          duration={duration}
-          buffered={buffered}
+          currentTime={displayCurrentTime}
+          duration={displayDuration}
+          buffered={batteredRegions}
           questions={questions}
           answeredQuestions={answeredQuestions}
           handleTimeSeek={handleTimeSeek}
           formatTime={formatTime}
           lastAllowedTime={lastAllowedTime}
+          onQuestionClick={onQuestionClick}
         />
 
         {/* Controls Row */}
@@ -429,7 +620,7 @@ const VideoControls = ({
 
             {/* Time Display */}
             <Typography variant="body2" sx={{ color: "white", minWidth: 100 }}>
-              {formatTime(currentTime)} / {formatTime(duration)}
+              {formatTime(displayCurrentTime)} / {formatTime(displayDuration)}
             </Typography>
           </Box>
 
@@ -443,6 +634,16 @@ const VideoControls = ({
               >
                 Offline
               </Typography>
+            )}
+
+            {/* Progress Loading Indicator */}
+            {isProgressLoading && (
+              <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+                <CircularProgress size={16} sx={{ color: "white" }} />
+                <Typography variant="caption" sx={{ color: "white" }}>
+                  Syncing...
+                </Typography>
+              </Box>
             )}
 
             {/* Speed Control */}
@@ -510,45 +711,133 @@ const VideoControls = ({
           </Box>
         </Box>
 
-        {/* Question Status */}
+        {/* Enhanced Progress and Question Status Display */}
         {questions?.length > 0 && (
-          <Box sx={{ mt: 1, display: "flex", alignItems: "center", gap: 1 }}>
-            <Typography
-              variant="caption"
-              sx={{ color: alpha(theme.palette.common.white, 0.7) }}
+          <Box sx={{ mt: 1 }}>
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                mb: 0.5,
+              }}
             >
-              Questions: {answeredQuestions.size}/{questions.length} answered
-            </Typography>
-            <Box sx={{ display: "flex", gap: 0.5 }}>
+              {/* Simplified status legend */}
               <Box
                 sx={{
-                  width: 8,
-                  height: 8,
-                  borderRadius: "50%",
-                  backgroundColor: theme.palette.success.main,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 2,
+                  flexWrap: "wrap",
                 }}
-              />
-              <Typography
-                variant="caption"
-                sx={{ color: alpha(theme.palette.common.white, 0.7), mr: 1 }}
               >
-                Answered
-              </Typography>
-              <Box
-                sx={{
-                  width: 8,
-                  height: 8,
-                  borderRadius: "50%",
-                  backgroundColor: theme.palette.warning.main,
-                }}
-              />
-              <Typography
-                variant="caption"
-                sx={{ color: alpha(theme.palette.common.white, 0.7) }}
-              >
-                Unanswered
-              </Typography>
+                <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+                  <Box
+                    sx={{
+                      width: 8,
+                      height: 8,
+                      borderRadius: "50%",
+                      backgroundColor: theme.palette.success.main,
+                    }}
+                  />
+                  <Typography
+                    variant="caption"
+                    sx={{ color: alpha(theme.palette.common.white, 0.7) }}
+                  >
+                    Answered ({questionStats.answered})
+                  </Typography>
+                </Box>
+
+                <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+                  <Box
+                    sx={{
+                      width: 8,
+                      height: 8,
+                      borderRadius: "50%",
+                      backgroundColor: theme.palette.grey[400],
+                    }}
+                  />
+                  <Typography
+                    variant="caption"
+                    sx={{ color: alpha(theme.palette.common.white, 0.7) }}
+                  >
+                    Unanswered ({questionStats.unanswered})
+                  </Typography>
+                </Box>
+
+                {/* Current/Next Question Indicator */}
+                {(activeQuestion || questionToShow) && (
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 0.5,
+                      ml: 1,
+                    }}
+                  >
+                    <Box
+                      sx={{
+                        width: 8,
+                        height: 8,
+                        borderRadius: "50%",
+                        backgroundColor: theme.palette.warning.main,
+                        animation: "pulse 2s infinite",
+                      }}
+                    />
+                    <Typography
+                      variant="caption"
+                      sx={{ color: theme.palette.warning.light }}
+                    >
+                      {activeQuestion ? "Active" : "Next"} question at{" "}
+                      {formatTime((activeQuestion || questionToShow).startTime)}
+                    </Typography>
+                  </Box>
+                )}
+              </Box>
+
+              {/* Enhanced completion percentage with sync status */}
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                {progressError && (
+                  <Typography
+                    variant="caption"
+                    sx={{ color: theme.palette.error.main }}
+                  >
+                    Sync Error
+                  </Typography>
+                )}
+                <Typography
+                  variant="caption"
+                  sx={{
+                    color:
+                      completionPercentage === 100
+                        ? theme.palette.success.main
+                        : completionPercentage > 0
+                          ? theme.palette.warning.main
+                          : theme.palette.error.main,
+                    fontWeight: 600,
+                  }}
+                ></Typography>
+              </Box>
             </Box>
+
+            {/* Enhanced Progress Stats */}
+            {/* {progressStats && (
+              <Box sx={{ mt: 1 }}>
+                <Typography
+                  variant="caption"
+                  sx={{
+                    color: alpha(theme.palette.common.white, 0.8),
+                    display: "block",
+                  }}
+                >
+                  Progress: {Math.round(progressStats.completion)}% • Watched:{" "}
+                  {formatTime(progressStats.watched)} • Time Spent:{" "}
+                  {formatTime(progressStats.timeSpent)} • Efficiency:{" "}
+                  {Math.round(progressStats.efficiency)}%
+                  {hasStartedWatching && " • Session Active"}
+                </Typography>
+              </Box>
+            )} */}
           </Box>
         )}
       </Box>
@@ -557,6 +846,13 @@ const VideoControls = ({
 };
 
 VideoControls.propTypes = {
+  progressStats: PropTypes.shape({
+    completion: PropTypes.number,
+    watched: PropTypes.number,
+    total: PropTypes.number,
+    timeSpent: PropTypes.number,
+    efficiency: PropTypes.number,
+  }),
   showControls: PropTypes.bool.isRequired,
   isPlaying: PropTypes.bool.isRequired,
   handlePlayPause: PropTypes.func.isRequired,
@@ -574,21 +870,37 @@ VideoControls.propTypes = {
   handleSpeedChange: PropTypes.func.isRequired,
   handleFullscreenToggle: PropTypes.func.isRequired,
   isFullscreen: PropTypes.bool.isRequired,
-  buffered: PropTypes.array,
+  batteredRegions: PropTypes.array,
   questions: PropTypes.array,
   answeredQuestions: PropTypes.instanceOf(Set),
   handleTimeSeek: PropTypes.func.isRequired,
   isOnline: PropTypes.bool,
   lastAllowedTime: PropTypes.number,
+  onQuestionClick: PropTypes.func,
+  getCurrentQuestion: PropTypes.func,
+  completionPercentage: PropTypes.number,
+  getQuestionToShow: PropTypes.func,
+  videoProgress: PropTypes.shape({
+    lastPosition: PropTypes.number,
+    totalDuration: PropTypes.number,
+  }),
+  isProgressLoading: PropTypes.bool,
+  progressError: PropTypes.oneOfType([PropTypes.string, PropTypes.object]),
+  hasStartedWatching: PropTypes.bool,
+  totalTimeSpent: PropTypes.number,
+  progressMilestones: PropTypes.array,
 };
 
 VideoControls.defaultProps = {
-  buffered: [],
+  batteredRegions: [],
   questions: [],
   answeredQuestions: new Set(),
   speedMenuAnchorEl: null,
   isOnline: true,
   lastAllowedTime: Infinity,
+  onQuestionClick: null,
+  getCurrentQuestion: null,
+  getQuestionToShow: null,
 };
 
 export default VideoControls;

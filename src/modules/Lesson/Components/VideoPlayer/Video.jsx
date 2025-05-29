@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useLocation } from "react-router-dom";
 import {
@@ -14,53 +14,103 @@ import {
   CircularProgress,
   Alert,
 } from "@mui/material";
-import { QuestionAnswer, Close, VolumeUp, VolumeDown, VolumeMute } from "@mui/icons-material";
+import {
+  QuestionAnswer,
+  Close,
+  VolumeUp,
+  VolumeDown,
+  VolumeMute,
+} from "@mui/icons-material";
 import { getLectureById } from "~/store/slices/Quiz/action";
 import SnackbarAlert from "../SnackbarAlert";
 import VideoControls from "./VideoControls";
 import useVideoQuestions from "../../hooks/useVideoQuestion";
 import useVideoProgress from "../../hooks/useVideoProgress";
 import { formatTime } from "../../hooks/useFormatTime";
-import PropTypes from 'prop-types';
+import PropTypes from "prop-types";
 import InteractiveQuestionDialog from "../InteractiveQuestionDialog";
+import { preloadInteractiveQuestion } from "~/store/slices/ModuleItem/action";
+import { useMemo } from "react";
+import { getProgress } from "~/store/slices/Progress/action";
 
 const Video = () => {
   const dispatch = useDispatch();
   const location = useLocation();
-  const lectureId = location.state.item.video;
+  const lectureId = location?.state?.item?.video;
   const moduleItemId = location.state.item._id;
-
   const [alert, setAlert] = useState("");
   const [lectureData, setLectureData] = useState(null);
   const [questions, setQuestion] = useState(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
-  const [showControls, setShowControls] = useState(true);
+  const [showControls] = useState(true);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [volume, setVolume] = useState(1);
   const [previousVolume, setPreviousVolume] = useState(1);
   const [playbackSpeed, setPlaybackSpeed] = useState(1);
   const [speedMenuAnchorEl, setSpeedMenuAnchorEl] = useState(null);
-
   const videoRef = useRef(null);
   const videoContainerRef = useRef(null);
   const controlsTimeoutRef = useRef(null);
-
   const { lecture, loading: quizLoading } = useSelector((state) => state.quiz);
+  //dispatch(getProgress(lectureId));
   const progress = findModuleItemProgress(
     useSelector((state) => state.progress.progress) || [],
     moduleItemId
   );
 
-  useEffect(() => {
-    dispatch(getLectureById(lectureId));
-  }, [dispatch, lectureId]);
+  // const moduleProgress = useSelector(
+  //   (state) => state.module.currentModule?.data?.progress
+  // );
+  // console.log("moduleProgress", moduleProgress);
+  // const course = useSelector((state) => state.course.currentCourse);
+  //console.log("course", course);
+  // dispatch(getProgress(course?._id));
 
+  // useEffect(() => {
+  //   dispatch(getLectureById(lectureId));
+  // }, [dispatch, lectureId]);
+  // Thêm state để theo dõi việc đã preload
+  const [hasPreloaded, setHasPreloaded] = useState(false);
+  // Sử dụng effect với deps đầy đủ
+  useEffect(() => {
+    if (!hasPreloaded) {
+      let videoId = lectureId || location.state?.item?.video;
+      if (videoId) {
+        console.log("Preloading interactive questions for video:", videoId);
+        dispatch(preloadInteractiveQuestion({ moduleItemId, videoId }));
+        setHasPreloaded(true);
+      }
+    }
+  }, [
+    hasPreloaded,
+    dispatch,
+    lectureId,
+    moduleItemId,
+    location.state?.item?.video,
+  ]);
   useEffect(() => {
     setLectureData(lecture);
     setQuestion(lecture?.questions || []);
   }, [lecture]);
+
+  const handleProgressTimeUpdate = useCallback(
+    (progressData) => {
+      if (progressData) {
+        // Đồng bộ currentTime với progress data nếu có sự khác biệt đáng kể
+        const videoCurrentTime = videoRef.current?.currentTime || 0;
+        if (Math.abs(videoCurrentTime - progressData.lastPosition) > 1) {
+          setCurrentTime(progressData.lastPosition);
+        }
+        // Đồng bộ duration nếu chưa có
+        if (progressData.totalDuration && !duration) {
+          setDuration(progressData.totalDuration);
+        }
+      }
+    },
+    [duration]
+  );
 
   const {
     currentQuestion,
@@ -74,29 +124,67 @@ const Video = () => {
     handleCloseDialog,
     handleMultipleChoiceChange,
     handleSingleChoiceChange,
+    checkQuestionHistory,
   } = useVideoQuestions(questions, progress, videoRef);
-
+  console.log("progress", progress);
+  console.log("progressId", progress?._id);
+  console.log("videoId", lectureId || location.state?.item?.video);
   const {
-    syncProgressToServer,
-    progressVideo,
-    setProgressVideo,
-    updateVideoProgress,
-    trackPlaybackEvent,
-    recordInteraction,
+    videoProgress,
+    isLoading,
+    error,
+    isPlayingProgress,
+    hasStarted,
+    completionPercentage,
+    watchedDuration,
+    totalDuration,
+    timeSpent,
+    sentMilestones,
+    updateProgress,
   } = useVideoProgress({
     videoRef,
-    moduleItemId,
-    lectureId,
-    onCompleteVideo: () => console.log("submitted video"),
+    progress,
+    videoId: lectureId || location.state?.item?.video,
+    progressId: progress?._id || moduleItemId,
+    onTimeUpdate: handleProgressTimeUpdate,
   });
+  const progressStats = useMemo(
+    () => ({
+      completion: completionPercentage,
+      watched: watchedDuration,
+      total: totalDuration,
+      timeSpent: timeSpent,
+      efficiency: timeSpent > 0 ? (watchedDuration / timeSpent) * 100 : 0,
+    }),
+    [completionPercentage, watchedDuration, totalDuration, timeSpent]
+  );
+  // Đồng bộ currentTime với videoProgress nếu có
+  const displayCurrentTime = useMemo(() => {
+    return videoProgress?.lastPosition ?? currentTime;
+  }, [videoProgress?.lastPosition, currentTime]);
 
-  const handleTimeUpdate = () => {
+  const displayDuration = useMemo(() => {
+    return videoProgress?.totalDuration ?? duration;
+  }, [videoProgress?.totalDuration, duration]);
+
+  const getCurrentQuestion = useCallback(() => {
+    return questions?.find(
+      (q) =>
+        displayCurrentTime >= q.startTime &&
+        displayCurrentTime < (q.endTime || q.startTime + 30)
+    );
+  }, [questions, displayCurrentTime]);
+
+  const handleTimeUpdate = useCallback(() => {
     const time = videoRef.current?.currentTime || 0;
     setCurrentTime(time);
     checkForQuestions(time);
-  };
+    if (updateProgress) {
+      updateProgress();
+    }
+  }, [checkForQuestions, updateProgress]);
 
-  const handlePlayPause = () => {
+  const handlePlayPause = useCallback(() => {
     if (videoRef.current.paused) {
       videoRef.current.play();
       setIsPlaying(true);
@@ -104,87 +192,66 @@ const Video = () => {
       videoRef.current.pause();
       setIsPlaying(false);
     }
-  };
+  }, []);
 
-  const handleVolumeChange = (event, newValue) => {
-    const newVolume = newValue / 100;
-    setVolume(newVolume);
-    videoRef.current.volume = newVolume;
-    if (newVolume === 0) {
-      setPreviousVolume(volume);
-    }
-    recordInteraction("volume-change", {
-      from: volume,
-      to: newVolume,
-      position: videoRef.current.currentTime,
-    });
-  };
+  const handleVolumeChange = useCallback(
+    (event, newValue) => {
+      const newVolume = newValue / 100;
+      setVolume(newVolume);
+      videoRef.current.volume = newVolume;
+      if (newVolume === 0) {
+        setPreviousVolume(volume);
+      }
+    },
+    [volume]
+  );
 
-  const handleMuteToggle = () => {
+  const handleMuteToggle = useCallback(() => {
     if (volume === 0) {
       setVolume(previousVolume);
       videoRef.current.volume = previousVolume;
-      recordInteraction("volume-change", {
-        from: 0,
-        to: previousVolume,
-        isMute: false,
-        position: videoRef.current.currentTime,
-      });
     } else {
       setPreviousVolume(volume);
       setVolume(0);
       videoRef.current.volume = 0;
-      recordInteraction("volume-change", {
-        from: volume,
-        to: 0,
-        isMute: true,
-        position: videoRef.current.currentTime,
-      });
     }
-  };
+  }, [volume, previousVolume]);
 
-  const handleTimeSeek = (event, newValue) => {
-    const newTime = (newValue / 100) * duration;
-    const currentPosition = videoRef.current.currentTime;
+  const handleTimeSeek = useCallback(
+    (event, newValue) => {
+      const newTime = (newValue / 100) * displayDuration;
+      const currentPosition = videoRef.current.currentTime;
 
-    recordInteraction("seek", {
-      from: currentPosition,
-      to: newTime,
-      seekDistance: Math.abs(newTime - currentPosition),
-      seekDirection: newTime > currentPosition ? "forward" : "backward",
-    });
+      // Allow seeking if video is completed or no questions exist
+      if (
+        progress?.status === "completed" ||
+        !questions ||
+        questions.length === 0
+      ) {
+        videoRef.current.currentTime = newTime;
+        setCurrentTime(newTime);
+        return;
+      }
 
-    if (progress?.status === "completed" || newTime <= lastAllowedTime) {
-      videoRef.current.currentTime = newTime;
-      setCurrentTime(newTime);
-      trackPlaybackEvent("seek", newTime);
-      return;
-    }
+      // Find the nearest unanswered question that blocks the seek
+      const blockingQuestion = questions
+        .filter((q) => !answeredQuestions.has(q.startTime))
+        .filter((q) => q.startTime > currentPosition && q.startTime <= newTime)
+        .sort((a, b) => a.startTime - b.startTime)[0];
 
-    if (!questions || questions.length === 0) {
-      videoRef.current.currentTime = newTime;
-      setCurrentTime(newTime);
-      trackPlaybackEvent("seek", newTime);
-      return;
-    }
-
-    const nextUnansweredQuestion = questions
-      .filter((q) => !answeredQuestions.has(q.startTime))
-      .sort((a, b) => a.startTime - b.startTime)
-      .find((q) => q.startTime < newTime);
-
-    if (nextUnansweredQuestion) {
-      videoRef.current.currentTime = nextUnansweredQuestion.startTime;
-      setCurrentTime(nextUnansweredQuestion.startTime);
-      setAlert("You must answer this question before continuing.");
-      trackPlaybackEvent("seek", nextUnansweredQuestion.startTime);
-    } else {
-      videoRef.current.currentTime = newTime;
-      setCurrentTime(newTime);
-      trackPlaybackEvent("seek", newTime);
-    }
-  };
-
+      if (blockingQuestion) {
+        // Dừng tại vị trí câu hỏi chưa trả lời
+        videoRef.current.currentTime = blockingQuestion.startTime;
+        setCurrentTime(blockingQuestion.startTime);
+        setAlert("You must answer this question before continuing.");
+      } else {
+        // Allow seeking if no questions are blocking
+        videoRef.current.currentTime = newTime;
+        setCurrentTime(newTime);
+      }
+    },
+    [displayDuration, progress?.status, questions, answeredQuestions]
+  );
   const handleFullscreenToggle = async () => {
     try {
       if (!document.fullscreenElement) {
@@ -198,10 +265,6 @@ const Video = () => {
         } else if (elem.mozRequestFullScreen) {
           await elem.mozRequestFullScreen();
         }
-        recordInteraction("fullscreen", {
-          state: "entered",
-          position: videoRef.current.currentTime,
-        });
       } else {
         if (document.exitFullscreen) {
           await document.exitFullscreen();
@@ -212,44 +275,44 @@ const Video = () => {
         } else if (document.mozCancelFullScreen) {
           await document.mozCancelFullScreen();
         }
-        recordInteraction("fullscreen", {
-          state: "exited",
-          position: videoRef.current.currentTime,
-        });
       }
     } catch (error) {
       console.error("Fullscreen error:", error);
     }
   };
-
   useEffect(() => {
     const handleFullscreenChange = () => {
       const isCurrentlyFullscreen = Boolean(
         document.fullscreenElement ||
-        document.webkitFullscreenElement ||
-        document.msFullscreenElement ||
-        document.mozFullScreenElement
+          document.webkitFullscreenElement ||
+          document.msFullscreenElement ||
+          document.mozFullScreenElement
       );
       setIsFullscreen(isCurrentlyFullscreen);
     };
-
     document.addEventListener("fullscreenchange", handleFullscreenChange);
     document.addEventListener("webkitfullscreenchange", handleFullscreenChange);
     document.addEventListener("msfullscreenchange", handleFullscreenChange);
     document.addEventListener("mozfullscreenchange", handleFullscreenChange);
-
     return () => {
       document.removeEventListener("fullscreenchange", handleFullscreenChange);
-      document.removeEventListener("webkitfullscreenchange", handleFullscreenChange);
-      document.removeEventListener("msfullscreenchange", handleFullscreenChange);
-      document.removeEventListener("mozfullscreenchange", handleFullscreenChange);
+      document.removeEventListener(
+        "webkitfullscreenchange",
+        handleFullscreenChange
+      );
+      document.removeEventListener(
+        "msfullscreenchange",
+        handleFullscreenChange
+      );
+      document.removeEventListener(
+        "mozfullscreenchange",
+        handleFullscreenChange
+      );
     };
   }, []);
-
   useEffect(() => {
     const handleKeyDown = (event) => {
       if (!isFullscreen) return;
-
       switch (event.key) {
         case "Escape":
           if (currentQuestion && progress?.status !== "completed") {
@@ -269,42 +332,29 @@ const Video = () => {
           break;
       }
     };
-
     if (isFullscreen) {
       document.addEventListener("keydown", handleKeyDown);
     }
-
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
     };
-  }, [isFullscreen, currentQuestion, progress?.status]);
-
+  }, [isFullscreen, currentQuestion, progress?.status, handlePlayPause]);
   const handleSpeedMenuOpen = (event) => {
     setSpeedMenuAnchorEl(event.currentTarget);
   };
-
   const handleSpeedMenuClose = () => {
     setSpeedMenuAnchorEl(null);
   };
-
   const handleSpeedChange = (speed) => {
-    const previousSpeed = videoRef.current.playbackRate;
     videoRef.current.playbackRate = speed;
     setPlaybackSpeed(speed);
     handleSpeedMenuClose();
-    recordInteraction("speed-change", {
-      from: previousSpeed,
-      to: speed,
-      position: videoRef.current.currentTime,
-    });
   };
-
   const getVolumeIcon = () => {
     if (volume === 0) return <VolumeMute />;
     if (volume < 0.5) return <VolumeDown />;
     return <VolumeUp />;
   };
-
   // Component hiển thị câu hỏi tích hợp
   const QuestionDialog = ({ open, question }) => {
     if (!open || !question) return null;
@@ -350,7 +400,7 @@ const Video = () => {
         style={dialogStyles}
         onClick={(e) => {
           if (isFullscreen && e.target === e.currentTarget) {
-             handleCloseDialog(); 
+            handleCloseDialog();
           }
         }}
       >
@@ -402,89 +452,102 @@ const Video = () => {
             <>
               {dialogAlert && (
                 <Alert
-                  severity={dialogAlert.includes("correct") ? "success" : "error"}
+                  severity={
+                    dialogAlert.includes("correct") ? "success" : "error"
+                  }
                   sx={{ mb: 2 }}
                 >
                   {dialogAlert}
                 </Alert>
               )}
+
               <FormControl sx={{ width: "100%" }}>
                 <Typography variant="h6" sx={{ mb: 2, fontWeight: 500 }}>
                   {question?.question}
                 </Typography>
-                <Typography variant="subtitle1" sx={{ mb: 2 }}>
-                  {question?.questionType === "multipleChoice"
-                    ? "Select all that apply:"
-                    : "Select one:"}
-                </Typography>
-                {question?.questionType === "multipleChoice" ? (
-                  <Stack spacing={2}>
-                    {question?.answers?.map((answer) => (
-                      <FormControlLabel
-                        key={answer._id}
-                        control={
-                          <Checkbox
-                            checked={selectedAnswer?.includes(answer._id)}
-                            onChange={() => handleMultipleChoiceChange(answer._id)}
-                            sx={{
-                              "&.Mui-checked": { color: "#3b82f6" },
-                            }}
+
+                {/* True/False Questions */}
+                {currentQuestion.questionType === "true-false" && (
+                  <>
+                    <Typography variant="subtitle1" className="mb-2">
+                      Select the box if{" "}
+                      <span className="text-green-600 font-bold uppercase">
+                        True
+                      </span>
+                      , leave blank if{" "}
+                      <span className="text-red-600 font-bold uppercase">
+                        False
+                      </span>
+                      .
+                    </Typography>
+                    <RadioGroup
+                      value={selectedAnswer?.[0] || ""}
+                      onChange={handleSingleChoiceChange}
+                    >
+                      <Stack className="space-y-4">
+                        {currentQuestion.answers.map((answer) => (
+                          <FormControlLabel
+                            key={answer._id}
+                            value={answer._id}
+                            control={<Radio />}
+                            label={answer.content}
                           />
-                        }
-                        label={answer.content}
-                        sx={{
-                          p: 1.5,
-                          borderRadius: 2,
-                          border: "2px solid",
-                          borderColor: selectedAnswer?.includes(answer._id)
-                            ? "#3b82f6"
-                            : "#e5e7eb",
-                          bgcolor: selectedAnswer?.includes(answer._id)
-                            ? "#eff6ff"
-                            : "white",
-                          "&:hover": {
-                            bgcolor: selectedAnswer?.includes(answer._id)
-                              ? "#eff6ff"
-                              : "#f9fafb",
-                          },
-                        }}
-                      />
-                    ))}
-                  </Stack>
-                ) : (
-                  <RadioGroup
-                    value={selectedAnswer?.[0] || ""}
-                    onChange={handleSingleChoiceChange}
-                  >
-                    <Stack spacing={2}>
-                      {question?.answers.map((answer) => (
+                        ))}
+                      </Stack>
+                    </RadioGroup>
+                  </>
+                )}
+
+                {/* Multiple Choice Questions */}
+                {currentQuestion.questionType === "multiple-choice" && (
+                  <>
+                    <Typography variant="subtitle1" className="mb-2">
+                      Select all that apply:
+                    </Typography>
+                    <Stack className="space-y-4">
+                      {currentQuestion.answers.map((answer) => (
                         <FormControlLabel
                           key={answer._id}
-                          value={answer._id}
-                          control={<Radio sx={{ "&.Mui-checked": { color: "#3b82f6" } }} />}
+                          control={
+                            <Checkbox
+                              checked={selectedAnswer?.includes(answer._id)}
+                              onChange={() =>
+                                handleMultipleChoiceChange(answer._id)
+                              }
+                            />
+                          }
                           label={answer.content}
-                          sx={{
-                            p: 1.5,
-                            borderRadius: 2,
-                            border: "2px solid",
-                            borderColor: selectedAnswer?.[0] === answer._id
-                              ? "#3b82f6"
-                              : "#e5e7eb",
-                            bgcolor: selectedAnswer?.[0] === answer._id
-                              ? "#eff6ff"
-                              : "white",
-                            "&:hover": {
-                              bgcolor: selectedAnswer?.[0] === answer._id
-                                ? "#eff6ff"
-                                : "#f9fafb",
-                            },
-                          }}
                         />
                       ))}
                     </Stack>
-                  </RadioGroup>
+                  </>
+                )}
+
+                {/* Single Choice Questions */}
+                {currentQuestion.questionType === "single-choice" && (
+                  <>
+                    <Typography variant="subtitle1" className="mb-2">
+                      Select one:
+                    </Typography>
+                    <RadioGroup
+                      value={selectedAnswer?.[0] || ""}
+                      onChange={handleSingleChoiceChange}
+                    >
+                      <Stack className="space-y-4">
+                        {currentQuestion.answers.map((answer) => (
+                          <FormControlLabel
+                            key={answer._id}
+                            value={answer._id}
+                            control={<Radio />}
+                            label={answer.content}
+                          />
+                        ))}
+                      </Stack>
+                    </RadioGroup>
+                  </>
                 )}
               </FormControl>
+
               <div
                 style={{
                   display: "flex",
@@ -509,17 +572,22 @@ const Video = () => {
                 </Button>
                 <Button
                   onClick={handleAnswerSubmit}
-                  disabled={loading || !selectedAnswer || selectedAnswer.length === 0}
+                  disabled={
+                    loading || !selectedAnswer || selectedAnswer.length === 0
+                  }
                   variant="contained"
                   sx={{
                     px: 2,
                     py: 1,
-                    bgcolor: loading || !selectedAnswer || selectedAnswer.length === 0
-                      ? "#9ca3af"
-                      : "#3b82f6",
+                    bgcolor:
+                      loading || !selectedAnswer || selectedAnswer.length === 0
+                        ? "#9ca3af"
+                        : "#3b82f6",
                     "&:hover": {
                       bgcolor:
-                        loading || !selectedAnswer || selectedAnswer.length === 0
+                        loading ||
+                        !selectedAnswer ||
+                        selectedAnswer.length === 0
                           ? "#9ca3af"
                           : "#2563eb",
                     },
@@ -567,6 +635,7 @@ const Video = () => {
           onLoadedMetadata={() => setDuration(videoRef.current?.duration || 0)}
         />
         <VideoControls
+          progressStats={progressStats}
           showControls={showControls}
           isPlaying={isPlaying}
           handlePlayPause={handlePlayPause}
@@ -574,8 +643,8 @@ const Video = () => {
           volume={volume}
           handleVolumeChange={handleVolumeChange}
           handleMuteToggle={handleMuteToggle}
-          currentTime={currentTime}
-          duration={duration}
+          currentTime={displayCurrentTime}
+          duration={displayDuration}
           formatTime={formatTime}
           handleSpeedMenuOpen={handleSpeedMenuOpen}
           playbackSpeed={playbackSpeed}
@@ -585,27 +654,38 @@ const Video = () => {
           handleFullscreenToggle={handleFullscreenToggle}
           isFullscreen={isFullscreen}
           questions={questions}
+          getCurrentQuestion={getCurrentQuestion}
           answeredQuestions={answeredQuestions}
           handleTimeSeek={handleTimeSeek}
           lastAllowedTime={lastAllowedTime}
+          completionPercentage={completionPercentage}
+          videoProgress={videoProgress}
+          isProgressLoading={isLoading}
+          progressError={error}
+          hasStartedWatching={hasStarted}
+          totalTimeSpent={timeSpent}
+          progressMilestones={sentMilestones}
         />
-        {!!currentQuestion && progress?.status !== "completed" && isFullscreen && (
-          <QuestionDialog open={true} question={currentQuestion} />
-        )}
-
-         {!!currentQuestion && progress?.status !== "completed" && !isFullscreen && (
-           <InteractiveQuestionDialog
-          open={!!currentQuestion && progress?.status !== "completed"}
-          loading={loading} //cmt
-          currentQuestion={currentQuestion}
-          selectedAnswer={selectedAnswer}
-          handleMultipleChoiceChange={handleMultipleChoiceChange}
-          handleSingleChoiceChange={handleSingleChoiceChange}
-          handleAnswerSubmit={handleAnswerSubmit}
-          handleCloseDialog={handleCloseDialog}
-          alert={dialogAlert}
-        />
-        )}
+        {!!currentQuestion &&
+          progress?.status !== "completed" &&
+          isFullscreen && (
+            <QuestionDialog open={true} question={currentQuestion} />
+          )}
+        {!!currentQuestion &&
+          progress?.status !== "completed" &&
+          !isFullscreen && (
+            <InteractiveQuestionDialog
+              open={!!currentQuestion && progress?.status !== "completed"}
+              loading={loading}
+              currentQuestion={currentQuestion}
+              selectedAnswer={selectedAnswer}
+              handleMultipleChoiceChange={handleMultipleChoiceChange}
+              handleSingleChoiceChange={handleSingleChoiceChange}
+              handleAnswerSubmit={handleAnswerSubmit}
+              handleCloseDialog={handleCloseDialog}
+              alert={dialogAlert}
+            />
+          )}
         <SnackbarAlert alert={alert} setAlert={setAlert} />
       </Box>
     </div>

@@ -14,7 +14,10 @@ import {
 import axios from "axios";
 import { useOutletContext } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { getProgress, updateSupplementProgress } from "~/store/slices/Progress/action.js";
+import {
+  getProgress,
+  updateSupplementProgress,
+} from "~/store/slices/Progress/action.js";
 import { motion } from "framer-motion"; // You'll need to install framer-motion
 
 const Supplement = () => {
@@ -48,8 +51,6 @@ const Supplement = () => {
     }, 1000); // Update every second
     return () => clearInterval(timeTracker);
   }, []);
-
-
 
   const handleCompleteSupplement = useCallback(async () => {
     // Đảm bảo lấy đúng ID của supplement hiện tại
