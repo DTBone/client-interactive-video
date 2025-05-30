@@ -60,7 +60,7 @@ const quizSlice = createSlice({
                 state.loading = false;
                 if (action.payload.success) {
                     state.currentQuiz = action.payload.data;
-                    state.quizProgress = action.payload.quizProgress;
+                    //state.quizProgress = action.payload.quizProgress;
                 }
             })
             .addCase(getQuizById.rejected, (state, action) => {
