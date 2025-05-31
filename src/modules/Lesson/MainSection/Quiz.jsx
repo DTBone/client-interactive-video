@@ -78,7 +78,7 @@ const Quiz = () => {
 
     const [isLoading, setIsLoading] = useState(false);
     const location = useLocation();
-    const quizId = location?.state?.item?.quiz || '';
+    const quizId = location?.state?.item?.quiz._id || '';
 
     useEffect(() => {
         setIsStarted(false);

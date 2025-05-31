@@ -69,10 +69,8 @@ const Lecture = () => {
 
   console.log("progress", progress);
 
-
-
   const getLecture = async () => {
-    const result = await dispatch(getLectureById(lectureId));
+    const result = await dispatch(getLectureById(lectureId._id));
     if (result.payload.success) {
       setLecture({ ...result.payload.data, title: location.state.item.title });
       setIsCompleted(progress.status == "completed");
@@ -80,8 +78,6 @@ const Lecture = () => {
       console.log("Failed to get lecture");
     }
   };
-
-  
 
   React.useEffect(() => {
     getLecture();

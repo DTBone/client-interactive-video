@@ -2,68 +2,83 @@
 import { useEffect } from "react";
 import { Route, Routes, useNavigate, Navigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
 import Login from "./modules/Authentication/Authentication";
-import { checkAuthStatus } from "~/store/slices/Auth/action"; // You'll need to create this action
+import VerifyEmailAccount from "./modules/Authentication/VerifyEmailAccout";
+import ForgetPassword from "./modules/Authentication/ForgetPassword";
+import { checkAuthStatus } from "~/store/slices/Auth/action";
+import { clearState } from "./store/slices/Auth/authSlice";
 
 import HomeSection from "./pages/Home/index";
+import ShortLink from "./pages/ShortLink/shortLink.jsx";
+import GithubAuth from "./pages/GithubAuth/githubAuth";
+
 import HomeUser from "~/modules/User/HomeUser";
+import Profile from "~/modules/User/Profile";
+import RoadMap from "~/modules/User/RoadMap";
+import MyLearning from "./modules/User/MyLearning/MyLearning";
+import SearchPage from "./modules/User/SearchPage/SearchPage";
+import Blogs from "~/modules/User/Blogs/index.jsx";
+import Codespace from "./modules/User/Codespace/codespace";
+
 import DashboardLayout from "~/components/Layout/DashBoardLayout";
 import DefaultLayout from "~/components/Layout/DefaultLayout";
-import Profile from "~/modules/User/Profile";
-import VerifyEmailAccount from "~/modules/Authentication/VerifyEmailAccout";
-import ForgetPassword from "~/modules/Authentication/ForgetPassword";
-import ErrorPage from "~/Pages/ErrorPage";
+import DefaultLayoutV2 from "~/components/Layout/DefaultLayoutV2";
+import ProtectedRoute from "~/components/ProtectedRoute";
+import ChatBot from "./components/ChatBot/chatbot";
+
+import ErrorPage from "./Pages/ErrorPage";
+import UnauthorizedPage from "./Pages/UnauthorizedPage";
+
 import EnrollToCourse from "~/modules/EnrollToCourse/EnrollToCourse";
+import Payment from "./modules/EnrollToCourse/Payment";
+import PaymentStatus from "./modules/EnrollToCourse/Payment/PaymentStatus";
+
 import CourseDetail from "~/modules/CourseDetail/CourseDetail";
+import CourseInfo from "~/modules/CourseDetail/MainSection/CourseInfo";
 import Grades from "~/modules/CourseDetail/MainSection/Grades";
 import Messages from "~/modules/CourseDetail/MainSection/Messages";
-import CourseInfo from "~/modules/CourseDetail/MainSection/CourseInfo";
+import Overview from "~/modules/CourseDetail/MainSection/Overview";
+import Module from "./modules/CourseDetail/MainSection/Modules/Module";
+import CourseCertificate from "./modules/CourseDetail/CourseCertificate";
+
 import GeneralLessons from "~/modules/Lesson/GeneralLessons";
 import Supplement from "~/modules/Lesson/MainSection/Supplement";
 import Lecture from "~/modules/Lesson/MainSection/Lecture";
 import Quiz from "~/modules/Lesson/MainSection/Quiz";
+import QuizV2 from "./modules/Lesson/MainSection/QuizV2";
 import Programming from "~/modules/Lesson/MainSection/Programming";
-import CodeCompiler from "~/modules/OnlineCodeCompiler/CodeCompiler";
-import RoadMap from "~/modules/User/RoadMap";
-import Overview from "~/modules/CourseDetail/MainSection/Overview";
-import InstructorSection from "~/modules/Instructor/InstructorSection";
-import CourseSection from "~/modules/Instructor/Courses/CourseSection";
-import UnauthorizedPage from "./Pages/UnauthorizedPage";
-import Payment from "./modules/EnrollToCourse/Payment";
-import PaymentStatus from "./modules/EnrollToCourse/Payment/PaymentStatus";
-import DefaultLayoutV2 from "~/components/Layout/DefaultLayoutV2";
-import ProtectedRoute from "~/components/ProtectedRoute";
-import HomeAdmin from "~/modules/Admin/Home";
-import AccountManager from "./modules/Admin/AccountMg";
-import CourseManager from "./modules/Admin/CourseMg";
-import InstructorManager from "./modules/Admin/IntructorMg";
-import Chat from "./modules/Admin/Chat";
-import VideoCall from "./modules/Chat/VideoCall";
-import { clearState } from "./store/slices/Auth/authSlice";
-import ListStudent from "./modules/Instructor/Statistical/ListStudent";
-import ModuleSection from "./modules/Instructor/Modules/ModuleSection";
-import Module from "./modules/CourseDetail/MainSection/Modules/Module";
 
+import CodeCompiler from "~/modules/OnlineCodeCompiler/CodeCompiler";
+
+import InstructorSection from "~/modules/Instructor/InstructorSection";
+import HomeIntructor from "./modules/Instructor/HomeIntructor";
+import CourseSection from "~/modules/Instructor/Courses/CourseSection";
+import ModuleSection from "./modules/Instructor/Modules/ModuleSection";
+import MainSection from "./modules/Instructor/Modules/MainSection/MainSection";
 import EditModule from "./modules/Instructor/Modules/MainSection/EditModule";
 import EditModuleItem from "./modules/Instructor/Modules/MainSection/EditModuleItem";
 import NewModule from "./modules/Instructor/Modules/MainSection/NewModule";
 import NewModuleItem from "./modules/Instructor/Modules/MainSection/NewModuleItem";
-
-import { ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
-import MainSection from "./modules/Instructor/Modules/MainSection/MainSection";
-import Blogs from "~/modules/User/Blogs/index.jsx";
-import HomeIntructor from "./modules/Instructor/HomeIntructor";
-import Editor from "./testFile";
-import CourseCertificate from "./modules/CourseDetail/CourseCertificate ";
+import ListStudent from "./modules/Instructor/Statistical/ListStudent";
 import DetailedStatistic from "./modules/Instructor/Statistical/DetailedStatistic";
-
-import MyLearning from "./modules/User/MyLearning/MyLearning";
-import SearchPage from "./modules/User/SearchPage/SearchPage";
 import Message from "./modules/Instructor/Messages";
+
+import HomeAdmin from "~/modules/Admin/Home";
+import AdminRoutes from "~/modules/Admin/AdminRoutes";
+import AdminLayout from "~/modules/Admin/AdminLayout";
+import AccountManager from "./modules/Admin/AccountMg";
+import CourseManager from "./modules/Admin/CourseMg";
+import InstructorManager from "./modules/Admin/IntructorMg";
+import Chat from "./modules/Admin/Chat";
+
+import VideoCall from "./modules/Chat/VideoCall";
+import Editor from "./testFile";
+
 import ScrollToTop from "./Utils/scrollToTop";
-import ChatBot from "./components/ChatBot/chatbot";
-import QuizV2 from "./modules/Lesson/MainSection/QuizV2";
+
 // import Certificate from './modules/User/Certificate/Certificate';
 
 function App() {
@@ -119,6 +134,7 @@ function App() {
         <Route path="/verify-account" element={<VerifyEmailAccount />} />
         <Route path="/error" element={<ErrorPage />} />
         <Route path="/unauthorized" element={<UnauthorizedPage />} />
+        <Route path="/github/callback" element={<GithubAuth />} />
 
         {/* Protected routes */}
         <Route
@@ -195,7 +211,7 @@ function App() {
         <Route
           path="/search"
           element={
-            <ProtectedRoute allowedRoles={["student", "instructor", "admin"]}>
+            <ProtectedRoute allowedRoles={["student"]}>
               <DashboardLayout>
                 <SearchPage />
               </DashboardLayout>
@@ -239,14 +255,19 @@ function App() {
           <Route path="module/:moduleId" element={<Module />}></Route>
         </Route>
 
-        <Route
-          path="learns/lessons"
-          element={
-            <ProtectedRoute allowedRoles={["student", "instructor", "admin"]}>
-              <GeneralLessons />
-            </ProtectedRoute>
-          }
-        >
+        <Route path="/codespace" element={
+          <ProtectedRoute allowedRoles={['student', 'instructor', 'admin']}>
+            <DashboardLayout>
+              <Codespace />
+            </DashboardLayout>
+          </ProtectedRoute>
+        } />
+        <Route path="learns/lessons" element={
+          <ProtectedRoute allowedRoles={['student', 'instructor', 'admin']}>
+            <GeneralLessons />
+          </ProtectedRoute>
+        }>
+
           <Route index element={<Supplement />} />
 
           <Route path="supplement/:itemId" element={<Supplement />} />
@@ -312,32 +333,29 @@ function App() {
         >
           <Route path="course/:courseId" element={<DetailedStatistic />} />
         </Route>
-        <Route
-          path="/course-management/new-course"
-          element={
-            <ProtectedRoute allowedRoles={["instructor", "admin"]}>
-              <CourseSection state={"new"} />
-            </ProtectedRoute>
-          }
-        />
 
-        <Route
-          path="/course-management/student/:courseId"
-          element={
-            <ProtectedRoute allowedRoles={["instructor", "admin"]}>
-              <ListStudent />
-            </ProtectedRoute>
-          }
-        />
+        
 
-        <Route
-          path="/course-management/:courseId/module"
-          element={
-            <ProtectedRoute allowedRoles={["instructor", "admin"]}>
-              <ModuleSection />
-            </ProtectedRoute>
-          }
-        >
+        <Route path="/course-management/new-course" element={
+          <ProtectedRoute allowedRoles={['instructor', 'admin']}>
+            <CourseSection state={'new'} />
+          </ProtectedRoute>
+        } />
+
+
+        <Route path="/course-management/student/:courseId" element={
+          <ProtectedRoute allowedRoles={['instructor', 'admin']}>
+            <ListStudent />
+          </ProtectedRoute>
+        } />
+        
+        <Route path="/s/:code" element={<ShortLink />} />
+        <Route path="/course-management/:courseId/module" element={
+          <ProtectedRoute allowedRoles={['instructor', 'admin']}>
+            <ModuleSection />
+          </ProtectedRoute>
+        } >
+
           <Route index element={<MainSection />} />
           <Route path="new-module" element={<NewModule />} />
           <Route path=":moduleId" element={<EditModule />} />
@@ -349,6 +367,7 @@ function App() {
         </Route>
 
         {/* Admin */}
+
         <Route
           path="/admin"
           element={
@@ -409,6 +428,22 @@ function App() {
             </ProtectedRoute>
           }
         />
+
+        {AdminRoutes.map((route, index) => (
+          <Route
+            key={index}
+            path={route.path}
+            element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <AdminLayout>
+
+                  <route.element />
+                </AdminLayout>
+              </ProtectedRoute>
+            }
+          />
+      ))}
+
         {/* <Route path="/test" element={
 
           // <Certificate />

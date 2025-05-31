@@ -13,7 +13,7 @@ import Logout from '@mui/icons-material/Logout';
 import { useNavigate } from 'react-router-dom';
 import authService from '~/services/auth/authService';
 import Badge from '@mui/material/Badge';
-import { Notifications } from "@mui/icons-material";
+import { Notifications, School } from "@mui/icons-material";
 import { api } from "~/Config/api.js";
 import socketService from "~/hooks/SocketService.js";
 import NotificationMenu from "~/components/Header/components/Notification/index.jsx";
@@ -31,6 +31,9 @@ export default function AccountMenu({ user }) {
 
 
   console.log('user', user);
+  if (!user) {
+    user = JSON.parse(localStorage.getItem('user'));
+  }
   const handleNotificationClick = (event) => {
     setNotificationAnchorEl(event.currentTarget);
   };
@@ -39,12 +42,7 @@ export default function AccountMenu({ user }) {
     setNotificationAnchorEl(null);
   };
   const fetchNotifications = async () => {
-    const result = await api.get('/notifications', {
-      params: {
-        user: user._id
-      }
-    });
-    console.log('result', result);
+    const result = await api.get('/notifications');
     // if(result.data.success){
     //   setNotifications(result.data.data);
     //   setUnreadNotifications(result.data.filter(notification => notification.read === false).length);
@@ -57,9 +55,11 @@ export default function AccountMenu({ user }) {
       );
     }
   }
+
   React.useEffect(() => {
-    console.log('user', user);
     fetchNotifications();
+  }, []);
+  React.useEffect(() => {
     socket.emit('user:login', {
       userId: user._id,
       fullname: user?.profile?.fullname || "Chưa cập nhật",
@@ -67,6 +67,7 @@ export default function AccountMenu({ user }) {
       role: 'student'
     });
     socket.on('notification:new', (data) => {
+      console.log('data', data);
       setNotifications((prev) => [data, ...prev]);
       setUnreadNotifications(prevState => prevState + 1);
     })
@@ -173,9 +174,16 @@ export default function AccountMenu({ user }) {
         anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
       >
         <MenuItem onClick={handleProfile}>
-          <Avatar />Your Profile
+          <Avatar src={user?.profile?.picture} sx={{ width: 20, height: 20 }}></Avatar>
+          Your Profile
         </MenuItem>
         <Divider />
+        <MenuItem onClick={() => navigate('/codespace')}>
+          <ListItemIcon>
+            <School fontSize="small" />
+          </ListItemIcon>
+          Codespaces
+        </MenuItem>
         <MenuItem onClick={handleClose}>
           <ListItemIcon>
             <Settings fontSize="small" />

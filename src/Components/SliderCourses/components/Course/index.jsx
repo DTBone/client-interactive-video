@@ -11,9 +11,47 @@ import Box from '@mui/material/Box';
 import { useNavigate } from 'react-router-dom';
 import { Avatar, Chip, Stack } from '@mui/material';
 import { FavoriteBorder, FlagOutlined, Share, SubscriptionsOutlined, ThumbsUpDown } from '@mui/icons-material';
+import React, { useState } from 'react';
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import DialogActions from '@mui/material/DialogActions';
+import TextField from '@mui/material/TextField';
+import IconButton from '@mui/material/IconButton';
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import CircularProgress from '@mui/material/CircularProgress';
+import Snackbar from '@mui/material/Snackbar';
+import { api } from '~/Config/api';
 
 function Course({ course }) {
   const navigate = useNavigate();
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [shortLink, setShortLink] = useState('');
+  const [shareLoading, setShareLoading] = useState(false);
+  const [snackbar, setSnackbar] = useState({ open: false, message: '' });
+
+  const handleShare = async () => {
+    try {
+      setShareLoading(true);
+      const shortLinkObj = await api.post(`/shortlinks`, {
+        courseId: course._id,
+      });
+      const url = `${window.location.origin}/s/${shortLinkObj.data.data.code}`;
+      setShortLink(url);
+      setDialogOpen(true);
+    } catch (err) {
+      setSnackbar({ open: true, message: 'Tạo link thất bại!' });
+    } finally {
+      setShareLoading(false);
+    }
+  };
+
+  const handleCopy = async () => {
+    if (shortLink) {
+      await navigator.clipboard.writeText(shortLink);
+      setSnackbar({ open: true, message: 'Đã copy link!' });
+    }
+  };
 
   return (
     <Box
@@ -281,15 +319,75 @@ function Course({ course }) {
                 <Share color="primary" 
                 sx={{
                   transition: 'all ease 0.3s',
-                  
                   ":hover": {
                     scale: 1.1,
                     cursor: 'pointer',
                   }
                 }}
+                onClick={handleShare}
+                disabled={shareLoading}
                 />
               </Stack>
           </Box>
+          <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)}>
+            <DialogTitle>Chia sẻ khóa học</DialogTitle>
+            <DialogContent>
+              {shareLoading ? (
+                <CircularProgress />
+              ) : (
+                <Box
+                sx={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 1,
+                  width: '100%',
+                  minWidth: '300px',
+                }}
+                >
+                  <img src={course.photo} alt="course" width={200} height={200} 
+                  style={{
+                    borderRadius: '10px',
+                    objectFit: 'cover',
+                  }}
+                  />
+                  <Typography variant="body1" color="black" sx={{ fontWeight: 'bold' }}>
+                    Link khóa học:
+                  </Typography>
+                  <TextField
+                  value={shortLink}
+                  fullWidth
+                  InputProps={{
+                    endAdornment: (
+                      <IconButton onClick={handleCopy} edge="end">
+                        <ContentCopyIcon />
+                      </IconButton>
+                    ),
+                    readOnly: true,
+                  }}
+                  margin="dense"
+                />
+                </Box>
+              )}
+            </DialogContent>
+              <DialogActions>
+                <Button onClick={() => setDialogOpen(false)}>Đóng</Button>
+              </DialogActions>
+            </Dialog>
+
+            <Snackbar
+              open={snackbar.open}
+              autoHideDuration={2000}
+              onClose={() => setSnackbar({ ...snackbar, open: false })}
+              message={snackbar.message}
+              sx={{
+                width: '100%',
+                position: 'absolute',
+                bottom: 0,
+                left: 0,
+              }}
+            />
     </Box>
   );
 }

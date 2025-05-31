@@ -1,4 +1,4 @@
-import { approveCourse, createCourse, getAllCourse, getAllCoursebyUser, getCertificateByCourseId, getCourseByID, getCourseByInstructor, updateCourse } from "./action";
+import { approveCourse, createCourse, getAllCourse, getAllCoursebyUser, getCertificateByCourseId, getCourseByID, getCourseByInstructor, rejectCourse, updateCourse } from "./action";
 import { createSlice } from '@reduxjs/toolkit';
 const courseSlice = createSlice({
     name: 'course',
@@ -88,7 +88,20 @@ const courseSlice = createSlice({
                 state.loading = false;
                 state.error = action.payload;
             })
-
+            .addCase(rejectCourse.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(rejectCourse.fulfilled, (state, action) => {
+                state.loading = false;
+                const index = state.courses.findIndex(course => course._id === action.payload.data._id);
+                if (index !== -1) {
+                    state.courses[index] = action.payload.data;
+                }
+            })
+            .addCase(rejectCourse.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
             .addCase(getCourseByInstructor.pending, (state) => {
                 state.loading = true;
             })

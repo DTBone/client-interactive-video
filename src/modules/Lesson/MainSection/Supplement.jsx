@@ -143,7 +143,6 @@ const Supplement = () => {
       apiCallRef.current = true; // Reset flag
       return;
     }
-
     // Set timeout to mark as complete after delay
     const timer = setTimeout(() => {
       if (!apiCallRef.current) {

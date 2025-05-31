@@ -42,7 +42,7 @@ export const getCourseByInstructor = createAsyncThunk(
     'course/getCourseByInstructor',
     async (_, { rejectWithValue }) => {
         try {
-            const { data } = await axiosInstance.get(`/learns/getCourseByInstructor`);
+            const { data } = await axiosInstance.get(`/learns/instructor`);
             //console.log('course/getCourseByInstructor', data);
             return data;
         } catch (error) {
@@ -103,9 +103,9 @@ export const updateCourse = createAsyncThunk(
 );
 export const approveCourse = createAsyncThunk(
     'course/approveCourse',
-    async ({ courseId, courseData }, { rejectWithValue }) => {
+    async ({ courseId, feedback, isApproved }, { rejectWithValue }) => {
         try {
-            const { data } = await api.put(`/learns/${courseId}/approve`, courseData, {
+            const { data } = await api.put(`/learns/${courseId}/approve`, { feedback, isApproved }, {
                 user: {
                     id: localStorage.getItem('user')._id,
                 }
@@ -114,6 +114,24 @@ export const approveCourse = createAsyncThunk(
             return data;
         } catch (error) {
             console.log('get module item failed', error.message);
+            return rejectWithValue(error.message);
+        }
+    }
+)
+
+export const rejectCourse = createAsyncThunk(
+    'course/rejectCourse',
+    async ({ courseId, feedback }, { rejectWithValue }) => {
+        try {
+            const { data } = await api.put(`/learns/${courseId}/reject`, { feedback }, {
+                user: {
+                    id: localStorage.getItem('user')._id,
+                }
+            });
+            console.log(data);
+            return data;
+        } catch (error) {
+            console.log('reject course failed', error.message);
             return rejectWithValue(error.message);
         }
     }

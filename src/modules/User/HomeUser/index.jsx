@@ -15,7 +15,7 @@ import you from '~/assets/you.png';
 import Joyride, { STATUS } from 'react-joyride';
 import "./HomeUser.css";
 import { api } from '~/Config/api';
-
+import BannerSlider from './components/Banner';
 function HomeUser({ user }) {
     const dispatch = useDispatch();
     const [loading, setLoading] = useState(false);
@@ -28,6 +28,7 @@ function HomeUser({ user }) {
     const [recommendCourses, setRecommendCourses] = useState([]);
     const [newCourses, setNewCourses] = useState([]);
     const countAllCourses = useSelector(state => state.course?.count) || 0;
+    const [settings, setSettings] = useState(null);
 
     // Refs for tour targets
     const categoriesRef = useRef(null);
@@ -50,6 +51,15 @@ function HomeUser({ user }) {
         }
     }, []);
 
+    useEffect(() => {
+        const fetchSettings = async () => {
+            const response = await api.get('/settings');
+            console.log(response.data);
+            setSettings(response.data);
+        };
+        fetchSettings();
+    }, []);
+
     // Initialize tour steps after components have rendered
     useEffect(() => {
         setTourSteps([
@@ -57,69 +67,69 @@ function HomeUser({ user }) {
                 target: '.welcome-banner',
                 content: (
                     <div>
-                        <h3 style={{margin:0, fontWeight:'bold'}}>Chào mừng bạn đến với CodeChef!</h3>
-                        <p>Khám phá nền tảng học lập trình hiện đại, đa dạng khóa học và cộng đồng lớn mạnh.</p>
+                        <h3 style={{margin:0, fontWeight:'bold'}}>Welcome to CodeChef!</h3>
+                        <p>Explore the modern, diverse learning platform, with a wide range of courses and a strong community.</p>
                     </div>
                 ),
                 placement: 'center',
                 disableBeacon: true,
-                title: '👋 Chào mừng!',
+                title: '👋 Welcome!',
             },
             {
                 target: '.categories-section',
                 content: (
                     <div>
-                        <b>Danh mục khóa học</b>
-                        <p>Chọn lĩnh vực bạn quan tâm để lọc các khóa học phù hợp.</p>
+                        <b>Course Categories</b>
+                        <p>Choose a topic you're interested in to filter the courses.</p>
                     </div>
                 ),
-                title: 'Khám phá danh mục',
+                title: 'Explore Categories',
             },
             {
                 target: '.recent-courses-section:first-of-type',
                 content: (
                     <div>
-                        <b>Khóa học đề xuất</b>
-                        <p>Đây là các khóa học phù hợp nhất với bạn. Nhấn vào từng khóa để xem chi tiết, đánh giá, và bắt đầu học.</p>
+                        <b>Recommended Courses</b>
+                        <p>These are the most suitable courses for you. Click on each course to view details, reviews, and start learning.</p>
                         <ul style={{margin:'0 0 0 1.2em'}}>
-                            <li><b>Xem chi tiết:</b> Nhấn vào tên hoặc ảnh khóa học.</li>
-                            <li><b>Đăng ký:</b> Nhấn nút &quot;Đăng ký&quot; để thêm vào lộ trình học.</li>
+                            <li><b>View details:</b> Click on the name or image of the course.</li>
+                            <li><b>Register:</b> Click the &quot;Start Learning Now&quot; button to add to your learning path.</li>
                         </ul>
                     </div>
                 ),
-                title: 'Khóa học đề xuất',
+                title: 'Recommended Courses',
             },
             {
                 target: '.newest-courses-section',
                 content: (
                     <div>
-                        <b>Khóa học mới nhất</b>
-                        <p>Luôn cập nhật các khóa học mới nhất tại đây.</p>
+                        <b>Newest Courses</b>
+                        <p>Always update the latest courses here.</p>
                     </div>
                 ),
-                title: 'Khóa học mới',
+                title: 'Newest Courses',
             },
             {
                 target: '.help-tour-btn',
                 content: (
                     <div>
-                        <b>Cần trợ giúp?</b>
-                        <p>Bạn có thể xem lại hướng dẫn này bất cứ lúc nào bằng cách nhấn vào nút trợ giúp ở góc phải bên dưới.</p>
+                        <b>Need help?</b>
+                        <p>You can view this guide anytime by clicking the help button at the bottom right.</p>
                     </div>
                 ),
                 placement: 'left',
-                title: 'Trợ giúp',
+                title: 'Help',
             },
             {
                 target: 'body',
                 content: (
                     <div>
-                        <b>Bạn đã sẵn sàng!</b>
-                        <p>Bắt đầu hành trình học tập cùng CodeChef ngay thôi!</p>
+                        <b>You are ready!</b>
+                        <p>Start your learning journey with CodeChef now!</p>
                     </div>
                 ),
                 placement: 'center',
-                title: '🎉 Bắt đầu học!',
+                title: '🎉 Start learning!',
             },
         ]);
     }, []);
@@ -247,6 +257,7 @@ function HomeUser({ user }) {
                 showProgress={true}
                 showSkipButton={true}
                 callback={handleJoyrideCallback}
+                scrollOffset={400}
                 styles={{
                     options: {
                         primaryColor: '#4CAF50',  // Green to match theme
@@ -285,7 +296,7 @@ function HomeUser({ user }) {
             />
 
             <div className="welcome-banner">
-                <Banner image={banner} />
+                <BannerSlider images={settings?.homepage_banner?.listImageUrl} />
             </div>
 
             <div className='h-full w-full flex flex-col items-center'>
