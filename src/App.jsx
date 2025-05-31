@@ -42,7 +42,6 @@ import Grades from "~/modules/CourseDetail/MainSection/Grades";
 import Messages from "~/modules/CourseDetail/MainSection/Messages";
 import Overview from "~/modules/CourseDetail/MainSection/Overview";
 import Module from "./modules/CourseDetail/MainSection/Modules/Module";
-import CourseCertificate from "./modules/CourseDetail/CourseCertificate";
 
 import GeneralLessons from "~/modules/Lesson/GeneralLessons";
 import Supplement from "~/modules/Lesson/MainSection/Supplement";
@@ -78,6 +77,7 @@ import VideoCall from "./modules/Chat/VideoCall";
 import Editor from "./testFile";
 
 import ScrollToTop from "./Utils/scrollToTop";
+import CourseCertificate from "./modules/CourseDetail/CourseCertificate ";
 
 // import Certificate from './modules/User/Certificate/Certificate';
 
@@ -255,19 +255,24 @@ function App() {
           <Route path="module/:moduleId" element={<Module />}></Route>
         </Route>
 
-        <Route path="/codespace" element={
-          <ProtectedRoute allowedRoles={['student', 'instructor', 'admin']}>
-            <DashboardLayout>
-              <Codespace />
-            </DashboardLayout>
-          </ProtectedRoute>
-        } />
-        <Route path="learns/lessons" element={
-          <ProtectedRoute allowedRoles={['student', 'instructor', 'admin']}>
-            <GeneralLessons />
-          </ProtectedRoute>
-        }>
-
+        <Route
+          path="/codespace"
+          element={
+            <ProtectedRoute allowedRoles={["student", "instructor", "admin"]}>
+              <DashboardLayout>
+                <Codespace />
+              </DashboardLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="learns/lessons"
+          element={
+            <ProtectedRoute allowedRoles={["student", "instructor", "admin"]}>
+              <GeneralLessons />
+            </ProtectedRoute>
+          }
+        >
           <Route index element={<Supplement />} />
 
           <Route path="supplement/:itemId" element={<Supplement />} />
@@ -334,28 +339,33 @@ function App() {
           <Route path="course/:courseId" element={<DetailedStatistic />} />
         </Route>
 
-        
+        <Route
+          path="/course-management/new-course"
+          element={
+            <ProtectedRoute allowedRoles={["instructor", "admin"]}>
+              <CourseSection state={"new"} />
+            </ProtectedRoute>
+          }
+        />
 
-        <Route path="/course-management/new-course" element={
-          <ProtectedRoute allowedRoles={['instructor', 'admin']}>
-            <CourseSection state={'new'} />
-          </ProtectedRoute>
-        } />
+        <Route
+          path="/course-management/student/:courseId"
+          element={
+            <ProtectedRoute allowedRoles={["instructor", "admin"]}>
+              <ListStudent />
+            </ProtectedRoute>
+          }
+        />
 
-
-        <Route path="/course-management/student/:courseId" element={
-          <ProtectedRoute allowedRoles={['instructor', 'admin']}>
-            <ListStudent />
-          </ProtectedRoute>
-        } />
-        
         <Route path="/s/:code" element={<ShortLink />} />
-        <Route path="/course-management/:courseId/module" element={
-          <ProtectedRoute allowedRoles={['instructor', 'admin']}>
-            <ModuleSection />
-          </ProtectedRoute>
-        } >
-
+        <Route
+          path="/course-management/:courseId/module"
+          element={
+            <ProtectedRoute allowedRoles={["instructor", "admin"]}>
+              <ModuleSection />
+            </ProtectedRoute>
+          }
+        >
           <Route index element={<MainSection />} />
           <Route path="new-module" element={<NewModule />} />
           <Route path=":moduleId" element={<EditModule />} />
@@ -434,15 +444,14 @@ function App() {
             key={index}
             path={route.path}
             element={
-              <ProtectedRoute allowedRoles={['admin']}>
+              <ProtectedRoute allowedRoles={["admin"]}>
                 <AdminLayout>
-
                   <route.element />
                 </AdminLayout>
               </ProtectedRoute>
             }
           />
-      ))}
+        ))}
 
         {/* <Route path="/test" element={
 
