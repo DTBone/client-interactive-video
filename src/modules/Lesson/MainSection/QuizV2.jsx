@@ -58,7 +58,7 @@ const QuizV2 = () => {
     }
   }, [currentQuiz]);
   console.log("quizState", quizState);
-  return <div>QuizV2</div>;
+  return <div>QuizV2 check</div>;
 };
 
 export default QuizV2;
