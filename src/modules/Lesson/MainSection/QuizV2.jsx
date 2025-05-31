@@ -161,7 +161,7 @@ function quizReducer(state, action) {
 const QuizV2 = () => {
   const dispatch = useDispatch();
   const location = useLocation();
-  const { onQuizSubmit } = useOutletContext();
+  const { onQuizSubmit } = useOutletContext(); // Chỉ để trigger đổi icon
 
   // Refs for security measures
   const quizContainerRef = useRef(null);
@@ -429,6 +429,37 @@ const QuizV2 = () => {
     }
   };
 
+  // Hàm mới để xử lý logic completion của quiz
+  const handleQuizCompletion = useCallback(
+    (isCompleted, quizData = null) => {
+      console.log("Quiz completion handler called:", { isCompleted, quizData });
+
+      if (isCompleted) {
+        // Xử lý logic khi quiz hoàn thành
+        if (quizData) {
+          // Nếu có data từ submit, cập nhật state
+          quizDispatch({
+            type: "SUBMIT_QUIZ",
+            payload: {
+              score: quizData.score,
+              isPassed: quizData.isPassed,
+              quizProgress: quizData.moduleItemProgress,
+            },
+          });
+        }
+
+        // Trigger icon change (chức năng ban đầu của onQuizSubmit)
+        if (onQuizSubmit) {
+          onQuizSubmit(true);
+        }
+
+        // Có thể thêm các logic khác khi quiz hoàn thành
+        showSnackbar("Quiz completed successfully!");
+      }
+    },
+    [onQuizSubmit]
+  );
+
   const handleAutoSubmit = useCallback(async () => {
     if (quizState.isSubmitted) return; // Prevent multiple submissions
 
@@ -451,26 +482,16 @@ const QuizV2 = () => {
       );
 
       if (result.payload && result.payload.success) {
-        quizDispatch({
-          type: "SUBMIT_QUIZ",
-          payload: {
-            score: result.payload.data.currentScore,
-            isPassed:
-              result.payload.data.moduleItemProgress?.result?.quiz?.score >=
-              quizState.quiz.passingScore,
-            quizProgress: result.payload.data.moduleItemProgress,
-          },
-        });
+        const quizData = {
+          score: result.payload.data.currentScore,
+          isPassed:
+            result.payload.data.moduleItemProgress?.result?.quiz?.score >=
+            quizState.quiz.passingScore,
+          moduleItemProgress: result.payload.data.moduleItemProgress,
+        };
 
-        if (onQuizSubmit) {
-          onQuizSubmit(true, {
-            score: result.payload.data.currentScore,
-            isPassed:
-              result.payload.data.moduleItemProgress?.result?.quiz?.score >=
-              quizState.quiz.passingScore,
-            moduleItemProgress: result.payload.data.moduleItemProgress,
-          });
-        }
+        // Sử dụng hàm completion handler mới
+        handleQuizCompletion(true, quizData);
       }
     } catch (error) {
       console.error("Failed to auto-submit quiz:", error);
@@ -486,7 +507,7 @@ const QuizV2 = () => {
     quizState.warningCount,
     quizState.quiz.passingScore,
     dispatch,
-    onQuizSubmit,
+    handleQuizCompletion,
   ]);
 
   const handleSubmit = async () => {
@@ -518,26 +539,16 @@ const QuizV2 = () => {
       console.log("Submit result:", result);
 
       if (result.payload && result.payload.success) {
-        quizDispatch({
-          type: "SUBMIT_QUIZ",
-          payload: {
-            score: result.payload.data.currentScore,
-            isPassed:
-              result.payload.data.moduleItemProgress?.result?.quiz?.score >=
-              quizState.quiz.passingScore,
-            quizProgress: result.payload.data.moduleItemProgress,
-          },
-        });
+        const quizData = {
+          score: result.payload.data.currentScore,
+          isPassed:
+            result.payload.data.moduleItemProgress?.result?.quiz?.score >=
+            quizState.quiz.passingScore,
+          moduleItemProgress: result.payload.data.moduleItemProgress,
+        };
 
-        if (onQuizSubmit) {
-          onQuizSubmit(true, {
-            score: result.payload.data.currentScore,
-            isPassed:
-              result.payload.data.moduleItemProgress?.result?.quiz?.score >=
-              quizState.quiz.passingScore,
-            moduleItemProgress: result.payload.data.moduleItemProgress,
-          });
-        }
+        // Sử dụng hàm completion handler mới
+        handleQuizCompletion(true, quizData);
         showSnackbar("Quiz submitted successfully!");
       } else {
         console.error("Submit failed:", result.payload);
@@ -1594,6 +1605,7 @@ const QuizV2 = () => {
     <Box
       ref={quizContainerRef}
       sx={{
+        width: "100%",
         minHeight: "100vh",
         backgroundColor: "transparent",
       }}
