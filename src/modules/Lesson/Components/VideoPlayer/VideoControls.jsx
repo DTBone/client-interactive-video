@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo, useEffect } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
 import {
   Box,
   IconButton,
@@ -32,7 +32,6 @@ const VideoProgressBar = ({
   answeredQuestions = new Set(),
   handleTimeSeek,
   formatTime,
-  lastAllowedTime,
   onQuestionClick,
 }) => {
   const theme = useTheme();
@@ -40,7 +39,17 @@ const VideoProgressBar = ({
   const [hoverTime, setHoverTime] = useState(0);
   const [hoverPosition, setHoverPosition] = useState(0);
 
-  const progressPercentage = duration > 0 ? (currentTime / duration) * 100 : 0;
+  // State để track việc dragging/seeking
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragTime, setDragTime] = useState(null);
+
+  // Tính toán progress percentage với ưu tiên cho dragging state
+  const progressPercentage = useMemo(() => {
+    if (isDragging && dragTime !== null) {
+      return duration > 0 ? (dragTime / duration) * 100 : 0;
+    }
+    return duration > 0 ? (currentTime / duration) * 100 : 0;
+  }, [currentTime, duration, isDragging, dragTime]);
 
   const handleMouseMove = useCallback(
     (event) => {
@@ -49,19 +58,88 @@ const VideoProgressBar = ({
       const time = position * duration;
       setHoverTime(time);
       setHoverPosition(event.clientX - rect.left);
+
+      // Nếu đang dragging, update drag time
+      if (isDragging) {
+        setDragTime(Math.max(0, Math.min(duration, time)));
+      }
+    },
+    [duration, isDragging]
+  );
+
+  const handleMouseDown = useCallback(
+    (event) => {
+      setIsDragging(true);
+      const rect = event.currentTarget.getBoundingClientRect();
+      const position = (event.clientX - rect.left) / rect.width;
+      const time = position * duration;
+      setDragTime(Math.max(0, Math.min(duration, time)));
     },
     [duration]
   );
 
+  const handleMouseUp = useCallback(
+    (event) => {
+      if (isDragging && dragTime !== null) {
+        const percentage = Math.max(
+          0,
+          Math.min(100, (dragTime / duration) * 100)
+        );
+        handleTimeSeek(event, percentage);
+      }
+      setIsDragging(false);
+      setDragTime(null);
+    },
+    [isDragging, dragTime, duration, handleTimeSeek]
+  );
+
   const handleClick = useCallback(
     (event) => {
-      const rect = event.currentTarget.getBoundingClientRect();
-      const position = (event.clientX - rect.left) / rect.width;
-      const percentage = Math.max(0, Math.min(100, position * 100));
-      handleTimeSeek(event, percentage);
+      // Chỉ handle click nếu không phải dragging
+      if (!isDragging) {
+        const rect = event.currentTarget.getBoundingClientRect();
+        const position = (event.clientX - rect.left) / rect.width;
+        const percentage = Math.max(0, Math.min(100, position * 100));
+        handleTimeSeek(event, percentage);
+      }
     },
-    [handleTimeSeek]
+    [handleTimeSeek, isDragging]
   );
+
+  // Mouse event listeners cho global mouse up
+  useEffect(() => {
+    const handleGlobalMouseUp = () => {
+      if (isDragging) {
+        setIsDragging(false);
+        setDragTime(null);
+      }
+    };
+
+    const handleGlobalMouseMove = (event) => {
+      if (isDragging) {
+        // Update drag time based on mouse position
+        const progressBar = document.querySelector(
+          '[data-progress-bar="true"]'
+        );
+        if (progressBar) {
+          const rect = progressBar.getBoundingClientRect();
+          const position = (event.clientX - rect.left) / rect.width;
+          const time = position * duration;
+          setDragTime(Math.max(0, Math.min(duration, time)));
+        }
+      }
+    };
+
+    if (isDragging) {
+      document.addEventListener("mouseup", handleGlobalMouseUp);
+      document.addEventListener("mousemove", handleGlobalMouseMove);
+    }
+
+    return () => {
+      document.removeEventListener("mouseup", handleGlobalMouseUp);
+      document.removeEventListener("mousemove", handleGlobalMouseMove);
+    };
+  }, [isDragging, duration]);
 
   // Simplified question status checking - only answered or unanswered
   const isQuestionAnswered = useCallback(
@@ -112,12 +190,15 @@ const VideoProgressBar = ({
 
   // Simplified question markers - only two states
   const questionMarkers = useMemo(() => {
+    // Use drag time or current time for question detection
+    const timeForDetection = isDragging ? dragTime : currentTime;
+
     return questions?.map((question) => {
       const position = (question.startTime / duration) * 100;
       const isAnswered = isQuestionAnswered(question);
       const isActive =
-        currentTime >= question.startTime &&
-        currentTime < (question.endTime || question.startTime + 30);
+        timeForDetection >= question.startTime &&
+        timeForDetection < (question.endTime || question.startTime + 30);
 
       // Determine marker appearance
       let markerColor,
@@ -213,12 +294,14 @@ const VideoProgressBar = ({
     theme,
     handleTimeSeek,
     onQuestionClick,
+    isDragging,
+    dragTime,
   ]);
 
   return (
     <Box sx={{ position: "relative", width: "100%", mb: 1 }}>
       {/* Hover time tooltip */}
-      {isHovering && (
+      {(isHovering || isDragging) && (
         <Box
           sx={{
             position: "absolute",
@@ -234,15 +317,16 @@ const VideoProgressBar = ({
             pointerEvents: "none",
           }}
         >
-          {formatTime(hoverTime)}
+          {formatTime(isDragging ? dragTime : hoverTime)}
         </Box>
       )}
 
       {/* Progress bar container */}
       <Box
+        data-progress-bar="true"
         sx={{
           position: "relative",
-          height: 6,
+          height: isDragging ? 10 : 6,
           backgroundColor: alpha(theme.palette.common.white, 0.2),
           borderRadius: 3,
           cursor: "pointer",
@@ -254,6 +338,8 @@ const VideoProgressBar = ({
         onMouseMove={handleMouseMove}
         onMouseEnter={() => setIsHovering(true)}
         onMouseLeave={() => setIsHovering(false)}
+        onMouseDown={handleMouseDown}
+        onMouseUp={handleMouseUp}
         onClick={handleClick}
       >
         {/* Buffered segments */}
@@ -266,9 +352,12 @@ const VideoProgressBar = ({
             left: 0,
             width: `${progressPercentage}%`,
             height: "100%",
-            backgroundColor: theme.palette.primary.main,
+            backgroundColor: isDragging
+              ? theme.palette.primary.light
+              : theme.palette.primary.main,
             borderRadius: 3,
             zIndex: 2,
+            transition: isDragging ? "none" : "width 0.1s ease",
           }}
         />
 
@@ -282,14 +371,17 @@ const VideoProgressBar = ({
             left: `${progressPercentage}%`,
             top: "50%",
             transform: "translate(-50%, -50%)",
-            width: 14,
-            height: 14,
+            width: isDragging ? 18 : 14,
+            height: isDragging ? 18 : 14,
             backgroundColor: theme.palette.primary.main,
             borderRadius: "50%",
             border: `2px solid ${theme.palette.common.white}`,
             zIndex: 3,
-            opacity: isHovering ? 1 : 0,
-            transition: "opacity 0.2s ease",
+            opacity: isHovering || isDragging ? 1 : 0,
+            transition: isDragging
+              ? "none"
+              : "opacity 0.2s ease, width 0.2s ease, height 0.2s ease",
+            cursor: isDragging ? "grabbing" : "grab",
           }}
         />
       </Box>
@@ -306,7 +398,6 @@ VideoProgressBar.propTypes = {
   answeredQuestions: PropTypes.instanceOf(Set),
   handleTimeSeek: PropTypes.func.isRequired,
   formatTime: PropTypes.func.isRequired,
-  lastAllowedTime: PropTypes.number,
   onQuestionClick: PropTypes.func,
 };
 
@@ -314,13 +405,11 @@ VideoProgressBar.defaultProps = {
   buffered: [],
   questions: [],
   answeredQuestions: new Set(),
-  lastAllowedTime: Infinity,
   onQuestionClick: null,
 };
 
 // Enhanced Main VideoControls Component
 const VideoControls = ({
-  progressStats,
   showControls,
   isPlaying,
   handlePlayPause,
@@ -342,7 +431,6 @@ const VideoControls = ({
   questions,
   answeredQuestions,
   handleTimeSeek,
-  lastAllowedTime,
   isOnline = true,
   onQuestionClick,
   getCurrentQuestion,
@@ -351,12 +439,13 @@ const VideoControls = ({
   videoProgress,
   isProgressLoading,
   progressError,
-  hasStartedWatching,
-  totalTimeSpent,
-  progressMilestones,
 }) => {
   const theme = useTheme();
   const [showVolumeSlider, setShowVolumeSlider] = useState(false);
+
+  // State để track việc seeking
+  const [isSeeking, setIsSeeking] = useState(false);
+  const [seekingTime, setSeekingTime] = useState(null);
 
   // Speed options
   const speedOptions = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 2];
@@ -399,17 +488,39 @@ const VideoControls = ({
     };
   }, [questions, answeredQuestions]);
 
-  // Skip functions
+  // Enhanced skip functions with immediate state update
   const handleSkipBackward = useCallback(() => {
     const newTime = Math.max(0, currentTime - 10);
     const percentage = (newTime / duration) * 100;
+
+    // Set seeking state để hiển thị thời gian ngay lập tức
+    setIsSeeking(true);
+    setSeekingTime(newTime);
+
     handleTimeSeek(null, percentage);
+
+    // Reset seeking state sau một khoảng ngắn
+    setTimeout(() => {
+      setIsSeeking(false);
+      setSeekingTime(null);
+    }, 100);
   }, [currentTime, duration, handleTimeSeek]);
 
   const handleSkipForward = useCallback(() => {
     const newTime = Math.min(duration, currentTime + 10);
     const percentage = (newTime / duration) * 100;
+
+    // Set seeking state để hiển thị thời gian ngay lập tức
+    setIsSeeking(true);
+    setSeekingTime(newTime);
+
     handleTimeSeek(null, percentage);
+
+    // Reset seeking state sau một khoảng ngắn
+    setTimeout(() => {
+      setIsSeeking(false);
+      setSeekingTime(null);
+    }, 100);
   }, [currentTime, duration, handleTimeSeek]);
 
   // Get current active question
@@ -418,12 +529,15 @@ const VideoControls = ({
       return getCurrentQuestion();
     }
 
+    // Use the most current time for question detection
+    const timeToCheck = isSeeking ? seekingTime : currentTime;
+
     return questions?.find(
       (q) =>
-        currentTime >= q.startTime &&
-        currentTime < (q.endTime || q.startTime + 30)
+        timeToCheck >= q.startTime &&
+        timeToCheck < (q.endTime || q.startTime + 30)
     );
-  }, [questions, currentTime, getCurrentQuestion]);
+  }, [questions, currentTime, getCurrentQuestion, isSeeking, seekingTime]);
 
   // Get question to display based on logic
   const questionToShow = useMemo(() => {
@@ -443,14 +557,27 @@ const VideoControls = ({
     );
   }, [activeQuestion, questions, answeredQuestions, getQuestionToShow]);
 
-  // Sync current time with video progress if available
+  // Improved current time calculation với priority cho seeking state
   const displayCurrentTime = useMemo(() => {
-    return videoProgress?.lastPosition ?? currentTime;
-  }, [videoProgress?.lastPosition, currentTime]);
+    // Priority 1: If seeking, show seeking time immediately
+    if (isSeeking && seekingTime !== null) {
+      return seekingTime;
+    }
 
+    // Priority 2: Use current time from props (most up-to-date)
+    if (currentTime >= 0) {
+      return currentTime;
+    }
+
+    // Priority 3: Fallback to video progress if available
+    return videoProgress?.lastPosition ?? 0;
+  }, [isSeeking, seekingTime, currentTime, videoProgress?.lastPosition]);
+
+  // Improved duration calculation
   const displayDuration = useMemo(() => {
-    return videoProgress?.totalDuration ?? duration;
-  }, [videoProgress?.totalDuration, duration]);
+    // Use duration from props first, then fallback to video progress
+    return duration > 0 ? duration : (videoProgress?.totalDuration ?? 0);
+  }, [duration, videoProgress?.totalDuration]);
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -517,7 +644,6 @@ const VideoControls = ({
           answeredQuestions={answeredQuestions}
           handleTimeSeek={handleTimeSeek}
           formatTime={formatTime}
-          lastAllowedTime={lastAllowedTime}
           onQuestionClick={onQuestionClick}
         />
 
@@ -846,13 +972,6 @@ const VideoControls = ({
 };
 
 VideoControls.propTypes = {
-  progressStats: PropTypes.shape({
-    completion: PropTypes.number,
-    watched: PropTypes.number,
-    total: PropTypes.number,
-    timeSpent: PropTypes.number,
-    efficiency: PropTypes.number,
-  }),
   showControls: PropTypes.bool.isRequired,
   isPlaying: PropTypes.bool.isRequired,
   handlePlayPause: PropTypes.func.isRequired,
@@ -875,7 +994,6 @@ VideoControls.propTypes = {
   answeredQuestions: PropTypes.instanceOf(Set),
   handleTimeSeek: PropTypes.func.isRequired,
   isOnline: PropTypes.bool,
-  lastAllowedTime: PropTypes.number,
   onQuestionClick: PropTypes.func,
   getCurrentQuestion: PropTypes.func,
   completionPercentage: PropTypes.number,
@@ -886,9 +1004,6 @@ VideoControls.propTypes = {
   }),
   isProgressLoading: PropTypes.bool,
   progressError: PropTypes.oneOfType([PropTypes.string, PropTypes.object]),
-  hasStartedWatching: PropTypes.bool,
-  totalTimeSpent: PropTypes.number,
-  progressMilestones: PropTypes.array,
 };
 
 VideoControls.defaultProps = {
@@ -897,7 +1012,6 @@ VideoControls.defaultProps = {
   answeredQuestions: new Set(),
   speedMenuAnchorEl: null,
   isOnline: true,
-  lastAllowedTime: Infinity,
   onQuestionClick: null,
   getCurrentQuestion: null,
   getQuestionToShow: null,
