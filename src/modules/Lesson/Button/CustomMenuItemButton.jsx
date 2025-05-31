@@ -1,7 +1,12 @@
-import React from 'react';
-import styled from 'styled-components';
-import { CheckCircle, Checklist, RadioButtonChecked, RadioButtonUncheckedOutlined } from "@mui/icons-material";
-import theme from '~/theme';
+import React from "react";
+import styled from "styled-components";
+import {
+  CheckCircle,
+  Checklist,
+  RadioButtonChecked,
+  RadioButtonUncheckedOutlined,
+} from "@mui/icons-material";
+import theme from "~/theme";
 
 const StyledButton = styled.button`
   width: 100%;
@@ -10,13 +15,16 @@ const StyledButton = styled.button`
   padding: 8px 16px 8px 32px;
   color: #000000;
   font-size: 13px;
-  background: ${props => props.isActive ? "#f2f5fa" : "transparent"};
+  background: ${(props) => (props.isActive ? "#f2f5fa" : "transparent")};
   border: none;
-  border-left: ${props => props.isActive ? "4px solid #0056d2" : "4px solid transparent"};
+  border-left: ${(props) =>
+    props.isActive ? "4px solid #0056d2" : "4px solid transparent"};
   border-radius: 0 4px 4px 0;
   position: relative;
   cursor: pointer;
-  transition: background-color 0.3s, border-left-color 0.3s;
+  transition:
+    background-color 0.3s,
+    border-left-color 0.3s;
   text-align: left;
   min-height: 48px;
 
@@ -53,8 +61,14 @@ const TimeWrapper = styled.span`
   margin-top: 4px;
 `;
 
-const CustomMenuItemButton = ({ isActive, children, icon, time, isCompleted, ...props }) => {
-  
+const CustomMenuItemButton = ({
+  isActive,
+  children,
+  icon,
+  time,
+  isCompleted,
+  ...props
+}) => {
   // console.log("isActive", isActive);
   console.log("isCompleted", isCompleted);
   // console.log("children", children);
@@ -63,9 +77,19 @@ const CustomMenuItemButton = ({ isActive, children, icon, time, isCompleted, ...
   // console.log("time", time);
   return (
     <StyledButton isActive={isActive} {...props}>
-      {isCompleted ? <CheckCircle 
-      sx={{backgroundColor: theme.palette.primary.main, color: "white", borderRadius: "50%", padding: "2px", marginRight: "8px"}}
-      /> : (icon && <IconWrapper>{icon}</IconWrapper>)}
+      {isCompleted ? (
+        <CheckCircle
+          sx={{
+            backgroundColor: theme.palette.primary.main,
+            color: "white",
+            borderRadius: "50%",
+            padding: "2px",
+            marginRight: "8px",
+          }}
+        />
+      ) : (
+        icon && <IconWrapper>{icon}</IconWrapper>
+      )}
 
       <TextWrapper>
         <MainText>{children}</MainText>

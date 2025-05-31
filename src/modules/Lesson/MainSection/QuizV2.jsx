@@ -453,11 +453,25 @@ const QuizV2 = () => {
           onQuizSubmit(true);
         }
 
+        // Reload module progress để cập nhật UI
+        setTimeout(() => {
+          // Trigger reload của parent component để refresh sidebar
+          window.dispatchEvent(
+            new CustomEvent("moduleProgressUpdate", {
+              detail: {
+                moduleItemId: location.state?.item?._id,
+                status: "completed",
+                type: "quiz",
+              },
+            })
+          );
+        }, 1000);
+
         // Có thể thêm các logic khác khi quiz hoàn thành
         showSnackbar("Quiz completed successfully!");
       }
     },
-    [onQuizSubmit]
+    [onQuizSubmit, location.state?.item?._id]
   );
 
   const handleAutoSubmit = useCallback(async () => {

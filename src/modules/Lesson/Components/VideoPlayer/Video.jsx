@@ -38,7 +38,7 @@ import { preloadInteractiveQuestion } from "~/store/slices/ModuleItem/action";
 import { getProgress } from "~/store/slices/Progress/action";
 import SnackbarAlert from "../SnackbarAlert";
 
-const Video = () => {
+const Video = ({ onVideoComplete }) => {
   const dispatch = useDispatch();
   const location = useLocation();
   const lectureId = location?.state?.item?.video;
@@ -64,7 +64,7 @@ const Video = () => {
     moduleItemId
   );
 
-  const { onQuizSubmit } = useOutletContext();
+  const { onQuizSubmit, onVideoSubmit } = useOutletContext();
   const [hasPreloaded, setHasPreloaded] = useState(false);
   useEffect(() => {
     if (!hasPreloaded) {
@@ -97,9 +97,19 @@ const Video = () => {
         if (progressData.totalDuration && !duration) {
           setDuration(progressData.totalDuration);
         }
+
+        // Check for video completion
+        if (progressData.status === "completed" && onVideoComplete) {
+          onVideoComplete({
+            status: "completed",
+            progress: progressData,
+            videoId: lectureId,
+            moduleItemId: moduleItemId,
+          });
+        }
       }
     },
-    [duration]
+    [duration, onVideoComplete, lectureId, moduleItemId]
   );
 
   const {
@@ -121,13 +131,10 @@ const Video = () => {
     videoProgress,
     isLoading,
     error,
-    isPlayingProgress,
-    hasStarted,
     completionPercentage,
     watchedDuration,
     totalDuration,
     timeSpent,
-    sentMilestones,
     updateProgress,
   } = useVideoProgress({
     videoRef,
@@ -135,7 +142,37 @@ const Video = () => {
     videoId: location.state?.item?.video,
     progressId: progress?.moduleItemId?._id || moduleItemId,
     onTimeUpdate: handleProgressTimeUpdate,
-    onQuizSubmit,
+    onVideoSubmit,
+    onComplete: (progressData) => {
+      // Handle video completion
+      console.log("Video completed via useVideoProgress:", progressData);
+
+      if (onVideoSubmit) {
+        onVideoSubmit(true);
+      }
+
+      if (onVideoComplete) {
+        onVideoComplete({
+          status: "completed",
+          progress: progressData,
+          videoId: location.state?.item?.video,
+          moduleItemId: moduleItemId,
+        });
+      }
+
+      // Trigger progress update event
+      setTimeout(() => {
+        window.dispatchEvent(
+          new CustomEvent("moduleProgressUpdate", {
+            detail: {
+              moduleItemId: moduleItemId,
+              status: "completed",
+              type: "video",
+            },
+          })
+        );
+      }, 1000);
+    },
   });
   const progressStats = useMemo(
     () => ({

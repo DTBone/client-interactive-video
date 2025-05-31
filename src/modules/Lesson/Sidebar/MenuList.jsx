@@ -245,24 +245,6 @@ const MenuList = ({ module }) => {
               >
                 {item.note}
               </Typography>
-              {/* Real-time progress indicator */}
-              {/* {getModuleItemStatus(item._id) && (
-                <Typography
-                  fontSize="10px"
-                  sx={{
-                    textTransform: "uppercase",
-                    fontWeight: "bold",
-                    color:
-                      getModuleItemStatus(item._id) === "completed"
-                        ? "green"
-                        : "orange",
-                  }}
-                >
-                  {getModuleItemStatus(item._id) === "completed"
-                    ? "✓ Completed"
-                    : "🔄 In Progress"}
-                </Typography>
-              )} */}
             </CustomMenuItemButton>
           ))}
         </div>

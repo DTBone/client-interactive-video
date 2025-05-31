@@ -39,7 +39,7 @@ const useVideoProgress = ({
   videoId,
   progressId, // ID của progress record
   onTimeUpdate, // Callback để đồng bộ với component cha
-  onQuizSubmit, // Callback để đồng bộ với component cha
+  onVideoSubmit, // Callback để đồng bộ với component cha
 }) => {
   const dispatch = useDispatch();
   const location = useLocation();
@@ -247,9 +247,9 @@ const useVideoProgress = ({
         if (!allowedRepeatedUpdates.includes(milestone)) {
           dispatch(markMilestoneSent({ videoId, milestone }));
         }
-        if (milestone === 100 && onQuizSubmit) {
-          console.log("Video completed, triggering onQuizSubmit");
-          onQuizSubmit(true);
+        if (milestone === 100 && onVideoSubmit) {
+          console.log("Video completed, triggering onVideoSubmit");
+          onVideoSubmit(true);
         }
         console.log(
           `Milestone ${milestone}% sent successfully for video ${videoId}`
@@ -354,10 +354,10 @@ const useVideoProgress = ({
           status: "completed"
         });
       }
-      // THÊM: Trigger onQuizSubmit khi video hoàn thành
-      if (onQuizSubmit) {
-        console.log("Video locally completed, triggering onQuizSubmit");
-        onQuizSubmit(true);
+      // THÊM: Trigger onVideoSubmit khi video hoàn thành
+      if (onVideoSubmit) {
+        console.log("Video locally completed, triggering onVideoSubmit");
+        onVideoSubmit(true);
       }
       // Gửi milestone 100% cuối cùng
       checkAndSendMilestones(progressData);
@@ -450,10 +450,10 @@ const useVideoProgress = ({
         if (onTimeUpdate) {
           onTimeUpdate(finalProgressData);
         }
-        // THÊM: Trigger onQuizSubmit khi video ended
-        if (onQuizSubmit) {
-          console.log("Video ended, triggering onQuizSubmit");
-          onQuizSubmit(true);
+        // THÊM: Trigger onVideoSubmit khi video ended
+        if (onVideoSubmit) {
+          console.log("Video ended, triggering onVideoSubmit");
+          onVideoSubmit(true);
         }
         // Gửi milestone 100% cuối cùng
         if (progressId) {

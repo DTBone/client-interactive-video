@@ -59,7 +59,7 @@ const Lecture = () => {
   //     }
   //   }, [moduleItemId, dispatch]);
 
-  const { onQuizSubmit } = useOutletContext();
+  const { onQuizSubmit, onVideoSubmit } = useOutletContext();
   const [value, setValue] = React.useState("1");
   const [isCompleted, setIsCompleted] = React.useState(false);
   const [lecture, setLecture] = React.useState({});
@@ -112,6 +112,23 @@ const Lecture = () => {
     setOpenNote(!openNote);
   };
 
+  // Handle video completion
+  const handleVideoComplete = React.useCallback(
+    (completionData) => {
+      console.log("Video completed in Lecture:", completionData);
+      setIsCompleted(true);
+
+      // Trigger video submission handler
+      if (onVideoSubmit) {
+        onVideoSubmit(true);
+      }
+
+      // Show success message
+      setAlert("Video lesson completed successfully!");
+    },
+    [onVideoSubmit]
+  );
+
   return (
     <div className="flex-1 flex flex-col justify-between items-start">
       <div className="w-full max-w-6xl mx-auto">
@@ -131,6 +148,7 @@ const Lecture = () => {
                   height: "100%",
                   objectFit: "cover",
                 }}
+                onVideoComplete={handleVideoComplete}
               />
             </div>
           </div>

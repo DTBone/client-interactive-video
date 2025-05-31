@@ -27,7 +27,7 @@ const Supplement = () => {
   const dispatch = useDispatch();
   const [loading, setLoading] = useState(false);
   const [pdfUrl, setPdfUrl] = useState(null);
-  const { onQuizSubmit } = useOutletContext();
+  const { onSupplementSubmit } = useOutletContext();
   const module = location.state?.module;
   const course = useSelector((state) => state.course.currentCourse);
   //const progress = useSelector((state) => state.progress.progress);
@@ -114,9 +114,22 @@ const Supplement = () => {
             "Supplement completed successfully:",
             rep.payload.message
           );
-          if (onQuizSubmit) {
-            onQuizSubmit(true);
+          if (onSupplementSubmit) {
+            onSupplementSubmit(true);
           }
+
+          // Trigger progress reload event để cập nhật UI
+          setTimeout(() => {
+            window.dispatchEvent(
+              new CustomEvent("moduleProgressUpdate", {
+                detail: {
+                  moduleItemId: currentItemId,
+                  status: "completed",
+                  type: "supplement",
+                },
+              })
+            );
+          }, 1000);
         } else {
           console.error(
             "Update progress failed:",
@@ -129,7 +142,7 @@ const Supplement = () => {
       apiCallRef.current = false; // Reset flag on error
       console.error("Error in handleCompleteSupplement:", error);
     }
-  }, [item, dispatch, onQuizSubmit, moduleProgress]);
+  }, [item, dispatch, onSupplementSubmit, moduleProgress]);
   useEffect(() => {
     apiCallRef.current = false; // Reset flag on every render
     // Check if progress already exists and is completed
