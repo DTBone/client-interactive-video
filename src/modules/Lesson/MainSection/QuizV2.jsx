@@ -450,7 +450,7 @@ const QuizV2 = () => {
 
         // Trigger icon change (chức năng ban đầu của onQuizSubmit)
         if (onQuizSubmit) {
-          onQuizSubmit(true);
+          onQuizSubmit("Quiz completed");
         }
 
         // Có thể thêm các logic khác khi quiz hoàn thành

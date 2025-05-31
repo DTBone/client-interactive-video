@@ -249,7 +249,7 @@ const useVideoProgress = ({
         }
         if (milestone === 100 && onQuizSubmit) {
           console.log("Video completed, triggering onQuizSubmit");
-          onQuizSubmit(true);
+          onQuizSubmit("Video completed");
         }
         console.log(
           `Milestone ${milestone}% sent successfully for video ${videoId}`
@@ -357,7 +357,7 @@ const useVideoProgress = ({
       // THÊM: Trigger onQuizSubmit khi video hoàn thành
       if (onQuizSubmit) {
         console.log("Video locally completed, triggering onQuizSubmit");
-        onQuizSubmit(true);
+        onQuizSubmit("Video completed");
       }
       // Gửi milestone 100% cuối cùng
       checkAndSendMilestones(progressData);
@@ -453,7 +453,7 @@ const useVideoProgress = ({
         // THÊM: Trigger onQuizSubmit khi video ended
         if (onQuizSubmit) {
           console.log("Video ended, triggering onQuizSubmit");
-          onQuizSubmit(true);
+          onQuizSubmit("Video completed");
         }
         // Gửi milestone 100% cuối cùng
         if (progressId) {

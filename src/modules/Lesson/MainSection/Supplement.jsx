@@ -115,7 +115,7 @@ const Supplement = () => {
             rep.payload.message
           );
           if (onQuizSubmit) {
-            onQuizSubmit(true);
+            onQuizSubmit("Supplement completed");
           }
         } else {
           console.error(

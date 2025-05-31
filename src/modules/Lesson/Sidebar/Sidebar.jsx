@@ -7,11 +7,7 @@ import { useDispatch } from "react-redux";
 import { getModuleById } from "~/store/slices/Module/action.js";
 import { useLocation } from "react-router-dom";
 
-const Sidebar = ({
-  handleSidebarButtonClick,
-  isExpanded,
-  isSubmitted = false,
-}) => {
+const Sidebar = ({ handleSidebarButtonClick, isExpanded, isSubmitted }) => {
   const location = useLocation();
   const locationState = location.state;
 
