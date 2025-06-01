@@ -4,7 +4,6 @@ import debounce from "lodash/debounce";
 import throttle from "lodash/throttle";
 import {
   updateLocalProgress as updateLocalProgressAction,
-  markMilestoneSent,
   resetVideoProgress,
   selectVideoProgress,
   selectVideoLoading,
@@ -17,20 +16,19 @@ import { getModuleItemProgress, getProgress, updateVideoProgress } from "~/store
 import { useLocation } from "react-router-dom";
 
 /**
- * OPTIMIZED VIDEO PROGRESS TRACKING HOOK
+ * OPTIMIZED VIDEO PROGRESS TRACKING HOOK - V2
+ * 
+ * MAJOR CHANGES:
+ * - API calls ONLY when: user leaves page OR video reaches 100%
+ * - Enhanced local state management for smooth UI
+ * - Better synchronization between video currentTime and progressBar
+ * - Reduced API calls for better performance
  * 
  * COMPLETED VIDEO HANDLING:
  * - Khi video đã completed (100%), ngăn chặn mọi progress updates
  * - Preserve completion state (100%, status: "completed") 
  * - Cho phép xem lại từ đầu mà không làm mất trạng thái completed
  * - Không auto-seek về cuối video khi completed để user có thể review
- * 
- * OPTIMIZATION FEATURES:
- * 1. THROTTLE API CALLS: Sử dụng throttle 1s cho timeupdate events
- * 2. MILESTONE-BASED UPDATES: Chỉ gửi API khi đạt mốc 10%, 25%, 50%... 
- * 3. SEPARATED LOGIC: Tách logic local update và server update
- * 4. REF-BASED TRACKING: Sử dụng useRef thay vì state để tránh re-render
- * 5. OPTIMIZED DEPENDENCIES: Loại bỏ dependencies gây loop trong useCallback
  */
 
 const useVideoProgress = ({
@@ -57,71 +55,25 @@ const useVideoProgress = ({
   );
   const progressMilestones = useSelector(selectProgressMilestones);
 
-  // Local state
+  // Local state - Enhanced for better UI sync
   const [isPlayingProgress, setisPlayingProgress] = useState(false);
   const [hasStarted, setHasStarted] = useState(false);
+  const [localProgress, setLocalProgress] = useState({
+    completionPercentage: 0,
+    watchedDuration: 0,
+    totalDuration: 0,
+    lastPosition: 0,
+    timeSpent: 0,
+    status: "in-progress"
+  });
 
   // Refs for tracking and optimization
   const intervalRef = useRef(null);
   const startTimeRef = useRef(null);
-  const lastSyncTimeRef = useRef(Date.now());
   const lastUpdateTimeRef = useRef(0);
-  const lastMilestoneCheckRef = useRef(0);
   const progressDataRef = useRef(null);
-
-  // Refs to prevent duplicate API calls
-  const pendingApiCallsRef = useRef(new Set()); // Track pending API calls
-  const lastApiCallTimeRef = useRef({}); // Track last call time for each milestone
-  const API_COOLDOWN = 2000; // 2 seconds cooldown between same type calls
-
-  // Hàm tính toán tiến độ - tối ưu dependencies
-  const calculateProgress = useCallback(() => {
-    if (!videoRef.current) return null;
-
-    const video = videoRef.current;
-    const currentTime = video.currentTime;
-    const duration = video.duration;
-
-    if (!duration || duration === 0) return null;
-
-    // Sử dụng ref để lấy timeSpent thay vì dependency
-    const currentVideoProgress = progressDataRef.current || videoProgress;
-    const timeSpent = currentVideoProgress?.timeSpent || 0;
-
-    let completionPercentage = Math.round((currentTime / duration) * 100);
-
-    // Nếu progress đã completed, luôn giữ ở 100% và lastPosition ở cuối video
-    if (progress?.status === "completed") {
-      completionPercentage = 100;
-      const progressData = {
-        completionPercentage: 100,
-        watchedDuration: duration, // Full duration khi completed
-        totalDuration: duration,
-        lastPosition: duration, // Vị trí cuối video
-        timeSpent,
-        videoId,
-        status: "completed"
-      };
-
-      // Cache progress data
-      progressDataRef.current = progressData;
-      return progressData;
-    }
-
-    const progressData = {
-      completionPercentage,
-      watchedDuration: currentTime,
-      totalDuration: duration,
-      lastPosition: currentTime,
-      timeSpent,
-      videoId,
-    };
-
-    // Cache progress data
-    progressDataRef.current = progressData;
-    return progressData;
-  }, [videoId]); // Chỉ dependency cần thiết
-
+  const hasTriggeredCompletion = useRef(false);
+  const pendingSaveRef = useRef(false);
 
   // Load all module item statuses
   const moduleProgress = useSelector(
@@ -129,13 +81,9 @@ const useVideoProgress = ({
   );
 
   const loadAllModuleItemStatuses = useCallback(async () => {
-    // Helper function để delay
     const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
-
-    // Chờ 100ms trước khi bắt đầu
     await delay(2000);
 
-    // Kiểm tra data trước khi thực hiện
     if (!module?.moduleItems?.length || !course?._id) {
       console.warn('Missing required data for loading module items');
       return;
@@ -155,11 +103,9 @@ const useVideoProgress = ({
         }
       });
 
-      // Chờ tất cả items load xong
       const results = await Promise.all(statusPromises);
       console.log('All items processed:', results.filter(Boolean));
 
-      // Load progress một lần cuối
       await dispatch(getProgress({ courseId: course._id }));
       console.log('Progress updated');
       console.log("moduleProgress useVideoProgress", moduleProgress);
@@ -167,234 +113,177 @@ const useVideoProgress = ({
     } catch (error) {
       console.error('Error in loadAllModuleItemStatuses:', error);
     }
-  }, [dispatch, module, course, moduleProgress]);// dependencies
+  }, [dispatch, module, course, moduleProgress]);
 
-  // Debounced function để cập nhật local progress - tăng delay
+  // Hàm tính toán tiến độ - Enhanced for real-time UI updates
+  const calculateProgress = useCallback(() => {
+    if (!videoRef.current) return null;
+
+    const video = videoRef.current;
+    const currentTime = video.currentTime;
+    const duration = video.duration;
+
+    if (!duration || duration === 0) return null;
+
+    const timeSpent = localProgress.timeSpent || 0;
+    let completionPercentage = Math.round((currentTime / duration) * 100);
+
+    // Nếu progress đã completed, luôn giữ ở 100%
+    if (progress?.status === "completed") {
+      completionPercentage = 100;
+      const progressData = {
+        completionPercentage: 100,
+        watchedDuration: duration,
+        totalDuration: duration,
+        lastPosition: duration,
+        timeSpent,
+        videoId,
+        status: "completed"
+      };
+
+      return progressData;
+    }
+
+    const progressData = {
+      completionPercentage,
+      watchedDuration: currentTime,
+      totalDuration: duration,
+      lastPosition: currentTime,
+      timeSpent,
+      videoId,
+      status: completionPercentage >= 100 ? "completed" : "in-progress"
+    };
+
+    return progressData;
+  }, [videoId, localProgress.timeSpent, progress?.status]);
+
+  // Enhanced debounced function để cập nhật local progress - chỉ local, không gọi API
   const debouncedLocalUpdate = useCallback(
     debounce((progressData) => {
       if (progressData) {
+        // Chỉ cập nhật local state, không gọi API
+        setLocalProgress(progressData);
         dispatch(
           updateLocalProgressAction({
             videoId,
             progress: progressData,
           })
         );
-        loadAllModuleItemStatuses();
       }
-    }, 2000), // Tăng từ 500ms lên 1000ms
+    }, 100), // Giảm delay để UI responsive hơn
     [dispatch, videoId]
   );
 
-  // Hàm gửi milestone lên server - tối ưu dependencies
-  const sendMilestoneUpdate = useCallback(
-    async (progressData, milestone) => {
-      // Kiểm tra progressId hợp lệ
-      if (!progressId) {
-        console.warn("progressId is not available, skipping update");
+  // Function để save progress lên server - chỉ gọi khi cần thiết
+  const saveProgressToServer = useCallback(
+    async (progressData, reason = "manual") => {
+      if (!progressId || pendingSaveRef.current) {
+        console.warn("progressId not available or save already pending");
         return;
       }
 
-      // Tạo unique key cho API call
-      const callKey = `${videoId}-${milestone}`;
-      const now = Date.now();
-
-      // Kiểm tra nếu đang có pending call cho milestone này
-      if (pendingApiCallsRef.current.has(callKey)) {
-        console.log(`API call for ${milestone} already pending, skipping`);
-        return;
-      }
-
-      // Kiểm tra cooldown period (trừ first-time milestones)
-      const allowedRepeatedUpdates = ["periodic", "position", "started"];
-      const lastCallTime = lastApiCallTimeRef.current[callKey] || 0;
-
-      if (allowedRepeatedUpdates.includes(milestone) && now - lastCallTime < API_COOLDOWN) {
-        console.log(`Cooldown period active for ${milestone}, skipping (${now - lastCallTime}ms ago)`);
-        return;
-      }
-
-      // Cho phép các loại update đặc biệt luôn được gửi
-      const currentSentMilestones = sentMilestones;
-
-      // Kiểm tra milestone đã gửi (chỉ cho milestones phần trăm)
-      if (!allowedRepeatedUpdates.includes(milestone) && currentSentMilestones.includes(milestone)) {
-        console.log(`Milestone ${milestone}% already sent, skipping`);
-        return;
-      }
-
-      // Đánh dấu API call đang pending
-      pendingApiCallsRef.current.add(callKey);
-      lastApiCallTimeRef.current[callKey] = now;
+      pendingSaveRef.current = true;
 
       try {
-        console.log(`Sending milestone update: ${milestone}`, {
-          progressId,
-          progressData,
-        });
+        console.log(`Saving progress to server (${reason}):`, progressData);
 
         await dispatch(
           updateVideoProgress({
             progressId,
             progressVideo: {
               ...progressData,
-              milestone, // Đánh dấu milestone này
-              updatedAt: now,
+              reason,
+              updatedAt: Date.now(),
             },
           })
         ).unwrap();
 
-        // Đánh dấu milestone đã gửi (chỉ cho milestones phần trăm, không cho periodic)
-        if (!allowedRepeatedUpdates.includes(milestone)) {
-          dispatch(markMilestoneSent({ videoId, milestone }));
-        }
-        if (milestone === 100 && onQuizSubmit) {
+        console.log(`Progress saved successfully for reason: ${reason}`);
+
+        // Trigger onQuizSubmit nếu video completed
+        if (progressData.completionPercentage >= 100 && onQuizSubmit && !hasTriggeredCompletion.current) {
           console.log("Video completed, triggering onQuizSubmit");
+          hasTriggeredCompletion.current = true;
           onQuizSubmit("Video completed");
         }
-        console.log(
-          `Milestone ${milestone}% sent successfully for video ${videoId}`
-        );
+
         loadAllModuleItemStatuses();
       } catch (error) {
-        console.error(`Failed to send milestone ${milestone}%:`, error);
+        console.error(`Failed to save progress (${reason}):`, error);
       } finally {
-        // Xóa pending call
-        pendingApiCallsRef.current.delete(callKey);
+        pendingSaveRef.current = false;
       }
     },
-    [dispatch, progressId, videoId, sentMilestones, API_COOLDOWN]
+    [dispatch, progressId, videoId, onQuizSubmit, loadAllModuleItemStatuses]
   );
 
-  // Logic kiểm tra và gửi milestones - tách riêng
-  const checkAndSendMilestones = useCallback((progressData) => {
-    // Ngăn chặn gửi milestone nếu progress đã completed (trừ khi đang complete lần đầu)
-    if (progress?.status === "completed" && progressData.completionPercentage !== 100) {
-      console.log("Video already completed, skipping milestone updates");
-      return;
-    }
-
-    const currentPercentage = progressData.completionPercentage;
-
-    // Gửi update ban đầu khi vừa bắt đầu xem (0-5% đầu tiên)
-    if (currentPercentage > 0 && currentPercentage <= 5 && hasStarted && !sentMilestones.includes("started")) {
-      console.log("Sending initial video start update");
-      sendMilestoneUpdate(progressData, "started");
-    }
-
-    // Kiểm tra milestone theo phần trăm - chỉ gửi khi đạt mốc 10%, 25%, 50%...
-    const milestoneToSend = progressMilestones?.find(
-      (milestone) =>
-        currentPercentage >= milestone && !sentMilestones.includes(milestone)
-    );
-
-    if (milestoneToSend) {
-      console.log(`Sending milestone update: ${milestoneToSend}%`);
-      sendMilestoneUpdate(progressData, milestoneToSend);
-    }
-
-    // Gửi update định kỳ mỗi 60 giây khi đang phát (tăng từ 30s lên 60s để giảm tần suất hơn nữa)
-    const now = Date.now();
-    if (isPlayingProgress && now - lastSyncTimeRef.current >= 60000) {
-      console.log("Sending periodic update");
-      sendMilestoneUpdate(progressData, "periodic");
-      lastSyncTimeRef.current = now;
-    }
-
-    // Gửi update mỗi khi currentTime thay đổi đáng kể (mỗi 120 giây video thay vì 60s)
-    const currentVideoProgress = progressDataRef.current;
-    const lastReportedTime = currentVideoProgress?.lastPosition || 0;
-    if (Math.abs(progressData.lastPosition - lastReportedTime) >= 120) {
-      console.log("Sending position update due to significant time change");
-      sendMilestoneUpdate(progressData, "position");
-    }
-  }, [hasStarted, isPlayingProgress, progressMilestones, sentMilestones, sendMilestoneUpdate]);
-
-  // Hàm cập nhật local progress - tách riêng khỏi server logic
+  // Hàm cập nhật local progress - tối ưu cho UI mượt
   const updateLocalProgress = useCallback(() => {
-    // Kiểm tra xem progress đã completed chưa - nếu rồi thì không cập nhật gì thêm
-    if (progress?.status === "completed") {
-      console.log("Video already completed, skipping progress updates");
-      return;
-    }
-
     const now = Date.now();
 
-    // Chỉ cập nhật local mỗi 2 giây để giảm tần suất hơn nữa
-    if (now - lastUpdateTimeRef.current < 2000) return;
+    // Cập nhật mỗi 100ms để UI mượt hơn
+    if (now - lastUpdateTimeRef.current < 100) return;
     lastUpdateTimeRef.current = now;
 
     const progressData = calculateProgress();
     if (!progressData) return;
-
-    // Nếu video đã đạt 100% HOẶC gần hết (95%+) và progress hiện tại chưa completed, đánh dấu completed
-    // Điều này xử lý trường hợp video có thể không load được 100% do buffering
-    const isNearlyComplete = progressData.completionPercentage >= 95;
-    const isAtEnd = Math.abs(progressData.lastPosition - progressData.totalDuration) <= 1; // trong vòng 1 giây cuối
-
-    if ((progressData.completionPercentage >= 100 || isNearlyComplete || isAtEnd) && progress?.status !== "completed") {
-      progressData.completionPercentage = 100; // Đảm bảo exactly 100%
-      console.log(`Video reached completion (${progressData.completionPercentage >= 100 ? '100%' : 'nearly complete at ' + progressData.completionPercentage + '%'}), marking as completed`);
-
-      // Cập nhật local với trạng thái completed
-      debouncedLocalUpdate({
-        ...progressData,
-        completionPercentage: 100,
-        watchedDuration: progressData.totalDuration, // Full duration
-        lastPosition: progressData.totalDuration, // End position
-        status: "completed"
-      });
-
-      // Gọi callback với completed status
-      if (onTimeUpdate) {
-        onTimeUpdate({
-          ...progressData,
-          completionPercentage: 100,
-          watchedDuration: progressData.totalDuration,
-          lastPosition: progressData.totalDuration,
-          status: "completed"
-        });
-      }
-      // THÊM: Trigger onQuizSubmit khi video hoàn thành
-      if (onQuizSubmit) {
-        console.log("Video locally completed, triggering onQuizSubmit");
-        onQuizSubmit("Video completed");
-      }
-      // Gửi milestone 100% cuối cùng
-      checkAndSendMilestones(progressData);
-      return;
-    }
 
     // Cập nhật thời gian đã xem nếu video đang phát
     if (isPlayingProgress && startTimeRef.current) {
       const timeSpentInThisSession = Math.floor(
         (now - startTimeRef.current) / 1000
       );
-      const currentVideoProgress = progressDataRef.current || videoProgress;
-      progressData.timeSpent =
-        (currentVideoProgress?.timeSpent || 0) + timeSpentInThisSession;
+      const currentTimeSpent = localProgress.timeSpent || 0;
+      progressData.timeSpent = currentTimeSpent + timeSpentInThisSession;
       startTimeRef.current = now;
     }
 
-    // Cập nhật local state với debounce
+    // Kiểm tra nếu video đạt 100%
+    const isCompleted = progressData.completionPercentage >= 100;
+    const wasNotCompleted = progress?.status !== "completed";
+
+    if (isCompleted && wasNotCompleted && !hasTriggeredCompletion.current) {
+      console.log("Video reached 100%, will save to server");
+      progressData.status = "completed";
+
+      // Cập nhật local ngay lập tức để UI responsive
+      debouncedLocalUpdate(progressData);
+
+      // Gọi callback để đồng bộ với component cha
+      if (onTimeUpdate) {
+        onTimeUpdate(progressData);
+      }
+
+      // Save to server khi đạt 100%
+      saveProgressToServer(progressData, "completion");
+      return;
+    }
+
+    // Cập nhật local state thường xuyên để UI mượt
     debouncedLocalUpdate(progressData);
+
+    // Cache progress data
+    progressDataRef.current = progressData;
 
     // Gọi callback để đồng bộ với component cha
     if (onTimeUpdate) {
       onTimeUpdate(progressData);
     }
+  }, [
+    calculateProgress,
+    isPlayingProgress,
+    localProgress.timeSpent,
+    progress?.status,
+    debouncedLocalUpdate,
+    onTimeUpdate,
+    saveProgressToServer
+  ]);
 
-    // Kiểm tra milestone mỗi 10 giây để giảm tần suất kiểm tra hơn nữa
-    if (now - lastMilestoneCheckRef.current >= 10000) {
-      checkAndSendMilestones(progressData);
-      lastMilestoneCheckRef.current = now;
-    }
-  }, []); // Loại bỏ tất cả dependencies gây loop
-
-  // Throttled function để cập nhật progress - tăng interval
+  // Throttled function để cập nhật progress - tăng tần suất cho UI mượt hơn
   const throttledUpdateProgress = useCallback(
     throttle(() => {
       updateLocalProgress();
-    }, 2000), // Tăng từ 1000ms lên 2000ms - chỉ chạy tối đa 1 lần/2 giây
+    }, 100), // Giảm xuống 100ms để UI responsive hơn
     [updateLocalProgress]
   );
 
@@ -421,8 +310,7 @@ const useVideoProgress = ({
   const handleEnded = useCallback(() => {
     setisPlayingProgress(false);
 
-    // Khi video ended, tự động mark là completed bất kể percentage hiện tại
-    // Điều này xử lý trường hợp duration không chính xác hoặc video buffer issues
+    // Khi video ended, tự động mark là completed
     if (progress?.status !== "completed") {
       console.log("Video ended event - marking as completed");
 
@@ -433,12 +321,13 @@ const useVideoProgress = ({
           watchedDuration: video.duration || 0,
           totalDuration: video.duration || 0,
           lastPosition: video.duration || 0,
-          timeSpent: (progressDataRef.current?.timeSpent || 0),
+          timeSpent: localProgress.timeSpent || 0,
           videoId,
           status: "completed"
         };
 
-        // Cập nhật local với trạng thái completed
+        // Cập nhật local
+        setLocalProgress(finalProgressData);
         dispatch(
           updateLocalProgressAction({
             videoId,
@@ -446,53 +335,49 @@ const useVideoProgress = ({
           })
         );
 
-        // Gọi callback với completed status
+        // Gọi callback
         if (onTimeUpdate) {
           onTimeUpdate(finalProgressData);
         }
-        // THÊM: Trigger onQuizSubmit khi video ended
-        if (onQuizSubmit) {
-          console.log("Video ended, triggering onQuizSubmit");
-          onQuizSubmit("Video completed");
-        }
-        // Gửi milestone 100% cuối cùng
-        if (progressId) {
-          sendMilestoneUpdate(finalProgressData, 100);
-        }
+
+        // Save to server
+        saveProgressToServer(finalProgressData, "video_ended");
       }
     } else {
-      // Nếu đã completed rồi, chỉ cần update local progress
       updateLocalProgress();
     }
-  }, [updateLocalProgress, progress?.status, videoId, onTimeUpdate, dispatch, progressId, sendMilestoneUpdate]);
+  }, [updateLocalProgress, progress?.status, videoId, onTimeUpdate, dispatch, localProgress.timeSpent, saveProgressToServer]);
 
   const handleLoadedMetadata = useCallback(() => {
     // Reset khi load video mới
     if (videoProgress && !videoProgress.totalDuration) {
       const video = videoRef.current;
       if (video && video.duration) {
+        const updatedProgress = {
+          ...localProgress,
+          totalDuration: video.duration,
+          lastPosition: videoProgress.lastPosition || 0,
+        };
+
+        setLocalProgress(updatedProgress);
         dispatch(
           updateLocalProgressAction({
             videoId,
-            progress: {
-              totalDuration: video.duration,
-              lastPosition: videoProgress.lastPosition || 0,
-            },
+            progress: updatedProgress,
           })
         );
 
-        // Chỉ seek đến vị trí cuối cùng nếu video chưa completed và có lastPosition
-        // Nếu đã completed, để user tự chọn xem từ đầu hay tiếp tục
+        // Chỉ seek đến vị trí cuối cùng nếu video chưa completed
         if (progress?.status !== "completed" && videoProgress.lastPosition > 0) {
           video.currentTime = videoProgress.lastPosition;
           console.log(`Resuming video at ${videoProgress.lastPosition}s`);
         } else if (progress?.status === "completed") {
           console.log("Video completed - starting from beginning for review");
-          video.currentTime = 0; // Bắt đầu từ đầu khi xem lại video completed
+          video.currentTime = 0;
         }
       }
     }
-  }, [dispatch, videoId, videoProgress, videoRef]);
+  }, [dispatch, videoId, videoProgress, videoRef, localProgress, progress?.status]);
 
   // Setup event listeners
   useEffect(() => {
@@ -521,40 +406,81 @@ const useVideoProgress = ({
     videoRef,
   ]);
 
-  // Sync progressDataRef with videoProgress
+  // Sync local progress with video progress from store
   useEffect(() => {
     if (videoProgress) {
+      setLocalProgress(prev => ({
+        ...prev,
+        ...videoProgress
+      }));
       progressDataRef.current = videoProgress;
     }
   }, [videoProgress]);
 
-  // Cleanup khi unmount
+  // Handle page unload - Save progress when user leaves
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      const currentProgressData = calculateProgress();
+      if (currentProgressData && progressId && !pendingSaveRef.current) {
+        console.log("Page unload - saving progress");
+        // Fallback: sync call as last resort
+        saveProgressToServer(currentProgressData, "page_unload");
+      }
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') {
+        const currentProgressData = calculateProgress();
+        if (currentProgressData && progressId) {
+          console.log("Page hidden - saving progress");
+          saveProgressToServer(currentProgressData, "page_hidden");
+        }
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [calculateProgress, progressId, saveProgressToServer]);
+
+  // Cleanup khi unmount - Save final progress
   useEffect(() => {
     return () => {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
       }
-      // Gửi update cuối cùng khi component unmount
-      if (isPlayingProgress) {
-        updateLocalProgress();
+
+      // Save progress when component unmounts
+      const currentProgressData = calculateProgress();
+      if (currentProgressData && progressId) {
+        console.log("Component unmount - saving progress");
+        saveProgressToServer(currentProgressData, "component_unmount");
       }
     };
-  }, [isPlayingProgress, updateLocalProgress]);
+  }, [calculateProgress, progressId, saveProgressToServer]);
 
   // Public methods
   const resetProgress = useCallback(() => {
     dispatch(resetVideoProgress({ videoId }));
     setHasStarted(false);
     setisPlayingProgress(false);
+    setLocalProgress({
+      completionPercentage: 0,
+      watchedDuration: 0,
+      totalDuration: 0,
+      lastPosition: 0,
+      timeSpent: 0,
+      status: "in-progress"
+    });
     startTimeRef.current = null;
     progressDataRef.current = null;
     lastUpdateTimeRef.current = 0;
-    lastMilestoneCheckRef.current = 0;
-
-    // Clear API call tracking
-    pendingApiCallsRef.current.clear();
-    lastApiCallTimeRef.current = {};
-    lastSyncTimeRef.current = Date.now();
+    hasTriggeredCompletion.current = false;
+    pendingSaveRef.current = false;
 
     console.log("Progress reset - cleared all tracking data");
   }, [dispatch, videoId]);
@@ -562,24 +488,24 @@ const useVideoProgress = ({
   const forceSync = useCallback(() => {
     const progressData = calculateProgress();
     if (progressData && progressId) {
-      return sendMilestoneUpdate(progressData, "manual");
+      return saveProgressToServer(progressData, "manual_sync");
     }
-  }, [calculateProgress, progressId, sendMilestoneUpdate]);
+  }, [calculateProgress, progressId, saveProgressToServer]);
 
   return {
-    // State
-    videoProgress,
+    // State - Sử dụng local progress để UI responsive hơn
+    videoProgress: localProgress,
     isLoading,
     error,
     isPlayingProgress,
     hasStarted,
 
-    // Progress info
-    completionPercentage: videoProgress?.completionPercentage || 0,
-    watchedDuration: videoProgress?.watchedDuration || 0,
-    totalDuration: videoProgress?.totalDuration || 0,
-    timeSpent: videoProgress?.timeSpent || 0,
-    lastPosition: videoProgress?.lastPosition || 0,
+    // Progress info - Từ local state để đồng bộ tốt hơn
+    completionPercentage: localProgress.completionPercentage || 0,
+    watchedDuration: localProgress.watchedDuration || 0,
+    totalDuration: localProgress.totalDuration || 0,
+    timeSpent: localProgress.timeSpent || 0,
+    lastPosition: localProgress.lastPosition || 0,
 
     // Milestone info
     sentMilestones,
