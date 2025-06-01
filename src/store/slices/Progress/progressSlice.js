@@ -27,7 +27,7 @@ const progressSlice = createSlice({
     checkProgress: false,
     courseCompletion: {},
     videoProgresses: {},
-    progressMilestones: [10, 25, 50, 75, 90, 95, 100], // Milestones for progress tracking
+    progressMilestones: [100], // Milestones for progress tracking
     sentMilestones: {},
   },
   reducers: {

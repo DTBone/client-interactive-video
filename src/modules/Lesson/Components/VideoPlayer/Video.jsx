@@ -41,8 +41,8 @@ import SnackbarAlert from "../SnackbarAlert";
 const Video = () => {
   const dispatch = useDispatch();
   const location = useLocation();
-  const lectureId = location?.state?.item?.video;
-  const moduleItemId = location.state.item._id;
+  const lectureId = location?.state?.item?.video._id;
+  const moduleItemId = location.state?.item._id;
   const [alert, setAlert] = useState("");
   const [lectureData, setLectureData] = useState(null);
   const [questions, setQuestion] = useState(null);
@@ -68,7 +68,7 @@ const Video = () => {
   const [hasPreloaded, setHasPreloaded] = useState(false);
   useEffect(() => {
     if (!hasPreloaded) {
-      let videoId = lectureId || location.state?.item?.video;
+      let videoId = location.state?.item?.video._id;
       if (videoId) {
         console.log("Preloading interactive questions for video:", videoId);
         dispatch(preloadInteractiveQuestion({ moduleItemId, videoId }));
@@ -80,7 +80,7 @@ const Video = () => {
     dispatch,
     lectureId,
     moduleItemId,
-    location.state?.item?.video,
+    // location.state?.item?.video,
   ]);
   useEffect(() => {
     setLectureData(lecture);
