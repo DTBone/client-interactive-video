@@ -1,10 +1,4 @@
-import React, {
-  useState,
-  useRef,
-  useCallback,
-  useMemo,
-  useEffect,
-} from "react";
+import { useState, useRef, useCallback, useMemo, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useLocation, useOutletContext } from "react-router-dom";
 import {
@@ -90,10 +84,9 @@ const Video = () => {
   const handleProgressTimeUpdate = useCallback(
     (progressData) => {
       if (progressData) {
-        const videoCurrentTime = videoRef.current?.currentTime || 0;
-        if (Math.abs(videoCurrentTime - progressData.lastPosition) > 1) {
-          setCurrentTime(progressData.lastPosition);
-        }
+        // Đồng bộ real-time với video controls
+        setCurrentTime(progressData.lastPosition);
+
         if (progressData.totalDuration && !duration) {
           setDuration(progressData.totalDuration);
         }
@@ -107,14 +100,12 @@ const Video = () => {
     selectedAnswer,
     dialogAlert,
     loading,
-    lastAllowedTime,
     answeredQuestions,
     checkForQuestions,
     handleAnswerSubmit,
     handleCloseDialog,
     handleMultipleChoiceChange,
     handleSingleChoiceChange,
-    checkQuestionHistory,
   } = useVideoQuestions(questions, progress, videoRef);
 
   const {
@@ -148,11 +139,17 @@ const Video = () => {
     [completionPercentage, watchedDuration, totalDuration, timeSpent]
   );
   const displayCurrentTime = useMemo(() => {
-    return videoProgress?.lastPosition ?? currentTime;
+    if (videoProgress?.lastPosition !== undefined) {
+      return videoProgress.lastPosition;
+    }
+    return currentTime;
   }, [videoProgress?.lastPosition, currentTime]);
 
   const displayDuration = useMemo(() => {
-    return videoProgress?.totalDuration ?? duration;
+    if (videoProgress?.totalDuration > 0) {
+      return videoProgress.totalDuration;
+    }
+    return duration;
   }, [videoProgress?.totalDuration, duration]);
 
   const getCurrentQuestion = useCallback(() => {
@@ -210,11 +207,13 @@ const Video = () => {
       const newTime = (newValue / 100) * displayDuration;
       const currentPosition = videoRef.current.currentTime;
 
-      if (
-        progress?.status === "completed" ||
-        !questions ||
-        questions.length === 0
-      ) {
+      if (progress?.status === "completed") {
+        videoRef.current.currentTime = newTime;
+        setCurrentTime(newTime);
+        return;
+      }
+
+      if (!questions || questions.length === 0) {
         videoRef.current.currentTime = newTime;
         setCurrentTime(newTime);
         return;

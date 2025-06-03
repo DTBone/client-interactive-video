@@ -118,8 +118,8 @@ const progressSlice = createSlice({
       })
       .addCase(getProgrammingProgressByProblemId.fulfilled, (state, action) => {
         state.loading = false;
-        state.moduleProgress = action.payload.moduleProgress;
-        state.moduleItemProgress = action.payload.moduleItemProgress;
+        state.moduleProgress = action.payload.data.moduleProgress;
+        state.moduleItemProgress = action.payload.data.moduleItemProgress;
         state.error = null;
       })
       .addCase(getProgrammingProgressByProblemId.rejected, (state, action) => {

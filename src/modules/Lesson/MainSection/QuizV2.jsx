@@ -66,6 +66,18 @@ function quizReducer(state, action) {
         quiz: action.payload,
         timeLeft: action.payload.duration || 1200,
         totalQuestions: action.payload.questions?.length || 0,
+        currentQuestion: 0,
+        selectedAnswers: {},
+        isSubmitted: false,
+        isStarted: false,
+        isReviewing: false,
+        score: 0,
+        isPassed: false,
+        warningCount: 0,
+        startTime: null,
+        endTime: null,
+        quizProgress: null,
+        quizHistory: null,
       };
     }
     case "SET_QUIZ_HISTORY": {
@@ -153,6 +165,10 @@ function quizReducer(state, action) {
     case "SET_QUIZ_ID": {
       return { ...state, quizId: action.payload };
     }
+    case "RESET_TO_DEFINED_INITIAL_STATE": {
+      // Action mới để reset hoàn toàn
+      return action.payload; // payload chính là object initialState từ component
+    }
     default:
       return state;
   }
@@ -205,24 +221,26 @@ const QuizV2 = () => {
   const [quizState, quizDispatch] = useReducer(quizReducer, initialState);
   const currentQuiz = useSelector((state) => state.quiz.currentQuiz);
   console.log("currentQuiz", currentQuiz);
-
-  // Get quizId from different possible sources
   const getQuizId = useCallback(() => {
     // Priority: location.state > URL pathname
     const fromState =
       location.state?.item?.quiz?._id || location.state?.item?.quiz;
     const fromPath = location.pathname.split("/").pop();
 
+    const finalQuizId = fromState || fromPath || "";
+
     console.log("Quiz ID sources:", {
       fromState,
       fromPath,
+      finalQuizId,
+      currentStateQuizId: quizState.quizId,
       locationState: location.state,
     });
 
-    return fromState || fromPath || "";
-  }, [location.state, location.pathname]);
+    return finalQuizId;
+  }, [location.state, location.pathname, quizState.quizId]);
 
-  // Get quiz data and history
+  // Get quiz data and history - Di chuyển lên trước useEffect để tránh lỗi reference
   const getQuizData = useCallback(async () => {
     const quizId = getQuizId();
 
@@ -235,6 +253,11 @@ const QuizV2 = () => {
     console.log("Fetching quiz data for ID:", quizId);
     setIsLoading(true);
 
+    // Ngay lập tức set quiz ID để trigger reset state nếu cần
+    if (quizState.quizId !== quizId) {
+      quizDispatch({ type: "SET_QUIZ_ID", payload: quizId });
+    }
+
     try {
       const result = await dispatch(getQuizById(quizId));
       console.log("Quiz fetch result:", result);
@@ -245,7 +268,7 @@ const QuizV2 = () => {
         // Update quiz state
         quizDispatch({ type: "SET_QUIZ", payload: quizData });
 
-        // Update quiz ID in state
+        // Update quiz ID in state (backup, đã set ở trên)
         quizDispatch({ type: "SET_QUIZ_ID", payload: quizId });
 
         // Check for quiz history in progress data
@@ -268,7 +291,59 @@ const QuizV2 = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [dispatch, getQuizId]);
+  }, [dispatch, getQuizId, quizState.quizId]);
+
+  // Effect để reset state khi chuyển đổi giữa các quiz khác nhau
+  useEffect(() => {
+    const currentQuizId = getQuizId();
+
+    // Nếu đã có quiz ID trong state và khác với quiz ID hiện tại, reset state
+    if (
+      quizState.quizId &&
+      currentQuizId &&
+      quizState.quizId !== currentQuizId
+    ) {
+      console.log("Quiz ID changed, resetting state:", {
+        previousQuizId: quizState.quizId,
+        newQuizId: currentQuizId,
+      });
+
+      // Reset state về trạng thái ban đầu
+      quizDispatch({
+        type: "RESET_TO_DEFINED_INITIAL_STATE",
+        payload: initialState,
+      });
+
+      // Reset UI state
+      setShowSubmitDialog(false);
+      setShowWarningDialog(false);
+      setIsLoading(false);
+      setSnackbarOpen(false);
+      setSnackbarMessage("");
+
+      // Fetch data cho quiz mới
+      console.log("Fetching new quiz data after ID change");
+      getQuizData();
+    }
+  }, [
+    location.pathname,
+    location.state,
+    quizState.quizId,
+    getQuizId,
+    getQuizData,
+  ]);
+
+  // Effect để cleanup khi component unmount
+  useEffect(() => {
+    console.log("QuizComponent mounted.");
+
+    // Hàm cleanup sẽ được gọi khi component unmount
+    return () => {
+      console.log("QuizComponent is unmounting. Cleaning up resources.");
+      // Chỉ dọn dẹp các tài nguyên như timers, listeners, etc.
+      // Không reset state ở đây vì có thể không cần thiết
+    };
+  }, []);
 
   // Initial data load
   useEffect(() => {
@@ -374,6 +449,14 @@ const QuizV2 = () => {
 
     quizDispatch({ type: "START_QUIZ" });
     showSnackbar("Quiz started! Good luck!");
+  };
+
+  // Kiểm tra xem quiz đã hoàn thành và pass chưa
+  const isQuizCompletedAndPassed = () => {
+    return (
+      quizState.quizHistory?.status === "completed" &&
+      quizState.quizHistory?.result?.quiz?.score >= quizState.quiz.passingScore
+    );
   };
 
   const handleAnswerSelect = (event) => {
@@ -752,18 +835,29 @@ const QuizV2 = () => {
                 variant="contained"
                 size="large"
                 onClick={handleStartQuiz}
-                startIcon={<Security />}
+                disabled={isQuizCompletedAndPassed()}
+                startIcon={
+                  isQuizCompletedAndPassed() ? <CheckCircle /> : <Security />
+                }
                 sx={{
                   py: 2,
-                  background:
-                    "linear-gradient(45deg, #4CAF50 30%, #45a049 90%)",
-                  "&:hover": {
-                    background:
-                      "linear-gradient(45deg, #45a049 30%, #4CAF50 90%)",
-                  },
+                  background: isQuizCompletedAndPassed()
+                    ? "linear-gradient(45deg, #4CAF50 30%, #45a049 90%)"
+                    : "linear-gradient(45deg, #4CAF50 30%, #45a049 90%)",
+                  "&:hover": !isQuizCompletedAndPassed()
+                    ? {
+                        background:
+                          "linear-gradient(45deg, #45a049 30%, #4CAF50 90%)",
+                      }
+                    : {},
+                  opacity: isQuizCompletedAndPassed() ? 0.7 : 1,
                 }}
               >
-                {quizState.quizHistory ? "Retake Quiz" : "Start Quiz"}
+                {isQuizCompletedAndPassed()
+                  ? "Quiz Completed ✓"
+                  : quizState.quizHistory
+                    ? "Retake Quiz"
+                    : "Start Quiz"}
               </Button>
 
               {quizState.quizHistory && (
@@ -791,10 +885,19 @@ const QuizV2 = () => {
             </Stack>
 
             {/* Security Alert */}
-            <Alert severity="warning" sx={{ mt: 2 }}>
-              <AlertTitle>Security Notice</AlertTitle>
-              This quiz monitors your activity for academic integrity purposes.
-            </Alert>
+            {isQuizCompletedAndPassed() ? (
+              <Alert severity="success" sx={{ mt: 2 }}>
+                <AlertTitle>Quiz Completed</AlertTitle>
+                Congratulations! You have successfully completed this quiz with
+                a passing score.
+              </Alert>
+            ) : (
+              <Alert severity="warning" sx={{ mt: 2 }}>
+                <AlertTitle>Security Notice</AlertTitle>
+                This quiz monitors your activity for academic integrity
+                purposes.
+              </Alert>
+            )}
           </Grid>
         </Grid>
       </Container>
