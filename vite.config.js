@@ -11,5 +11,17 @@ export default defineConfig({
   },
   server: {
     port: 5173,
-  }
+  },
+  optimizeDeps: {
+    include: ['monaco-editor'],
+  },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'monaco-editor': ['monaco-editor'],
+        },
+      },
+    },
+  },
 })
