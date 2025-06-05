@@ -40,7 +40,7 @@ function Course({ course }) {
       setShortLink(url);
       setDialogOpen(true);
     } catch (err) {
-      setSnackbar({ open: true, message: 'Tạo link thất bại!' });
+      setSnackbar({ open: true, message: 'Failed to create link' });
     } finally {
       setShareLoading(false);
     }
@@ -49,7 +49,7 @@ function Course({ course }) {
   const handleCopy = async () => {
     if (shortLink) {
       await navigator.clipboard.writeText(shortLink);
-      setSnackbar({ open: true, message: 'Đã copy link!' });
+      setSnackbar({ open: true, message: 'Copied to clipboard' });
     }
   };
 
@@ -330,7 +330,7 @@ function Course({ course }) {
               </Stack>
           </Box>
           <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)}>
-            <DialogTitle>Chia sẻ khóa học</DialogTitle>
+            <DialogTitle>Share course</DialogTitle>
             <DialogContent>
               {shareLoading ? (
                 <CircularProgress />
@@ -353,7 +353,7 @@ function Course({ course }) {
                   }}
                   />
                   <Typography variant="body1" color="black" sx={{ fontWeight: 'bold' }}>
-                    Link khóa học:
+                    Course link:
                   </Typography>
                   <TextField
                   value={shortLink}
@@ -372,7 +372,7 @@ function Course({ course }) {
               )}
             </DialogContent>
               <DialogActions>
-                <Button onClick={() => setDialogOpen(false)}>Đóng</Button>
+                  <Button onClick={() => setDialogOpen(false)}>Close</Button>
               </DialogActions>
             </Dialog>
 
