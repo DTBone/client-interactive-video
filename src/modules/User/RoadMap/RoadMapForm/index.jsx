@@ -21,7 +21,8 @@ import {
     MenuItem,
     Select,
     InputLabel,
-    CircularProgress
+    CircularProgress,
+    OutlinedInput
 } from '@mui/material';
 import {
     Code as CodeIcon,
@@ -480,14 +481,15 @@ function RoadmapForm({ onGenerateRoadmap, isLoading }) {
                                 <Chip label="Optional" color="success" size="small" />
                             </Typography>
                             
-                            <FormControl fullWidth sx={{ mb: 2 }}>
+                            <FormControl fullWidth sx={{ m:1 }}>
                                 <InputLabel id="preferred-languages-label">Choose the programming languages you want to learn</InputLabel>
                                 <Select
-                                    labelId="preferred-languagess-label"
+                                    labelId="preferred-languages-label"
                                     id="preferred-languages"
                                     multiple
                                     value={formData.preferredLanguages}
                                     onChange={handleLanguageChange}
+                                    input={<OutlinedInput label="Choose the programming languages you want to learn" />}
                                     renderValue={(selected) => (
                                         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
                                             {selected.map((value) => {
@@ -506,9 +508,13 @@ function RoadmapForm({ onGenerateRoadmap, isLoading }) {
                                             })}
                                         </Box>
                                     )}
-                                    sx={{
-                                        borderRadius: 2,
-                                        backgroundColor: '#F5F5F5'
+                                    MenuProps={{
+                                        PaperProps: {
+                                            style: {
+                                                maxHeight: 48 * 4.5 + 8,
+                                                width: '250px',
+                                            },
+                                        },
                                     }}
                                 >
                                     {getAvailableLanguages().map((language) => (
@@ -595,6 +601,13 @@ function RoadmapForm({ onGenerateRoadmap, isLoading }) {
                                 sx={{
                                     borderRadius: 2,
                                     backgroundColor: '#F5F5F5'
+                                }}
+                                MenuProps={{
+                                    PaperProps: {
+                                        style: {
+                                            maxHeight: 48 * 4.5 + 8,
+                                        },
+                                    },
                                 }}
                             >
                                 {GOAL_TIMEFRAMES.map((timeframe) => (

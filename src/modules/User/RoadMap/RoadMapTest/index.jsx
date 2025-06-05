@@ -63,7 +63,7 @@ const exampleTest = {
     ]
 };
 
-const TestModal = ({ open = true, onClose, test = exampleTest, setTest }) => {
+const TestModal = ({ open = true, onClose, test = exampleTest, setTest, refreshRoadmap }) => {
   
   // Initialize state
   const [currentQuestion, setCurrentQuestion] = useState(0);
@@ -153,9 +153,13 @@ const TestModal = ({ open = true, onClose, test = exampleTest, setTest }) => {
             if(result.data.data.passed){
                 setTest({...test, passed: true});
             }
+            if(refreshRoadmap){
+                refreshRoadmap();
+            }
         }
         else{
             console.log('Test submission failed');
+
         }
     }
     submitTest();

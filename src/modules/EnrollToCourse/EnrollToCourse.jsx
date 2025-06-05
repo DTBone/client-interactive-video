@@ -111,7 +111,7 @@ const EnrollToCourse = () => {
     }
     const handleCopy = async () => {
         await navigator.clipboard.writeText(shortLink);
-        setSnackbar({ open: true, message: 'Đã copy link!' });
+        setSnackbar({ open: true, message: 'Copied to clipboard' });
     }
     return (
         <div className='space-y-2 min-h-screen'>
@@ -149,7 +149,7 @@ const EnrollToCourse = () => {
                             disabled={shareLoading}
                         />
                         <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)}>
-                        <DialogTitle>Chia sẻ khóa học</DialogTitle>
+                        <DialogTitle>Share course</DialogTitle>
                         <DialogContent>
                         {shareLoading ? (
                             <CircularProgress />
@@ -172,7 +172,7 @@ const EnrollToCourse = () => {
                   }}
                   />
                   <Typography variant="body1" color="black" sx={{ fontWeight: 'bold' }}>
-                    Link khóa học:
+                    Course link:
                   </Typography>
                         <TextField
                         value={shortLink}
@@ -191,7 +191,7 @@ const EnrollToCourse = () => {
                     )}
                     </DialogContent>
                     <DialogActions>
-                        <Button onClick={() => setDialogOpen(false)}>Đóng</Button>
+                        <Button onClick={() => setDialogOpen(false)}>Close</Button>
                     </DialogActions>
                     </Dialog>
 

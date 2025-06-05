@@ -263,7 +263,7 @@ function App() {
         } />
         <Route path="instructor/instructor-chat" element={
           <ProtectedRoute allowedRoles={['instructor', 'admin']}>
-            {/* <Message /> */}
+            <Message />
 
           </ProtectedRoute>
         } ></Route>
