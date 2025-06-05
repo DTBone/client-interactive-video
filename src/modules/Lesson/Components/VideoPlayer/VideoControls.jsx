@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo, useEffect } from "react";
+import { useState, useCallback, useMemo, useEffect, useRef } from "react";
 import {
   Box,
   IconButton,
@@ -22,8 +22,9 @@ import {
   Replay10,
 } from "@mui/icons-material";
 import PropTypes from "prop-types";
+import { throttle } from "lodash";
 
-// Enhanced Progress Bar Component with Simplified Question States
+// Enhanced Progress Bar Component with Better Real-time Sync
 const VideoProgressBar = ({
   currentTime,
   duration,
@@ -32,7 +33,6 @@ const VideoProgressBar = ({
   answeredQuestions = new Set(),
   handleTimeSeek,
   formatTime,
-  lastAllowedTime,
   onQuestionClick,
 }) => {
   const theme = useTheme();
@@ -40,27 +40,74 @@ const VideoProgressBar = ({
   const [hoverTime, setHoverTime] = useState(0);
   const [hoverPosition, setHoverPosition] = useState(0);
 
-  const progressPercentage = duration > 0 ? (currentTime / duration) * 100 : 0;
+  // Enhanced state để track việc dragging/seeking với better performance
+  const [isDragging, setIsDragging] = useState(false);
+  const dragTimeRef = useRef(null); // Ref để tránh re-render khi drag
 
+  // Optimized progress percentage calculation
+  const progressPercentage = useMemo(() => {
+    if (isDragging && dragTimeRef.current !== null) {
+      return duration > 0 ? (dragTimeRef.current / duration) * 100 : 0;
+    }
+    return duration > 0 ? (currentTime / duration) * 100 : 0;
+  }, [currentTime, duration, isDragging]);
+
+  // Enhanced mouse move handler với throttling
   const handleMouseMove = useCallback(
-    (event) => {
+    throttle((event) => {
       const rect = event.currentTarget.getBoundingClientRect();
       const position = (event.clientX - rect.left) / rect.width;
       const time = position * duration;
       setHoverTime(time);
       setHoverPosition(event.clientX - rect.left);
+
+      // Nếu đang dragging, update drag time với ref để tránh re-render
+      if (isDragging) {
+        const newDragTime = Math.max(0, Math.min(duration, time));
+        dragTimeRef.current = newDragTime;
+      }
+    }, 16), // ~60fps update rate
+    [duration, isDragging]
+  );
+
+  const handleMouseDown = useCallback(
+    (event) => {
+      setIsDragging(true);
+      const rect = event.currentTarget.getBoundingClientRect();
+      const position = (event.clientX - rect.left) / rect.width;
+      const time = position * duration;
+      const clampedTime = Math.max(0, Math.min(duration, time));
+      dragTimeRef.current = clampedTime;
     },
     [duration]
   );
 
+  const handleMouseUp = useCallback(
+    (event) => {
+      if (isDragging && dragTimeRef.current !== null) {
+        const percentage = Math.max(
+          0,
+          Math.min(100, (dragTimeRef.current / duration) * 100)
+        );
+        handleTimeSeek(event, percentage);
+      }
+      setIsDragging(false);
+      dragTimeRef.current = null;
+    },
+    [isDragging, duration, handleTimeSeek]
+  );
+
   const handleClick = useCallback(
     (event) => {
-      const rect = event.currentTarget.getBoundingClientRect();
-      const position = (event.clientX - rect.left) / rect.width;
-      const percentage = Math.max(0, Math.min(100, position * 100));
-      handleTimeSeek(event, percentage);
+      // Chỉ handle click nếu không phải dragging
+      if (!isDragging) {
+        const rect = event.currentTarget.getBoundingClientRect();
+        const position = (event.clientX - rect.left) / rect.width;
+        const percentage = Math.max(0, Math.min(100, position * 100));
+        handleTimeSeek(event, percentage);
+      }
     },
-    [handleTimeSeek]
+    [handleTimeSeek, isDragging]
   );
 
   // Simplified question status checking - only answered or unanswered
@@ -110,16 +157,19 @@ const VideoProgressBar = ({
     });
   }, [buffered, duration, theme]);
 
-  // Simplified question markers - only two states
+  // Enhanced question markers với better performance
   const questionMarkers = useMemo(() => {
+    // Use drag time or current time for question detection
+    const timeForDetection = isDragging ? dragTimeRef.current : currentTime;
+
     return questions?.map((question) => {
       const position = (question.startTime / duration) * 100;
       const isAnswered = isQuestionAnswered(question);
       const isActive =
-        currentTime >= question.startTime &&
-        currentTime < (question.endTime || question.startTime + 30);
+        timeForDetection >= question.startTime &&
+        timeForDetection < (question.endTime || question.startTime + 30);
 
-      // Determine marker appearance
+      // Enhanced marker appearance với better visual feedback
       let markerColor,
         tooltipText,
         markerSize = 12,
@@ -163,7 +213,7 @@ const VideoProgressBar = ({
                 transform: "translate(-50%, -50%) scale(1.3)",
                 boxShadow: `0 0 12px ${alpha(markerColor, 0.6)}`,
               },
-              // Pulse animation for answered and active questions
+              // Enhanced pulse animation
               ...(pulseAnimation && {
                 animation: `pulse-${isAnswered ? "answered" : "active"} 2s infinite`,
                 "@keyframes pulse-answered": {
@@ -195,7 +245,6 @@ const VideoProgressBar = ({
               const percentage = (question.startTime / duration) * 100;
               handleTimeSeek(e, percentage);
 
-              // Notify parent component about question click
               if (onQuestionClick) {
                 onQuestionClick(question);
               }
@@ -213,12 +262,13 @@ const VideoProgressBar = ({
     theme,
     handleTimeSeek,
     onQuestionClick,
+    isDragging,
   ]);
 
   return (
     <Box sx={{ position: "relative", width: "100%", mb: 1 }}>
-      {/* Hover time tooltip */}
-      {isHovering && (
+      {/* Enhanced hover time tooltip với better positioning */}
+      {(isHovering || isDragging) && (
         <Box
           sx={{
             position: "absolute",
@@ -232,17 +282,21 @@ const VideoProgressBar = ({
             fontSize: "0.75rem",
             zIndex: 4,
             pointerEvents: "none",
+            // Enhanced styling cho better visibility
+            border: `1px solid ${alpha(theme.palette.common.white, 0.2)}`,
+            backdropFilter: "blur(4px)",
           }}
         >
-          {formatTime(hoverTime)}
+          {formatTime(isDragging ? dragTimeRef.current : hoverTime)}
         </Box>
       )}
 
-      {/* Progress bar container */}
+      {/* Enhanced progress bar container */}
       <Box
+        data-progress-bar="true"
         sx={{
           position: "relative",
-          height: 6,
+          height: isDragging ? 10 : 6,
           backgroundColor: alpha(theme.palette.common.white, 0.2),
           borderRadius: 3,
           cursor: "pointer",
@@ -250,46 +304,66 @@ const VideoProgressBar = ({
             height: 8,
           },
           transition: "height 0.2s ease",
+          // Enhanced interaction feedback
+          "&:active": {
+            height: 12,
+          },
         }}
         onMouseMove={handleMouseMove}
         onMouseEnter={() => setIsHovering(true)}
         onMouseLeave={() => setIsHovering(false)}
+        onMouseDown={handleMouseDown}
+        onMouseUp={handleMouseUp}
         onClick={handleClick}
       >
         {/* Buffered segments */}
         {bufferedElements}
 
-        {/* Progress bar */}
+        {/* Enhanced progress bar với smooth transitions */}
         <Box
           sx={{
             position: "absolute",
             left: 0,
             width: `${progressPercentage}%`,
             height: "100%",
-            backgroundColor: theme.palette.primary.main,
+            backgroundColor: isDragging
+              ? theme.palette.primary.light
+              : theme.palette.primary.main,
             borderRadius: 3,
             zIndex: 2,
+            transition: isDragging ? "none" : "width 0.1s ease",
+            // Enhanced visual feedback
+            boxShadow: isDragging
+              ? `0 0 8px ${alpha(theme.palette.primary.light, 0.8)}`
+              : "none",
           }}
         />
 
         {/* Question markers */}
         {questionMarkers}
 
-        {/* Progress thumb */}
+        {/* Enhanced progress thumb */}
         <Box
           sx={{
             position: "absolute",
             left: `${progressPercentage}%`,
             top: "50%",
             transform: "translate(-50%, -50%)",
-            width: 14,
-            height: 14,
+            width: isDragging ? 18 : 14,
+            height: isDragging ? 18 : 14,
             backgroundColor: theme.palette.primary.main,
             borderRadius: "50%",
             border: `2px solid ${theme.palette.common.white}`,
             zIndex: 3,
-            opacity: isHovering ? 1 : 0,
-            transition: "opacity 0.2s ease",
+            opacity: isHovering || isDragging ? 1 : 0,
+            transition: isDragging
+              ? "none"
+              : "opacity 0.2s ease, width 0.2s ease, height 0.2s ease",
+            cursor: isDragging ? "grabbing" : "grab",
+            // Enhanced visual feedback
+            boxShadow: isDragging
+              ? `0 0 12px ${alpha(theme.palette.primary.main, 0.8)}`
+              : `0 2px 4px ${alpha(theme.palette.common.black, 0.2)}`,
           }}
         />
       </Box>
@@ -306,7 +380,6 @@ VideoProgressBar.propTypes = {
   answeredQuestions: PropTypes.instanceOf(Set),
   handleTimeSeek: PropTypes.func.isRequired,
   formatTime: PropTypes.func.isRequired,
-  lastAllowedTime: PropTypes.number,
   onQuestionClick: PropTypes.func,
 };
 
@@ -314,13 +387,11 @@ VideoProgressBar.defaultProps = {
   buffered: [],
   questions: [],
   answeredQuestions: new Set(),
-  lastAllowedTime: Infinity,
   onQuestionClick: null,
 };
 
-// Enhanced Main VideoControls Component
+// Enhanced Main VideoControls Component với Better Performance
 const VideoControls = ({
-  progressStats,
   showControls,
   isPlaying,
   handlePlayPause,
@@ -342,7 +413,6 @@ const VideoControls = ({
   questions,
   answeredQuestions,
   handleTimeSeek,
-  lastAllowedTime,
   isOnline = true,
   onQuestionClick,
   getCurrentQuestion,
@@ -351,17 +421,18 @@ const VideoControls = ({
   videoProgress,
   isProgressLoading,
   progressError,
-  hasStartedWatching,
-  totalTimeSpent,
-  progressMilestones,
 }) => {
   const theme = useTheme();
   const [showVolumeSlider, setShowVolumeSlider] = useState(false);
 
+  // Enhanced state để track việc seeking với better performance
+  const [isSeeking, setIsSeeking] = useState(false);
+  const seekingTimeRef = useRef(null); // Ref để tránh re-render
+
   // Speed options
   const speedOptions = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 2];
 
-  // Calculate question statistics - simplified to answered/unanswered
+  // Enhanced question statistics calculation với memoization
   const questionStats = useMemo(() => {
     if (!questions?.length) return { total: 0, answered: 0, correctAnswers: 0 };
 
@@ -399,33 +470,58 @@ const VideoControls = ({
     };
   }, [questions, answeredQuestions]);
 
-  // Skip functions
+  // Enhanced skip functions với optimized state updates
   const handleSkipBackward = useCallback(() => {
     const newTime = Math.max(0, currentTime - 10);
     const percentage = (newTime / duration) * 100;
+
+    // Set seeking state với ref để hiển thị thời gian ngay lập tức
+    setIsSeeking(true);
+    seekingTimeRef.current = newTime;
+
     handleTimeSeek(null, percentage);
+
+    // Reset seeking state sau một khoảng ngắn
+    setTimeout(() => {
+      setIsSeeking(false);
+      seekingTimeRef.current = null;
+    }, 100);
   }, [currentTime, duration, handleTimeSeek]);
 
   const handleSkipForward = useCallback(() => {
     const newTime = Math.min(duration, currentTime + 10);
     const percentage = (newTime / duration) * 100;
+
+    // Set seeking state với ref để hiển thị thời gian ngay lập tức
+    setIsSeeking(true);
+    seekingTimeRef.current = newTime;
+
     handleTimeSeek(null, percentage);
+
+    // Reset seeking state sau một khoảng ngắn
+    setTimeout(() => {
+      setIsSeeking(false);
+      seekingTimeRef.current = null;
+    }, 100);
   }, [currentTime, duration, handleTimeSeek]);
 
-  // Get current active question
+  // Enhanced current active question calculation
   const activeQuestion = useMemo(() => {
     if (getCurrentQuestion) {
       return getCurrentQuestion();
     }
 
+    // Use the most current time for question detection
+    const timeToCheck = isSeeking ? seekingTimeRef.current : currentTime;
+
     return questions?.find(
       (q) =>
-        currentTime >= q.startTime &&
-        currentTime < (q.endTime || q.startTime + 30)
+        timeToCheck >= q.startTime &&
+        timeToCheck < (q.endTime || q.startTime + 30)
     );
-  }, [questions, currentTime, getCurrentQuestion]);
+  }, [questions, currentTime, getCurrentQuestion, isSeeking]);
 
-  // Get question to display based on logic
+  // Enhanced question to display calculation
   const questionToShow = useMemo(() => {
     if (getQuestionToShow) {
       return getQuestionToShow();
@@ -443,19 +539,44 @@ const VideoControls = ({
     );
   }, [activeQuestion, questions, answeredQuestions, getQuestionToShow]);
 
-  // Sync current time with video progress if available
+  // Enhanced current time calculation với priority optimized
   const displayCurrentTime = useMemo(() => {
-    return videoProgress?.lastPosition ?? currentTime;
-  }, [videoProgress?.lastPosition, currentTime]);
+    // Priority 1: If seeking, show seeking time immediately
+    if (isSeeking && seekingTimeRef.current !== null) {
+      return seekingTimeRef.current;
+    }
 
+    // Priority 2: Use video progress last position (most accurate)
+    if (
+      videoProgress?.lastPosition !== undefined &&
+      videoProgress.lastPosition >= 0
+    ) {
+      return videoProgress.lastPosition;
+    }
+
+    // Priority 3: Fallback to current time from props
+    return currentTime;
+  }, [isSeeking, currentTime, videoProgress?.lastPosition]);
+
+  // Enhanced duration calculation
   const displayDuration = useMemo(() => {
-    return videoProgress?.totalDuration ?? duration;
-  }, [videoProgress?.totalDuration, duration]);
+    // Priority 1: Video progress total duration
+    if (videoProgress?.totalDuration > 0) {
+      return videoProgress.totalDuration;
+    }
 
-  // Keyboard shortcuts
+    // Priority 2: Duration from props
+    return duration > 0 ? duration : 0;
+  }, [duration, videoProgress?.totalDuration]);
+
+  // Enhanced keyboard shortcuts với better event handling
   useEffect(() => {
     const handleKeyPress = (event) => {
-      if (event.target.tagName === "INPUT") return;
+      if (
+        event.target.tagName === "INPUT" ||
+        event.target.tagName === "TEXTAREA"
+      )
+        return;
 
       switch (event.key) {
         case " ":
@@ -471,10 +592,12 @@ const VideoControls = ({
           handleSkipForward();
           break;
         case "f":
+        case "F":
           event.preventDefault();
           handleFullscreenToggle();
           break;
         case "m":
+        case "M":
           event.preventDefault();
           handleMuteToggle();
           break;
@@ -506,9 +629,11 @@ const VideoControls = ({
           background: `linear-gradient(transparent, ${alpha(theme.palette.common.black, 0.8)})`,
           padding: theme.spacing(2),
           color: theme.palette.common.white,
+          // Enhanced backdrop for better visibility
+          backdropFilter: "blur(4px)",
         }}
       >
-        {/* Enhanced Progress Bar */}
+        {/* Enhanced Progress Bar với better sync */}
         <VideoProgressBar
           currentTime={displayCurrentTime}
           duration={displayDuration}
@@ -517,7 +642,6 @@ const VideoControls = ({
           answeredQuestions={answeredQuestions}
           handleTimeSeek={handleTimeSeek}
           formatTime={formatTime}
-          lastAllowedTime={lastAllowedTime}
           onQuestionClick={onQuestionClick}
         />
 
@@ -618,8 +742,8 @@ const VideoControls = ({
               </Fade>
             </Box>
 
-            {/* Time Display */}
-            <Typography variant="body2" sx={{ color: "white", minWidth: 100 }}>
+            {/* Enhanced Time Display với better sync */}
+            <Typography variant="body2" sx={{ color: "white", minWidth: 120 }}>
               {formatTime(displayCurrentTime)} / {formatTime(displayDuration)}
             </Typography>
           </Box>
@@ -630,13 +754,26 @@ const VideoControls = ({
             {!isOnline && (
               <Typography
                 variant="caption"
-                sx={{ color: theme.palette.warning.main }}
+                sx={{
+                  color: theme.palette.warning.main,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 0.5,
+                }}
               >
+                <Box
+                  sx={{
+                    width: 6,
+                    height: 6,
+                    borderRadius: "50%",
+                    backgroundColor: theme.palette.warning.main,
+                  }}
+                />
                 Offline
               </Typography>
             )}
 
-            {/* Progress Loading Indicator */}
+            {/* Enhanced Progress Loading Indicator */}
             {isProgressLoading && (
               <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
                 <CircularProgress size={16} sx={{ color: "white" }} />
@@ -644,6 +781,42 @@ const VideoControls = ({
                   Syncing...
                 </Typography>
               </Box>
+            )}
+
+            {/* Progress Error Indicator */}
+            {progressError && (
+              <Tooltip title={`Sync error: ${progressError}`}>
+                <Typography
+                  variant="caption"
+                  sx={{
+                    color: theme.palette.error.main,
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 0.5,
+                  }}
+                >
+                  ⚠ Error
+                </Typography>
+              </Tooltip>
+            )}
+
+            {/* Enhanced Completion Percentage Display */}
+            {completionPercentage > 0 && (
+              <Typography
+                variant="caption"
+                sx={{
+                  color:
+                    completionPercentage === 100
+                      ? theme.palette.success.main
+                      : completionPercentage > 50
+                        ? theme.palette.warning.main
+                        : theme.palette.info.main,
+                  fontWeight: 600,
+                  minWidth: 40,
+                }}
+              >
+                {Math.round(completionPercentage)}%
+              </Typography>
             )}
 
             {/* Speed Control */}
@@ -669,6 +842,7 @@ const VideoControls = ({
                 sx: {
                   backgroundColor: alpha(theme.palette.common.black, 0.9),
                   color: "white",
+                  backdropFilter: "blur(8px)",
                 },
               }}
             >
@@ -722,7 +896,7 @@ const VideoControls = ({
                 mb: 0.5,
               }}
             >
-              {/* Simplified status legend */}
+              {/* Enhanced status legend với better visual feedback */}
               <Box
                 sx={{
                   display: "flex",
@@ -742,7 +916,7 @@ const VideoControls = ({
                   />
                   <Typography
                     variant="caption"
-                    sx={{ color: alpha(theme.palette.common.white, 0.7) }}
+                    sx={{ color: alpha(theme.palette.common.white, 0.8) }}
                   >
                     Answered ({questionStats.answered})
                   </Typography>
@@ -759,13 +933,13 @@ const VideoControls = ({
                   />
                   <Typography
                     variant="caption"
-                    sx={{ color: alpha(theme.palette.common.white, 0.7) }}
+                    sx={{ color: alpha(theme.palette.common.white, 0.8) }}
                   >
                     Unanswered ({questionStats.unanswered})
                   </Typography>
                 </Box>
 
-                {/* Current/Next Question Indicator */}
+                {/* Enhanced Current/Next Question Indicator */}
                 {(activeQuestion || questionToShow) && (
                   <Box
                     sx={{
@@ -773,6 +947,10 @@ const VideoControls = ({
                       alignItems: "center",
                       gap: 0.5,
                       ml: 1,
+                      padding: "2px 8px",
+                      borderRadius: 1,
+                      backgroundColor: alpha(theme.palette.warning.main, 0.2),
+                      border: `1px solid ${alpha(theme.palette.warning.main, 0.3)}`,
                     }}
                   >
                     <Box
@@ -786,7 +964,10 @@ const VideoControls = ({
                     />
                     <Typography
                       variant="caption"
-                      sx={{ color: theme.palette.warning.light }}
+                      sx={{
+                        color: theme.palette.warning.light,
+                        fontWeight: 500,
+                      }}
                     >
                       {activeQuestion ? "Active" : "Next"} question at{" "}
                       {formatTime((activeQuestion || questionToShow).startTime)}
@@ -794,50 +975,7 @@ const VideoControls = ({
                   </Box>
                 )}
               </Box>
-
-              {/* Enhanced completion percentage with sync status */}
-              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                {progressError && (
-                  <Typography
-                    variant="caption"
-                    sx={{ color: theme.palette.error.main }}
-                  >
-                    Sync Error
-                  </Typography>
-                )}
-                <Typography
-                  variant="caption"
-                  sx={{
-                    color:
-                      completionPercentage === 100
-                        ? theme.palette.success.main
-                        : completionPercentage > 0
-                          ? theme.palette.warning.main
-                          : theme.palette.error.main,
-                    fontWeight: 600,
-                  }}
-                ></Typography>
-              </Box>
             </Box>
-
-            {/* Enhanced Progress Stats */}
-            {/* {progressStats && (
-              <Box sx={{ mt: 1 }}>
-                <Typography
-                  variant="caption"
-                  sx={{
-                    color: alpha(theme.palette.common.white, 0.8),
-                    display: "block",
-                  }}
-                >
-                  Progress: {Math.round(progressStats.completion)}% • Watched:{" "}
-                  {formatTime(progressStats.watched)} • Time Spent:{" "}
-                  {formatTime(progressStats.timeSpent)} • Efficiency:{" "}
-                  {Math.round(progressStats.efficiency)}%
-                  {hasStartedWatching && " • Session Active"}
-                </Typography>
-              </Box>
-            )} */}
           </Box>
         )}
       </Box>
@@ -846,13 +984,6 @@ const VideoControls = ({
 };
 
 VideoControls.propTypes = {
-  progressStats: PropTypes.shape({
-    completion: PropTypes.number,
-    watched: PropTypes.number,
-    total: PropTypes.number,
-    timeSpent: PropTypes.number,
-    efficiency: PropTypes.number,
-  }),
   showControls: PropTypes.bool.isRequired,
   isPlaying: PropTypes.bool.isRequired,
   handlePlayPause: PropTypes.func.isRequired,
@@ -875,7 +1006,6 @@ VideoControls.propTypes = {
   answeredQuestions: PropTypes.instanceOf(Set),
   handleTimeSeek: PropTypes.func.isRequired,
   isOnline: PropTypes.bool,
-  lastAllowedTime: PropTypes.number,
   onQuestionClick: PropTypes.func,
   getCurrentQuestion: PropTypes.func,
   completionPercentage: PropTypes.number,
@@ -886,9 +1016,6 @@ VideoControls.propTypes = {
   }),
   isProgressLoading: PropTypes.bool,
   progressError: PropTypes.oneOfType([PropTypes.string, PropTypes.object]),
-  hasStartedWatching: PropTypes.bool,
-  totalTimeSpent: PropTypes.number,
-  progressMilestones: PropTypes.array,
 };
 
 VideoControls.defaultProps = {
@@ -897,7 +1024,6 @@ VideoControls.defaultProps = {
   answeredQuestions: new Set(),
   speedMenuAnchorEl: null,
   isOnline: true,
-  lastAllowedTime: Infinity,
   onQuestionClick: null,
   getCurrentQuestion: null,
   getQuestionToShow: null,

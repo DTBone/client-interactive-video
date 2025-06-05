@@ -1,5 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { createModuleItemLecture, createModuleItemProgramming, createModuleItemQuiz, createModuleItemSupplement,  editLectureByItemId, editProgrammingByItemId, editQuizByItemId, editSupplementByItemId, getModuleItemById, preloadInteractiveQuestion } from "./action";
+import { createModuleItemLecture, createModuleItemProgramming, createModuleItemQuiz, createModuleItemSupplement, editLectureByItemId, editProgrammingByItemId, editQuizByItemId, editSupplementByItemId, getModuleItemById, preloadInteractiveQuestion, updateInteractiveQuestion } from "./action";
 
 const moduleItemSlice = createSlice({
     name: 'module-item-slice',
@@ -179,6 +179,19 @@ const moduleItemSlice = createSlice({
                 state.error = null;
             })
             .addCase(preloadInteractiveQuestion.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
+            .addCase(updateInteractiveQuestion.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(updateInteractiveQuestion.fulfilled, (state, action) => {
+                state.loading = false;
+                // state.currentQuestion = action.payload.data.nextQuestion;
+                state.error = null;
+            })
+            .addCase(updateInteractiveQuestion.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload;
             });

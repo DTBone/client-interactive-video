@@ -1,43 +1,42 @@
-import React, { useEffect, useRef, useState, useCallback } from "react";
+import { useState, useRef, useCallback, useMemo, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useLocation, useOutletContext } from "react-router-dom";
 import {
   Box,
+  Dialog,
+  DialogTitle,
+  DialogContent,
   Button,
   FormControl,
-  Typography,
-  Stack,
   FormControlLabel,
   Checkbox,
-  RadioGroup,
   Radio,
-  CircularProgress,
-  Alert,
+  RadioGroup,
+  Stack,
+  Typography,
 } from "@mui/material";
 import {
-  QuestionAnswer,
-  Close,
-  VolumeUp,
+  VolumeOff,
   VolumeDown,
-  VolumeMute,
+  VolumeUp,
+  QuestionAnswer,
 } from "@mui/icons-material";
-import { getLectureById } from "~/store/slices/Quiz/action";
-import SnackbarAlert from "../SnackbarAlert";
 import VideoControls from "./VideoControls";
+
 import useVideoQuestions from "../../hooks/useVideoQuestion";
 import useVideoProgress from "../../hooks/useVideoProgress";
 import { formatTime } from "../../hooks/useFormatTime";
 import PropTypes from "prop-types";
 import InteractiveQuestionDialog from "../InteractiveQuestionDialog";
 import { preloadInteractiveQuestion } from "~/store/slices/ModuleItem/action";
-import { useMemo } from "react";
 import { getProgress } from "~/store/slices/Progress/action";
+import SnackbarAlert from "../SnackbarAlert";
 
 const Video = () => {
   const dispatch = useDispatch();
   const location = useLocation();
-  const lectureId = location?.state?.item?.video;
-  const moduleItemId = location.state.item._id;
+  const lectureId = location?.state?.item?.video._id;
+  const moduleItemId = location.state?.item._id;
   const [alert, setAlert] = useState("");
   const [lectureData, setLectureData] = useState(null);
   const [questions, setQuestion] = useState(null);
@@ -54,30 +53,16 @@ const Video = () => {
   const videoContainerRef = useRef(null);
   const controlsTimeoutRef = useRef(null);
   const { lecture, loading: quizLoading } = useSelector((state) => state.quiz);
-  //dispatch(getProgress(lectureId));
   const progress = findModuleItemProgress(
     useSelector((state) => state.progress.progress) || [],
     moduleItemId
   );
 
   const { onQuizSubmit } = useOutletContext();
-  // const moduleProgress = useSelector(
-  //   (state) => state.module.currentModule?.data?.progress
-  // );
-  // console.log("moduleProgress", moduleProgress);
-  // const course = useSelector((state) => state.course.currentCourse);
-  //console.log("course", course);
-  // dispatch(getProgress(course?._id));
-
-  // useEffect(() => {
-  //   dispatch(getLectureById(lectureId));
-  // }, [dispatch, lectureId]);
-  // Thêm state để theo dõi việc đã preload
   const [hasPreloaded, setHasPreloaded] = useState(false);
-  // Sử dụng effect với deps đầy đủ
   useEffect(() => {
     if (!hasPreloaded) {
-      let videoId = lectureId || location.state?.item?.video;
+      let videoId = location.state?.item?.video._id;
       if (videoId) {
         console.log("Preloading interactive questions for video:", videoId);
         dispatch(preloadInteractiveQuestion({ moduleItemId, videoId }));
@@ -89,7 +74,7 @@ const Video = () => {
     dispatch,
     lectureId,
     moduleItemId,
-    location.state?.item?.video,
+    // location.state?.item?.video,
   ]);
   useEffect(() => {
     setLectureData(lecture);
@@ -99,12 +84,9 @@ const Video = () => {
   const handleProgressTimeUpdate = useCallback(
     (progressData) => {
       if (progressData) {
-        // Đồng bộ currentTime với progress data nếu có sự khác biệt đáng kể
-        const videoCurrentTime = videoRef.current?.currentTime || 0;
-        if (Math.abs(videoCurrentTime - progressData.lastPosition) > 1) {
-          setCurrentTime(progressData.lastPosition);
-        }
-        // Đồng bộ duration nếu chưa có
+        // Đồng bộ real-time với video controls
+        setCurrentTime(progressData.lastPosition);
+
         if (progressData.totalDuration && !duration) {
           setDuration(progressData.totalDuration);
         }
@@ -118,19 +100,14 @@ const Video = () => {
     selectedAnswer,
     dialogAlert,
     loading,
-    lastAllowedTime,
     answeredQuestions,
     checkForQuestions,
     handleAnswerSubmit,
     handleCloseDialog,
     handleMultipleChoiceChange,
     handleSingleChoiceChange,
-    checkQuestionHistory,
   } = useVideoQuestions(questions, progress, videoRef);
-  // console.log("progress", progress);
-  // console.log("progressId", progress?._id);
-  // console.log("videoId", lectureId || location.state?.item?.video);
-  // console.log("location", location.state);
+
   const {
     videoProgress,
     isLoading,
@@ -161,13 +138,18 @@ const Video = () => {
     }),
     [completionPercentage, watchedDuration, totalDuration, timeSpent]
   );
-  // Đồng bộ currentTime với videoProgress nếu có
   const displayCurrentTime = useMemo(() => {
-    return videoProgress?.lastPosition ?? currentTime;
+    if (videoProgress?.lastPosition !== undefined) {
+      return videoProgress.lastPosition;
+    }
+    return currentTime;
   }, [videoProgress?.lastPosition, currentTime]);
 
   const displayDuration = useMemo(() => {
-    return videoProgress?.totalDuration ?? duration;
+    if (videoProgress?.totalDuration > 0) {
+      return videoProgress.totalDuration;
+    }
+    return duration;
   }, [videoProgress?.totalDuration, duration]);
 
   const getCurrentQuestion = useCallback(() => {
@@ -225,30 +207,28 @@ const Video = () => {
       const newTime = (newValue / 100) * displayDuration;
       const currentPosition = videoRef.current.currentTime;
 
-      // Allow seeking if video is completed or no questions exist
-      if (
-        progress?.status === "completed" ||
-        !questions ||
-        questions.length === 0
-      ) {
+      if (progress?.status === "completed") {
         videoRef.current.currentTime = newTime;
         setCurrentTime(newTime);
         return;
       }
 
-      // Find the nearest unanswered question that blocks the seek
+      if (!questions || questions.length === 0) {
+        videoRef.current.currentTime = newTime;
+        setCurrentTime(newTime);
+        return;
+      }
+
       const blockingQuestion = questions
         .filter((q) => !answeredQuestions.has(q.startTime))
         .filter((q) => q.startTime > currentPosition && q.startTime <= newTime)
         .sort((a, b) => a.startTime - b.startTime)[0];
 
       if (blockingQuestion) {
-        // Dừng tại vị trí câu hỏi chưa trả lời
         videoRef.current.currentTime = blockingQuestion.startTime;
         setCurrentTime(blockingQuestion.startTime);
         setAlert("You must answer this question before continuing.");
       } else {
-        // Allow seeking if no questions are blocking
         videoRef.current.currentTime = newTime;
         setCurrentTime(newTime);
       }
@@ -354,11 +334,10 @@ const Video = () => {
     handleSpeedMenuClose();
   };
   const getVolumeIcon = () => {
-    if (volume === 0) return <VolumeMute />;
+    if (volume === 0) return <VolumeOff />;
     if (volume < 0.5) return <VolumeDown />;
     return <VolumeUp />;
   };
-  // Component hiển thị câu hỏi tích hợp
   const QuestionDialog = ({ open, question }) => {
     if (!open || !question) return null;
 
@@ -408,7 +387,6 @@ const Video = () => {
         }}
       >
         <div style={contentStyles} onClick={(e) => e.stopPropagation()}>
-          {/* Header */}
           <div
             style={{
               display: "flex",
@@ -439,7 +417,6 @@ const Video = () => {
             </Button>
           </div>
 
-          {/* Nội dung câu hỏi */}
           {loading ? (
             <div
               style={{
@@ -469,7 +446,6 @@ const Video = () => {
                   {question?.question}
                 </Typography>
 
-                {/* True/False Questions */}
                 {currentQuestion.questionType === "true-false" && (
                   <>
                     <Typography variant="subtitle1" className="mb-2">
@@ -501,7 +477,6 @@ const Video = () => {
                   </>
                 )}
 
-                {/* Multiple Choice Questions */}
                 {currentQuestion.questionType === "multiple-choice" && (
                   <>
                     <Typography variant="subtitle1" className="mb-2">
@@ -526,7 +501,6 @@ const Video = () => {
                   </>
                 )}
 
-                {/* Single Choice Questions */}
                 {currentQuestion.questionType === "single-choice" && (
                   <>
                     <Typography variant="subtitle1" className="mb-2">
@@ -638,7 +612,6 @@ const Video = () => {
           onLoadedMetadata={() => setDuration(videoRef.current?.duration || 0)}
         />
         <VideoControls
-          progressStats={progressStats}
           showControls={showControls}
           isPlaying={isPlaying}
           handlePlayPause={handlePlayPause}
@@ -656,18 +629,15 @@ const Video = () => {
           handleSpeedChange={handleSpeedChange}
           handleFullscreenToggle={handleFullscreenToggle}
           isFullscreen={isFullscreen}
+          batteredRegions={[]}
           questions={questions}
           getCurrentQuestion={getCurrentQuestion}
           answeredQuestions={answeredQuestions}
           handleTimeSeek={handleTimeSeek}
-          lastAllowedTime={lastAllowedTime}
           completionPercentage={completionPercentage}
           videoProgress={videoProgress}
           isProgressLoading={isLoading}
           progressError={error}
-          hasStartedWatching={hasStarted}
-          totalTimeSpent={timeSpent}
-          progressMilestones={sentMilestones}
         />
         {!!currentQuestion &&
           progress?.status !== "completed" &&
