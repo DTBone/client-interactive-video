@@ -131,6 +131,7 @@ const Lecture = () => {
                   height: "100%",
                   objectFit: "cover",
                 }}
+                onQuizSubmit={onQuizSubmit}
               />
             </div>
           </div>

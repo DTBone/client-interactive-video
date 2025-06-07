@@ -3,9 +3,6 @@ import { useDispatch, useSelector } from "react-redux";
 import { useLocation, useOutletContext } from "react-router-dom";
 import {
   Box,
-  Dialog,
-  DialogTitle,
-  DialogContent,
   Button,
   FormControl,
   FormControlLabel,
@@ -14,27 +11,30 @@ import {
   RadioGroup,
   Stack,
   Typography,
+  Alert,
+  CircularProgress,
 } from "@mui/material";
 import {
   VolumeOff,
   VolumeDown,
   VolumeUp,
   QuestionAnswer,
+  Close,
 } from "@mui/icons-material";
+import PropTypes from "prop-types";
 import VideoControls from "./VideoControls";
 
 import useVideoQuestions from "../../hooks/useVideoQuestion";
 import useVideoProgress from "../../hooks/useVideoProgress";
 import { formatTime } from "../../hooks/useFormatTime";
-import PropTypes from "prop-types";
 import InteractiveQuestionDialog from "../InteractiveQuestionDialog";
 import { preloadInteractiveQuestion } from "~/store/slices/ModuleItem/action";
-import { getProgress } from "~/store/slices/Progress/action";
 import SnackbarAlert from "../SnackbarAlert";
 
 const Video = () => {
   const dispatch = useDispatch();
   const location = useLocation();
+  const { onQuizSubmit } = useOutletContext();
   const lectureId = location?.state?.item?.video._id;
   const moduleItemId = location.state?.item._id;
   const [alert, setAlert] = useState("");
@@ -58,7 +58,6 @@ const Video = () => {
     moduleItemId
   );
 
-  const { onQuizSubmit } = useOutletContext();
   const [hasPreloaded, setHasPreloaded] = useState(false);
   useEffect(() => {
     if (!hasPreloaded) {
@@ -112,13 +111,7 @@ const Video = () => {
     videoProgress,
     isLoading,
     error,
-    isPlayingProgress,
-    hasStarted,
     completionPercentage,
-    watchedDuration,
-    totalDuration,
-    timeSpent,
-    sentMilestones,
     updateProgress,
   } = useVideoProgress({
     videoRef,
@@ -128,16 +121,7 @@ const Video = () => {
     onTimeUpdate: handleProgressTimeUpdate,
     onQuizSubmit,
   });
-  const progressStats = useMemo(
-    () => ({
-      completion: completionPercentage,
-      watched: watchedDuration,
-      total: totalDuration,
-      timeSpent: timeSpent,
-      efficiency: timeSpent > 0 ? (watchedDuration / timeSpent) * 100 : 0,
-    }),
-    [completionPercentage, watchedDuration, totalDuration, timeSpent]
-  );
+
   const displayCurrentTime = useMemo(() => {
     if (videoProgress?.lastPosition !== undefined) {
       return videoProgress.lastPosition;
@@ -207,13 +191,18 @@ const Video = () => {
       const newTime = (newValue / 100) * displayDuration;
       const currentPosition = videoRef.current.currentTime;
 
+      console.log(`Seeking to: ${newTime}s (${newValue}%)`);
+      console.log(`Progress status: ${progress?.status}`);
+
       if (progress?.status === "completed") {
+        console.log("Video completed - allowing free seeking");
         videoRef.current.currentTime = newTime;
         setCurrentTime(newTime);
         return;
       }
 
       if (!questions || questions.length === 0) {
+        console.log("No questions - allowing free seeking");
         videoRef.current.currentTime = newTime;
         setCurrentTime(newTime);
         return;
@@ -225,10 +214,12 @@ const Video = () => {
         .sort((a, b) => a.startTime - b.startTime)[0];
 
       if (blockingQuestion) {
+        console.log(`Blocked by question at ${blockingQuestion.startTime}s`);
         videoRef.current.currentTime = blockingQuestion.startTime;
         setCurrentTime(blockingQuestion.startTime);
         setAlert("You must answer this question before continuing.");
       } else {
+        console.log("No blocking questions - seeking allowed");
         videoRef.current.currentTime = newTime;
         setCurrentTime(newTime);
       }
@@ -579,6 +570,17 @@ const Video = () => {
         </div>
       </div>
     );
+  };
+
+  // Add PropTypes for QuestionDialog
+  QuestionDialog.propTypes = {
+    open: PropTypes.bool.isRequired,
+    question: PropTypes.shape({
+      question: PropTypes.string,
+      _id: PropTypes.string,
+      questionType: PropTypes.string,
+      answers: PropTypes.array,
+    }),
   };
 
   if (quizLoading) {
