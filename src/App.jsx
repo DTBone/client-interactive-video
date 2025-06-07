@@ -12,7 +12,7 @@ import { checkAuthStatus } from "~/store/slices/Auth/action";
 import { clearState } from "./store/slices/Auth/authSlice";
 
 // import HomeSection from "./pages/Home/index";
-import ShortLink from "./pages/ShortLink/shortLink.jsx";
+import ShortLink from "./pages/ShortLink/shortLink";
 import GithubAuth from "./pages/GithubAuth/githubAuth";
 
 import HomeUser from "~/modules/User/HomeUser";
