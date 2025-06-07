@@ -36,7 +36,7 @@ const Navbar = () => {
   const dispatch = useDispatch();
   const { problemId } = useParams();
   const location = useLocation();
-  console.log("location: ", location.state);
+
   const [progressData, setProgressData] = useState(moduleItemProgress);
   //console.log("moduleItemProgress: ", moduleItemProgress);
   useEffect(() => {

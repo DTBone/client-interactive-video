@@ -128,18 +128,20 @@ const useVideoProgress = ({
     const timeSpent = localProgress.timeSpent || 0;
     let completionPercentage = Math.round((currentTime / duration) * 100);
 
-    // Nếu progress đã completed, luôn giữ ở 100%
+    // Nếu progress đã completed, luôn giữ completion ở 100% nhưng vẫn track thời gian thực
     if (progress?.status === "completed") {
-      completionPercentage = 100;
       const progressData = {
-        completionPercentage: 100,
-        watchedDuration: duration,
+        completionPercentage: 100, // Luôn 100% khi completed
+        watchedDuration: currentTime, // Sử dụng thời gian thực
         totalDuration: duration,
-        lastPosition: duration,
+        lastPosition: currentTime, // Sử dụng thời gian thực để đồng bộ với video
         timeSpent,
         videoId,
         status: "completed"
       };
+
+      // Log để track sync behavior
+      console.log(`📺 Completed video sync - Current time: ${currentTime.toFixed(2)}s, Progress: 100%`);
 
       return progressData;
     }
@@ -202,9 +204,17 @@ const useVideoProgress = ({
 
         // Trigger onQuizSubmit nếu video completed
         if (progressData.completionPercentage >= 100 && onQuizSubmit && !hasTriggeredCompletion.current) {
-          console.log("Video completed, triggering onQuizSubmit");
+          console.log("🎉 Video completed, triggering onQuizSubmit");
+          console.log("Progress data:", progressData);
           hasTriggeredCompletion.current = true;
-          onQuizSubmit("Video completed");
+
+          // Call onQuizSubmit with completion data
+          onQuizSubmit({
+            type: "video_completed",
+            message: "Video completed successfully",
+            progressData: progressData,
+            timestamp: Date.now()
+          });
         }
 
         loadAllModuleItemStatuses();
@@ -372,8 +382,9 @@ const useVideoProgress = ({
           video.currentTime = videoProgress.lastPosition;
           console.log(`Resuming video at ${videoProgress.lastPosition}s`);
         } else if (progress?.status === "completed") {
-          console.log("Video completed - starting from beginning for review");
-          video.currentTime = 0;
+          console.log("Video completed - allowing free navigation for review");
+          // Không auto-seek về 0, để user tự chọn vị trí xem lại
+          // video.currentTime = 0; // Removed this line
         }
       }
     }
