@@ -1,7 +1,5 @@
 import PropTypes from 'prop-types';
 import { Dialog, DialogTitle, DialogContent, DialogActions, Typography, Button, Divider, Box } from '@mui/material';
-// import VideoPlayer from '~/modules/Lesson/Components/VideoPlayer';
-
 const CourseItemDetailDialog = ({ open, onClose, item }) => {
     if (!item) return null;
     return (

@@ -312,30 +312,23 @@ function App() {
             <InstructorSection />
           </ProtectedRoute>
         } /> */}
-        <Route
-          path="/course-management/:courseId"
-          element={
-            <ProtectedRoute allowedRoles={["instructor", "admin"]}>
-              <CourseSection state={"edit"} />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="instructor/instructor-chat"
-          element={
-            <ProtectedRoute allowedRoles={["instructor", "admin"]}>
-              {/* <Message /> */}
-            </ProtectedRoute>
-          }
-        ></Route>
-        <Route
-          path="/instructor/student-management"
-          element={
-            <ProtectedRoute allowedRoles={["instructor", "admin"]}>
-              <ListStudent />
-            </ProtectedRoute>
-          }
-        >
+        <Route path="/course-management/:courseId" element={
+          <ProtectedRoute allowedRoles={['instructor', 'admin']}>
+            <CourseSection state={'edit'} />
+          </ProtectedRoute>
+        } />
+        <Route path="instructor/instructor-chat" element={
+          <ProtectedRoute allowedRoles={['instructor', 'admin']}>
+            <Message />
+
+          </ProtectedRoute>
+        } ></Route>
+        <Route path="/instructor/student-management" element={
+          <ProtectedRoute allowedRoles={['instructor', 'admin']}>
+            <ListStudent />
+
+          </ProtectedRoute>
+        } >
           <Route path="course/:courseId" element={<DetailedStatistic />} />
         </Route>
 

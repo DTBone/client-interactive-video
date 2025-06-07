@@ -174,7 +174,7 @@ function CustomStepIcon(props) {
 
 
 
-const RoadmapDisplay = ({data, setRoadmapOutSide}) => {
+const RoadmapDisplay = ({data, setRoadmapOutSide, refreshRoadmap}) => {
   const [expanded, setExpanded] = useState('panel0');
   const theme = useTheme();
   const navigate = useNavigate();
@@ -424,7 +424,7 @@ const RoadmapDisplay = ({data, setRoadmapOutSide}) => {
                   <AccordionDetails sx={{ p: 2 }}>
                     {phase.items.map((item, itemIndex) => (
                       <ItemPaper key={itemIndex} completed={item.completed} elevation={1}
-                        onClick={() => navigate(`/search?q=${item.tags}`)}
+                        
                       >
                         <Box sx={{ display: 'flex', alignItems: 'flex-start' }}>
                           <Box sx={{ mr: 2, pt: 0.5 }}>
@@ -440,6 +440,7 @@ const RoadmapDisplay = ({data, setRoadmapOutSide}) => {
                               </Typography>
                               {item.tags.map((tag, tagIndex) => (
                                 <Chip 
+                                  onClick={() => navigate(`/search?tag=${tag}`)}
                                   key={tagIndex} 
                                   label={'#'+tag} 
                                   size="small" 
@@ -452,7 +453,7 @@ const RoadmapDisplay = ({data, setRoadmapOutSide}) => {
                               {item.description}
                             </Typography>
                             { (
-                              <ChipTest item={item} phase={phase} roadmap={roadmapData} setRoadmap={setRoadmapData} />
+                              <ChipTest item={item} phase={phase} roadmap={roadmapData} setRoadmap={setRoadmapData} refreshRoadmap={refreshRoadmap} />
                               
                             )}
                           </Box>

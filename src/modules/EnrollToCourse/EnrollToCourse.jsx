@@ -124,6 +124,7 @@ const EnrollToCourse = () => {
     } finally {
       setShareLoading(false);
     }
+
   };
   const handleCopy = async () => {
     await navigator.clipboard.writeText(shortLink);
@@ -211,6 +212,7 @@ const EnrollToCourse = () => {
                         Course link:
                       </Typography>
                       <TextField
+
                         value={shortLink}
                         fullWidth
                         InputProps={{
@@ -222,6 +224,7 @@ const EnrollToCourse = () => {
                           readOnly: true,
                         }}
                         margin="dense"
+
                       />
                     </Box>
                   )}
@@ -230,6 +233,7 @@ const EnrollToCourse = () => {
                   <Button onClick={() => setDialogOpen(false)}>Close</Button>
                 </DialogActions>
               </Dialog>
+
 
               <Snackbar
                 open={snackbar.open}

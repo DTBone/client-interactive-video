@@ -1,9 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 // import IconComponent from '../Common/Button/IconComponent'; // Xoá dòng này vì không dùng
 import {api} from '~/Config/api';
-import { PsychologyAlt } from '@mui/icons-material';
+import { CloseSharp, PsychologyAlt, ResetTv, SmartToyOutlined } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
+import { Box, Tooltip, Typography, List, ListItem, ListItemText, Button, Chip } from '@mui/material';
+import { toast } from 'react-toastify';
+import robot from '~/assets/DefaultImage/robot.png';
 const ChatBot = () => {
   const isAdmin = useSelector(state => state.auth.user?.role === 'admin');
   const navigate = useNavigate();
@@ -29,7 +32,7 @@ const ChatBot = () => {
   // Lấy khóa học theo id
   const getCourseById = (id) => {
     if (courseInfo[id]) return; // Đã có rồi thì không gọi lại
-    api.get(`/learns/courseId/${id}`)
+    api.get(`/learns/${id}`)
       .then(res => {
         // Giả sử res.data có { title, image }
         setCourseInfo(prev => ({ ...prev, [id]: res.data.data }));
@@ -79,19 +82,56 @@ const ChatBot = () => {
     if (open && messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
     }
-  }, [open]);
+  }, [open, messages]);
+
+  const cropCourseTitleFromAnswer = (answer) => {
+    // Tìm tất cả <course>id</course> và thay thế bằng info
+    if (!answer || typeof answer !== 'string') return answer;
+    const regex = /<course>([\w\d]+)<\/course>/g;
+    let lastIndex = 0;
+    let match;
+    const elements = [];
+    let idx = 0;
+    while ((match = regex.exec(answer)) !== null) {
+      const id = match[1];
+      // Thêm đoạn text trước <course>
+      if (match.index > lastIndex) {
+        elements.push(answer.slice(lastIndex, match.index));
+      }
+      // Đảm bảo đã có info
+      if (!courseInfo[id]) getCourseById(id);
+      const info = courseInfo[id];
+      elements.push(
+        <span key={id + idx} className="inline-flex items-center gap-2 bg-blue-50 border border-blue-200 rounded px-2 py-1 mx-1 cursor-pointer hover:bg-blue-100 transition"
+          onClick={() => info && navigate(`/course/${info.id}`)}
+        >
+          {info && info.photo && (
+            <img src={info.photo} alt={info.title} className="w-6 h-6 object-cover rounded" />
+          )}
+          <span className="font-semibold text-blue-700">{info && info.title ? info.title : id}</span>
+        </span>
+      );
+      lastIndex = regex.lastIndex;
+      idx++;
+    }
+    // Thêm phần còn lại
+    if (lastIndex < answer.length) {
+      elements.push(answer.slice(lastIndex));
+    }
+    return elements;
+  }
 
   const handleSend = async () => {
     if (!input.trim()) return;
-    const userMsg = { sender: 'user', content: input };
-    setMessages(prev => [userMsg, ...prev]);
+    const userMsg = { role: 'user', content: input };
+    setMessages(prev => [...prev, userMsg]);
     setInput('');
     setLoading(true);
     try {
       const res = await api.post('/chatbot/ask', { message: input });
-      setMessages(prev => [...prev, { sender: 'bot', content: res.data?.answer || '...' }]);
+      setMessages(prev => [...prev, { role: 'bot', content: res.data?.message.content || '...' }]);
     } catch {
-      setMessages(prev => [...prev, { sender: 'bot', content: 'Have an error.' }]);
+      setMessages(prev => [...prev, { role: 'bot', content: 'Have an error.' }]);
     }
     setLoading(false);
   };
@@ -100,25 +140,50 @@ const ChatBot = () => {
     if (e.key === 'Enter') handleSend();
   };
 
+  const handleReset = () => {
+    try {
+      api.delete('/chatbot/history')
+        .then(() => {
+          setMessages([]);
+          toast.success('Reset history successfully.');
+        })
+        .catch(() => {
+          toast.error('Have an error.');
+        });
+    } catch {
+      toast.error('Have an error.');
+    }
+  };
+
   return (
     
     <>
       {/* Nút nổi */}
       {!isAdmin && (
         <button
-        className="fixed bottom-6 right-6 z-50 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg p-3 flex items-center justify-center focus:outline-none"
+        className="fixed bottom-6 right-6 z-50 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg p-[4px] flex items-center justify-center focus:outline-none"
         onClick={() => setOpen(o => !o)}
         aria-label="Open chatbot"
       >
-        <PsychologyAlt/>    
+        <img src={robot} alt="Chatbot Avatar" className="w-6 h-6 rounded-full border-4 border-blue-200 bg-white object-contain" />
       </button>
       )}
       {/* Khung chat */}
       {open && (
-        <div className="fixed bottom-10 right-6 z-50 w-80 max-w-sm bg-white rounded-lg shadow-2xl flex flex-col border border-gray-200">
+        <div className="fixed bottom-10 right-6 z-50 w-1/4 min-h-[400px] max-h-[500px] max-w-lg bg-white rounded-lg shadow-2xl flex flex-col border border-gray-200">
           <div className="flex items-center justify-between p-3 border-b bg-blue-600 rounded-t-lg">
-            <span className="text-white font-semibold">ChatBot</span>
-            <button onClick={() => setOpen(false)} className="text-white text-xl font-bold">×</button>
+            <Box className="flex items-center gap-2">
+              <img src={robot} alt="Chatbot Avatar" className="w-6 h-6 rounded-full shadow-lg border-4 border-blue-200 bg-white object-contain" />
+              <Typography variant="h6" className="text-white">CodeChef Bot</Typography>
+            </Box>
+            <div className="flex items-center gap-2">
+            <Tooltip title="Reset History">
+                <button onClick={handleReset} className="text-white text-xl font-bold"><ResetTv/></button>
+              </Tooltip>
+              <Tooltip title="Close">
+                <button onClick={() => setOpen(false)} className="text-white text-xl font-bold"><CloseSharp/></button>
+              </Tooltip>
+            </div>
           </div>
           <div
             className="flex-1 overflow-y-auto p-3 space-y-2"
@@ -129,52 +194,54 @@ const ChatBot = () => {
               }
             }}
           >
-            {loadingMore && <div className="text-center text-xs text-gray-400">Đang tải thêm...</div>}
-            {messages.length === 0 && (
-              <div className="text-gray-400 text-center">No messages yet.</div>
-            )}
+            {loadingMore && <div className="text-center text-xs text-gray-400">Loading more...</div>}
+              <Box className="flex flex-col justify-center items-center h-full w-full p-4 bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg shadow-inner">
+                {/* Avatar and bot name */}
+                <Box className="flex flex-col items-center mb-4">
+                  <img
+                    src={robot}
+                    alt="Chatbot Avatar"
+                    className="w-20 h-20 rounded-full shadow-lg border-4 border-blue-200 bg-white mb-2 object-contain"
+                    onError={e => { e.target.onerror = null; e.target.src = 'https://cdn-icons-png.flaticon.com/512/4712/4712035.png'; }}
+                  />
+                  <Typography variant="h5" className="font-bold text-blue-700">CodeChef Bot</Typography>
+                  <Typography variant="body2" className="text-gray-500 text-center max-w-xs">Hello! I&apos;m a student assistant. Ask me anything about courses, knowledge, or learning paths!</Typography>
+                </Box>
+                {/* Supported features */}
+                <Box className="w-full flex flex-col gap-2 mb-4">
+                  <Box className="flex items-center gap-2">
+                    <SmartToyOutlined className="text-blue-500" />
+                    <Typography variant="body2">Search for courses</Typography>
+                  </Box>
+                  <Box className="flex items-center gap-2">
+                    <SmartToyOutlined className="text-green-500" />
+                    <Typography variant="body2">Recommend courses for you</Typography>
+                  </Box>
+                  <Box className="flex items-center gap-2">
+                    <SmartToyOutlined className="text-purple-500" />
+                    <Typography variant="body2">Search for knowledge</Typography>
+                  </Box>
+                  <Box className="flex items-center gap-2">
+                    <SmartToyOutlined className="text-orange-500" />
+                    <Typography variant="body2">Recommend Learning Paths for you</Typography>
+                  </Box>
+                </Box>
+                {/* Suggestion chips */}
+                <Box className="flex flex-row gap-2 flex-wrap justify-center">
+                  <Chip label="Search AI courses" clickable onClick={() => setInput('Search AI courses')} />
+                  <Chip label="What is Programming?" clickable onClick={() => setInput('What is Programming?')} />
+                  <Chip label="Recommend courses for me" clickable onClick={() => setInput('Recommend courses for me')} />
+                  <Chip label="Recommend Learning Paths for you" clickable onClick={() => setInput('Please recommend learning paths for me')} />
+                </Box>
+              </Box>
             {messages.length > 0 && messages.map((msg, idx) => {
               if (msg.role === 'bot') {
                 let answer = msg.content;
-                let courses = null;
-                try {
-                  const parsed = typeof answer === 'string' ? JSON.parse(answer) : answer;
-                  if (parsed && parsed.answer) {
-                    answer = parsed.answer;
-                    courses = parsed.courses;
-                  }
-                } catch {
-                  /* not JSON, ignore */
-                }
-                // Nếu có courses, gọi getCourseById cho từng id
-                if (courses && Array.isArray(courses)) {
-                  courses.forEach(id => getCourseById(id));
-                }
+                let cleanAnswer = cropCourseTitleFromAnswer(answer);
                 return (
-                  <div key={idx} className="flex justify-start">
-                    <div className="px-3 py-2 rounded-lg text-sm bg-gray-100 text-gray-800">
-                      <div>{answer}</div>
-                      {courses && Array.isArray(courses) && courses.length > 0 && (
-                        <div className="mt-2 text-xs text-blue-700">
-                          <div>Recommended Courses:</div>
-                          <ul className="list-disc ml-4">
-                            {courses.map((c, i) => {
-                              const info = courseInfo[c];
-                              console.log(info)
-                              return (
-                                <li key={i} className="flex items-center gap-2"
-                                onClick={() => navigate(`/course/${info.id}`)}
-                                >
-                                  {info && info.photo && (
-                                    <img src={info.photo} alt={info.title} className="w-8 h-8 object-cover rounded" />
-                                  )}
-                                  <span>{info && info.title ? info.title : c}</span>
-                                </li>
-                              );
-                            })}
-                          </ul>
-                        </div>
-                      )}
+                  <div key={idx} className="flex items-end gap-2 mb-2 animate-fade-in">
+                    <div className="px-4 py-2 rounded-2xl bg-gray-100 text-gray-800 shadow-md max-w-[80%] relative">
+                      <div className="whitespace-pre-line break-words">{cleanAnswer}</div>
                     </div>
                   </div>
                 );
@@ -182,7 +249,7 @@ const ChatBot = () => {
               // user message
               return (
                 <div key={idx} className="flex justify-end">
-                  <div className="px-3 py-2 rounded-lg text-sm bg-blue-100 text-blue-800">
+                  <div className={`px-3 py-2 rounded-lg text-sm bg-blue-100 ${msg.role == 'user' ? 'text-blue-800' : 'text-gray-800'}`}>
                     {msg.content}
                   </div>
                 </div>
@@ -196,7 +263,7 @@ const ChatBot = () => {
           <div className="p-3 border-t flex gap-2">
             <input
               type="text"
-              className="flex-1 border text-black rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-300"
+              className="flex-1 border text-white rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-300"
               placeholder="Enter your message..."
               value={input}
               onChange={e => setInput(e.target.value)}

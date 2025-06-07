@@ -108,6 +108,12 @@ const NotificationMenu = ({ anchorEl, open, onClose, notifications = [], onSelec
                         },
                     },
                 }}
+                MenuListProps={{
+                    sx: {
+                        maxHeight: 400,
+                        overflow: 'auto',
+                    },
+                }}
                 transformOrigin={{ horizontal: 'right', vertical: 'top' }}
                 anchorOrigin={{ horizontal: 'right', vertical: 'top' }}
             >

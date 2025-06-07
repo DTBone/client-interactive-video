@@ -49,6 +49,12 @@ const RoadMap = ({user = {}}) => {
         }
     }, [user, callRoadMap]);
 
+    const refreshRoadmap = () => {
+        if(user?._id) {
+            callRoadMap(user._id);
+        }
+    }
+
     const handleSubmit = useCallback(async (formData) => {
         setIsLoading(true);
         try {
@@ -251,6 +257,7 @@ const RoadMap = ({user = {}}) => {
                         data={roadmap}
                         setRoadmapOutSide={setRoadmap}
                         userProgress={countCompleted(roadmap.phases)}
+                        refreshRoadmap={refreshRoadmap}
                     />
                 </Box>
             )}

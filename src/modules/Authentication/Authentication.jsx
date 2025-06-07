@@ -140,21 +140,27 @@ function Login() {
                     const { user, token } = resultAction.payload.data;
                     console.log('user', user);
 
-                    localStorage.setItem('token', token);
-                    localStorage.setItem('user', JSON.stringify(user));
-                    //dispatch(setUser(user));
-                    console.log('Token saved:', localStorage.getItem('token'));
+                    await localStorage.setItem('token', token);
+                    await localStorage.setItem('user', JSON.stringify(user));
 
-                    // Navigate to home page after successful login
-                    if (user.role === 'student') {
-                        navigate(`/homeuser?userid=${user.userId}`, { state: { user } });
+                    const tokenLocal = await localStorage.getItem('token');
+                    if (tokenLocal === token) {
+                        // Navigate to home page after successful login
+                        if (user.role === 'student') {
+                            navigate(`/homeuser?userid=${user.userId}`, { state: { user } });
+                        }
+                        if (user.role === 'admin') {
+                            navigate('/admin');
+                        }
+                        if (user.role === 'instructor') {
+                            navigate(`/instructor`, { state: { user: user } });
+                        }
                     }
-                    if (user.role === 'admin') {
-                        navigate('/admin');
+                    else {
+                        window.location.reload();
                     }
-                    if (user.role === 'instructor') {
-                        navigate(`/instructor`, { state: { user: user } });
-                    }
+
+                    
                 }
             } catch (err) {
                 setMessage('Login failed. Please check your credentials.');
