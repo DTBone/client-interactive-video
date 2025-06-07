@@ -13,14 +13,14 @@ import { clearState } from "./store/slices/Auth/authSlice";
 
 // import HomeSection from "./pages/Home/index";
 import ShortLink from "./pages/ShortLink/shortLink";
-import GithubAuth from "./pages/GithubAuth/githubAuth";
+import GithubAuth from "./pages/GithubAuth/GithubAuth";
 
 import HomeUser from "~/modules/User/HomeUser";
 import Profile from "~/modules/User/Profile";
 import RoadMap from "~/modules/User/RoadMap";
 import MyLearning from "./modules/User/MyLearning/MyLearning";
 import SearchPage from "./modules/User/SearchPage/SearchPage";
-import Blogs from "~/modules/User/Blogs/index.jsx";
+import Blogs from "~/modules/User/Blogs";
 import Codespace from "./modules/User/Codespace/codespace";
 
 import DashboardLayout from "~/components/Layout/DashBoardLayout";
