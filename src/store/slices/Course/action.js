@@ -1,6 +1,6 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { api } from '~/Config/api';
-import axiosInstance from '~/Config/axiosInstance';
+// import axiosInstance from '~/Config/axiosInstance';
 // Tạo async thunks
 export const getAllCourse = createAsyncThunk(
     'course/getAllCourse',
@@ -30,7 +30,7 @@ export const getCourseByID = createAsyncThunk(
         console.log('courseId', id);
 
         try {
-            const { data } = await axiosInstance.get(`/learns/${id}`);
+            const { data } = await api.get(`/learns/${id}`);
             return data;
         } catch (error) {
             return rejectWithValue(error.message);
@@ -42,7 +42,7 @@ export const getCourseByInstructor = createAsyncThunk(
     'course/getCourseByInstructor',
     async (_, { rejectWithValue }) => {
         try {
-            const { data } = await axiosInstance.get(`/learns/instructor`);
+            const { data } = await api.get(`/learns/instructor`);
             //console.log('course/getCourseByInstructor', data);
             return data;
         } catch (error) {
@@ -55,7 +55,7 @@ export const createCourse = createAsyncThunk(
     'course/createCourse',
     async (courseData, { rejectWithValue }) => {
         try {
-            const { data } = await axiosInstance.post("/learns", courseData);
+            const { data } = await api.post("/learns", courseData);
             return data;
         } catch (error) {
             const errorMessage = error.response?.data?.message ||
@@ -83,7 +83,7 @@ export const updateCourse = createAsyncThunk(
                 },
             };
 
-            const { data } = await axiosInstance.put(
+            const { data } = await api.put(
                 `/learns/${courseId}`,
                 formData,
                 config
@@ -105,7 +105,7 @@ export const approveCourse = createAsyncThunk(
     'course/approveCourse',
     async ({ courseId, feedback, isApproved }, { rejectWithValue }) => {
         try {
-            const { data } = await axiosInstance.put(`/learns/${courseId}/approve`, { feedback, isApproved }, {
+            const { data } = await api.put(`/learns/${courseId}/approve`, { feedback, isApproved }, {
                 user: {
                     id: localStorage.getItem('user')._id,
                 }
@@ -123,7 +123,7 @@ export const rejectCourse = createAsyncThunk(
     'course/rejectCourse',
     async ({ courseId, feedback }, { rejectWithValue }) => {
         try {
-            const { data } = await axiosInstance.put(`/learns/${courseId}/reject`, { feedback }, {
+            const { data } = await api.put(`/learns/${courseId}/reject`, { feedback }, {
                 user: {
                     id: localStorage.getItem('user')._id,
                 }
@@ -141,7 +141,7 @@ export const enrollCourse = createAsyncThunk(
     'course/enrollCourse',
     async ({ courseId }, { rejectWithValue }) => {
         try {
-            const { data } = await axiosInstance.post(`/learns/enroll/${courseId}`);
+            const { data } = await api.post(`/learns/enroll/${courseId}`);
             console.log(data);
             return data;
         } catch (error) {
@@ -154,7 +154,7 @@ export const getCertificateByCourseId = createAsyncThunk(
     'course/getCertificateByCourseId',
     async ({ courseId }, { rejectWithValue }) => {
         try {
-            const { data } = await axiosInstance.get(`/learns/${courseId}/certificate`);
+            const { data } = await api.get(`/learns/${courseId}/certificate`);
             return data;
         } catch (error) {
             return rejectWithValue(error.message);
@@ -166,7 +166,8 @@ export const getAllCoursebyUser = createAsyncThunk(
     'course/getAllCoursebyUser',
     async (_, { rejectWithValue }) => {
         try {
-            const { data } = await axiosInstance.get(`/learns/my-learning`);
+            const { data } = await api.get(`/learns/my-learning`);
+            console.log('data', data);
             return data;
         } catch (error) {
             return rejectWithValue(error.message);
@@ -178,7 +179,7 @@ export const getGradeByCourseId = createAsyncThunk(
     'course/getGradeByCourseId',
     async ({ courseId }, { rejectWithValue }) => {
         try {
-            const { data } = await axiosInstance.get(`/coursegrades/grade/${courseId}`);
+            const { data } = await api.get(`/coursegrades/grade/${courseId}`);
             return data;
         } catch (error) {
             return rejectWithValue(error.message);

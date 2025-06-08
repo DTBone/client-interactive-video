@@ -30,6 +30,7 @@ TabButton.propTypes = {
 const MyLearning = () => {
     const [activeTab, setActiveTab] = useState("progress");
     const { courses, loading } = useSelector((state) => state.course);
+    console.log('courses', courses);
     const dispatch = useDispatch();
 
     useEffect(() => {
@@ -42,7 +43,7 @@ const MyLearning = () => {
 
     const filteredCourses = courses?.filter(
         (course) => activeTab === "progress" 
-            ? course.progress?.status === "in-progress" 
+            ? course.progress?.status !== "complete" 
             : course.progress?.status === "complete"
     );
 

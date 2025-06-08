@@ -78,20 +78,21 @@ export default function AccountMenu({ user }) {
   const navigate = useNavigate();
 
   const handleLogout = async () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    await dispatch({ type: 'CLEAR_STORE' });
-    handleClose();
     try {
       const response = await authService.logout();
       if (response.status === 'success') {
         // dispatch(logout());
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        await dispatch({ type: 'CLEAR_STORE' });
+        handleClose();
         navigate('/signin');
       }
     }
     catch (error) {
       console.log(error);
     }
+    
   }
   const handleProfile = () => {
     const user1 = JSON.parse(localStorage.getItem('user'));

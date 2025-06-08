@@ -1,11 +1,11 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
-import axiosInstance from '~/Config/axiosInstance';
+import { api } from '~/Config/api';
 
 export const login = createAsyncThunk(
     'auth/login',
     async (credentials, { rejectWithValue }) => {
         try {
-            const response = await axiosInstance.post('users/login', credentials);
+            const response = await api.post('users/login', credentials);
             //console.log('API Response:', response);
             return response.data;
         } catch (error) {
@@ -19,7 +19,7 @@ export const logout = createAsyncThunk(
     'auth/logout',
     async (_, { rejectWithValue }) => {
         try {
-            const response = await axiosInstance.post('users/logout');
+            const response = await api.post('users/logout');
             return response.data;
         } catch (error) {
             return rejectWithValue(error.response?.data.error || 'Logout failed');
@@ -31,7 +31,7 @@ export const register = createAsyncThunk(
     'auth/register',
     async (credentials, { rejectWithValue }) => {
         try {
-            const response = await axiosInstance.post('users/register', credentials);
+            const response = await api.post('users/register', credentials);
             return response.data;
         } catch (error) {
             return rejectWithValue(error.response?.data.error || 'Registration failed');
@@ -43,7 +43,7 @@ export const loginWithGoogle = createAsyncThunk(
     'auth/loginWithGoogle',
     async (credential, { rejectWithValue }) => {
         try {
-            const response = await axiosInstance.post('users/auth-google', credential);
+            const response = await api.post('users/auth-google', credential);
             return response.data;
         } catch (error) {
             return rejectWithValue(error.response?.data.error || 'Google login failed');
@@ -55,7 +55,7 @@ export const getResetAccessToken = createAsyncThunk(
     'auth/getResetAccessToken',
     async (_, { rejectWithValue }) => {
         try {
-            const response = await axiosInstance.post(`users/reset-access-token`);
+            const response = await api.post(`users/reset-access-token`);
             return response.data;
         } catch (error) {
             //console.error(error.status);
@@ -68,7 +68,7 @@ export const verifyCaptcha = createAsyncThunk(
     'auth/verifyCaptcha',
     async (token, { rejectWithValue }) => {
         try {
-            const response = await axiosInstance.post(`users/verifyCaptcha`, {
+            const response = await api.post(`users/verifyCaptcha`, {
                 body: {
                     captchaToken: token
                 }
@@ -88,7 +88,7 @@ export const checkAuthStatus = createAsyncThunk(
             if (!token) {
                 throw new Error('No token found');
             }
-            const response = await axiosInstance.get('users/check-auth');
+            const response = await api.get('users/check-auth');
             //console.log('check status', response.data);
             return response.data;
         } catch (error) {
