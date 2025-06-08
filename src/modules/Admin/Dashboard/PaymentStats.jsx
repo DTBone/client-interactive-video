@@ -1,10 +1,10 @@
-import { useState, useEffect } from 'react';
-import { 
-  Box, 
-  Card, 
-  CardContent, 
-  Typography, 
-  Grid, 
+import { useState, useEffect } from "react";
+import {
+  Box,
+  Card,
+  CardContent,
+  Typography,
+  Grid,
   CircularProgress,
   Button,
   Divider,
@@ -17,20 +17,20 @@ import {
   InputLabel,
   Select,
   MenuItem,
-  Stack
-} from '@mui/material';
-import { 
+  Stack,
+} from "@mui/material";
+import {
   Payment as PaymentIcon,
   ArrowUpward as ArrowUpwardIcon,
   ArrowDownward as ArrowDownwardIcon,
   ShowChart as ShowChartIcon,
-  ArrowForward as ArrowForwardIcon
-} from '@mui/icons-material';
-import { useDispatch } from 'react-redux';
-import { getPaymentByFilter } from '~/store/slices/Payment/action';
-import { useNavigate } from 'react-router-dom';
-import { PieChart } from '@mui/x-charts/PieChart';
-import { BarChart } from '@mui/x-charts/BarChart';
+  ArrowForward as ArrowForwardIcon,
+} from "@mui/icons-material";
+import { useDispatch } from "react-redux";
+import { getPaymentByFilter } from "~/store/slices/Payment/action";
+import { useNavigate } from "react-router-dom";
+import { PieChart } from "@mui/x-charts/PieChart";
+import { BarChart } from "@mui/x-charts/BarChart";
 
 const PaymentStats = () => {
   const dispatch = useDispatch();
@@ -38,7 +38,7 @@ const PaymentStats = () => {
   const [payments, setPayments] = useState([]);
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
-  
+
   // Filter state
   const currentMonth = new Date().getMonth() + 1;
   const currentYear = new Date().getFullYear();
@@ -48,18 +48,18 @@ const PaymentStats = () => {
 
   // Month data for dropdown
   const months = [
-    { key: 1, value: 'January' },
-    { key: 2, value: 'February' },
-    { key: 3, value: 'March' },
-    { key: 4, value: 'April' },
-    { key: 5, value: 'May' },
-    { key: 6, value: 'June' },
-    { key: 7, value: 'July' },
-    { key: 8, value: 'August' },
-    { key: 9, value: 'September' },
-    { key: 10, value: 'October' },
-    { key: 11, value: 'November' },
-    { key: 12, value: 'December' }
+    { key: 1, value: "January" },
+    { key: 2, value: "February" },
+    { key: 3, value: "March" },
+    { key: 4, value: "April" },
+    { key: 5, value: "May" },
+    { key: 6, value: "June" },
+    { key: 7, value: "July" },
+    { key: 8, value: "August" },
+    { key: 9, value: "September" },
+    { key: 10, value: "October" },
+    { key: 11, value: "November" },
+    { key: 12, value: "December" },
   ];
 
   // Year data for dropdown (last 5 years)
@@ -69,11 +69,13 @@ const PaymentStats = () => {
     const fetchPayments = async () => {
       setLoading(true);
       try {
-        const result = await dispatch(getPaymentByFilter({
-          from: fromMonth,
-          to: toMonth,
-          year: year
-        }));
+        const result = await dispatch(
+          getPaymentByFilter({
+            from: fromMonth,
+            to: toMonth,
+            year: year,
+          })
+        );
 
         if (getPaymentByFilter.fulfilled.match(result)) {
           setPayments(result.payload.data.payments);
@@ -94,7 +96,7 @@ const PaymentStats = () => {
   // Calculate payment stats
   const totalRevenue = payments.reduce((sum, payment) => {
     // Only count successful payments
-    if (payment.paymentStatus === 'success') {
+    if (payment.paymentStatus === "success") {
       return sum + (payment.amount || 0);
     }
     return sum;
@@ -102,37 +104,39 @@ const PaymentStats = () => {
 
   // Format as currency
   const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD'
+    return new Intl.NumberFormat("vi-VN", {
+      style: "currency",
+      currency: "VND",
     }).format(amount);
   };
 
   // Calculate by payment method
   const paymentMethodCounts = payments.reduce((acc, payment) => {
-    const method = payment.paymentMethod || 'Other';
+    const method = payment.paymentMethod || "Other";
     acc[method] = (acc[method] || 0) + 1;
     return acc;
   }, {});
 
   // Prepare data for the payment method pie chart
-  const pieChartData = Object.keys(paymentMethodCounts).map((method, index) => ({
-    id: index,
-    value: paymentMethodCounts[method],
-    label: method
-  }));
+  const pieChartData = Object.keys(paymentMethodCounts).map(
+    (method, index) => ({
+      id: index,
+      value: paymentMethodCounts[method],
+      label: method,
+    })
+  );
 
   // Get recent successful payments
   const recentPayments = [...payments]
-    .filter(payment => payment.paymentStatus === 'success')
+    .filter((payment) => payment.paymentStatus === "success")
     .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
     .slice(0, 5);
 
   // Prepare data for monthly revenue chart
   const monthlyRevenue = Array(12).fill(0);
-  
-  payments.forEach(payment => {
-    if (payment.paymentStatus === 'success') {
+
+  payments.forEach((payment) => {
+    if (payment.paymentStatus === "success") {
       const paymentDate = new Date(payment.createdAt);
       // Only count payments from selected year
       if (paymentDate.getFullYear() === year) {
@@ -143,7 +147,7 @@ const PaymentStats = () => {
   });
 
   return (
-    <Card sx={{ mb: 3, boxShadow: '0 2px 10px rgba(0,0,0,0.08)' }}>
+    <Card sx={{ mb: 3, boxShadow: "0 2px 10px rgba(0,0,0,0.08)" }}>
       <CardContent>
         <Box display="flex" alignItems="center" mb={2}>
           <PaymentIcon color="primary" sx={{ mr: 1 }} />
@@ -209,9 +213,13 @@ const PaymentStats = () => {
             <Grid container spacing={3}>
               {/* Total Revenue Card */}
               <Grid item xs={12} sm={6} md={3}>
-                <Card elevation={0} sx={{ bgcolor: '#f5f5f5', height: '100%' }}>
+                <Card elevation={0} sx={{ bgcolor: "#f5f5f5", height: "100%" }}>
                   <CardContent>
-                    <Typography color="textSecondary" variant="subtitle2" gutterBottom>
+                    <Typography
+                      color="textSecondary"
+                      variant="subtitle2"
+                      gutterBottom
+                    >
                       Total Revenue
                     </Typography>
                     <Typography variant="h4" color="primary" fontWeight="bold">
@@ -230,18 +238,30 @@ const PaymentStats = () => {
 
               {/* Transactions Card */}
               <Grid item xs={12} sm={6} md={3}>
-                <Card elevation={0} sx={{ bgcolor: '#f5f5f5', height: '100%' }}>
+                <Card elevation={0} sx={{ bgcolor: "#f5f5f5", height: "100%" }}>
                   <CardContent>
-                    <Typography color="textSecondary" variant="subtitle2" gutterBottom>
+                    <Typography
+                      color="textSecondary"
+                      variant="subtitle2"
+                      gutterBottom
+                    >
                       Transactions
                     </Typography>
-                    <Typography variant="h4" color="info.main" fontWeight="bold">
+                    <Typography
+                      variant="h4"
+                      color="info.main"
+                      fontWeight="bold"
+                    >
                       {payments.length}
                     </Typography>
                     <Divider sx={{ my: 1 }} />
                     <Box display="flex" alignItems="center">
                       <Typography variant="body2" color="textSecondary">
-                        {payments.filter(p => p.paymentStatus === 'success').length} successful
+                        {
+                          payments.filter((p) => p.paymentStatus === "success")
+                            .length
+                        }{" "}
+                        successful
                       </Typography>
                     </Box>
                   </CardContent>
@@ -250,27 +270,47 @@ const PaymentStats = () => {
 
               {/* Average Transaction Card */}
               <Grid item xs={12} sm={6} md={3}>
-                <Card elevation={0} sx={{ bgcolor: '#f5f5f5', height: '100%' }}>
+                <Card elevation={0} sx={{ bgcolor: "#f5f5f5", height: "100%" }}>
                   <CardContent>
-                    <Typography color="textSecondary" variant="subtitle2" gutterBottom>
+                    <Typography
+                      color="textSecondary"
+                      variant="subtitle2"
+                      gutterBottom
+                    >
                       Avg. Transaction
                     </Typography>
-                    <Typography variant="h4" color="success.main" fontWeight="bold">
-                      {formatCurrency(totalRevenue / (payments.filter(p => p.paymentStatus === 'success').length || 1))}
+                    <Typography
+                      variant="h4"
+                      color="success.main"
+                      fontWeight="bold"
+                    >
+                      {formatCurrency(
+                        totalRevenue /
+                          (payments.filter((p) => p.paymentStatus === "success")
+                            .length || 1)
+                      )}
                     </Typography>
                     <Divider sx={{ my: 1 }} />
                     <Box display="flex" alignItems="center">
                       {totalRevenue > 5000 ? (
                         <>
                           <ArrowUpwardIcon color="success" fontSize="small" />
-                          <Typography variant="body2" color="success.main" ml={0.5}>
+                          <Typography
+                            variant="body2"
+                            color="success.main"
+                            ml={0.5}
+                          >
                             Good performance
                           </Typography>
                         </>
                       ) : (
                         <>
                           <ArrowDownwardIcon color="error" fontSize="small" />
-                          <Typography variant="body2" color="error.main" ml={0.5}>
+                          <Typography
+                            variant="body2"
+                            color="error.main"
+                            ml={0.5}
+                          >
                             Below target
                           </Typography>
                         </>
@@ -282,20 +322,37 @@ const PaymentStats = () => {
 
               {/* Success Rate Card */}
               <Grid item xs={12} sm={6} md={3}>
-                <Card elevation={0} sx={{ bgcolor: '#f5f5f5', height: '100%' }}>
+                <Card elevation={0} sx={{ bgcolor: "#f5f5f5", height: "100%" }}>
                   <CardContent>
-                    <Typography color="textSecondary" variant="subtitle2" gutterBottom>
+                    <Typography
+                      color="textSecondary"
+                      variant="subtitle2"
+                      gutterBottom
+                    >
                       Success Rate
                     </Typography>
-                    <Typography variant="h4" color="secondary.main" fontWeight="bold">
-                      {payments.length ? Math.round((payments.filter(p => p.paymentStatus === 'success').length / payments.length) * 100) : 0}%
+                    <Typography
+                      variant="h4"
+                      color="secondary.main"
+                      fontWeight="bold"
+                    >
+                      {payments.length
+                        ? Math.round(
+                            (payments.filter(
+                              (p) => p.paymentStatus === "success"
+                            ).length /
+                              payments.length) *
+                              100
+                          )
+                        : 0}
+                      %
                     </Typography>
                     <Divider sx={{ my: 1 }} />
-                    <Button 
-                      size="small" 
-                      color="primary" 
+                    <Button
+                      size="small"
+                      color="primary"
                       sx={{ mt: 0.5 }}
-                      onClick={() => navigate('/admin/payments')}
+                      onClick={() => navigate("/admin/payments")}
                       endIcon={<ArrowForwardIcon />}
                     >
                       View All Payments
@@ -309,18 +366,33 @@ const PaymentStats = () => {
               {/* Payment Methods Pie Chart */}
               <Grid item xs={12} md={6}>
                 <Box mt={3}>
-                  <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
+                  <Typography
+                    variant="subtitle1"
+                    fontWeight="bold"
+                    gutterBottom
+                  >
                     Payment Methods
                   </Typography>
-                  <Card elevation={0} sx={{ bgcolor: '#f5f5f5', p: 2, height: 300 }}>
+                  <Card
+                    elevation={0}
+                    sx={{ bgcolor: "#f5f5f5", p: 2, height: 300 }}
+                  >
                     {pieChartData.length > 0 ? (
                       <PieChart
                         series={[
                           {
                             data: pieChartData,
-                            highlightScope: { faded: 'global', highlighted: 'item' },
-                            faded: { innerRadius: 30, additionalRadius: -30, color: 'gray' },
-                            arcLabel: (item) => `${Math.round((item.value / payments.length) * 100)}%`,
+                            highlightScope: {
+                              faded: "global",
+                              highlighted: "item",
+                            },
+                            faded: {
+                              innerRadius: 30,
+                              additionalRadius: -30,
+                              color: "gray",
+                            },
+                            arcLabel: (item) =>
+                              `${Math.round((item.value / payments.length) * 100)}%`,
                           },
                         ]}
                         height={250}
@@ -328,14 +400,27 @@ const PaymentStats = () => {
                         legend={{ hidden: true }}
                       />
                     ) : (
-                      <Box display="flex" justifyContent="center" alignItems="center" height="100%">
-                        <Typography color="textSecondary">No payment data available</Typography>
+                      <Box
+                        display="flex"
+                        justifyContent="center"
+                        alignItems="center"
+                        height="100%"
+                      >
+                        <Typography color="textSecondary">
+                          No payment data available
+                        </Typography>
                       </Box>
                     )}
                   </Card>
-                  <Stack direction="row" spacing={1} mt={1} flexWrap="wrap" gap={1}>
+                  <Stack
+                    direction="row"
+                    spacing={1}
+                    mt={1}
+                    flexWrap="wrap"
+                    gap={1}
+                  >
                     {Object.keys(paymentMethodCounts).map((method, index) => (
-                      <Chip 
+                      <Chip
                         key={method}
                         label={`${method}: ${paymentMethodCounts[method]}`}
                         size="small"
@@ -349,20 +434,33 @@ const PaymentStats = () => {
               {/* Monthly Revenue Chart */}
               <Grid item xs={12} md={6}>
                 <Box mt={3}>
-                  <Typography variant="subtitle1" fontWeight="bold" gutterBottom display="flex" alignItems="center">
+                  <Typography
+                    variant="subtitle1"
+                    fontWeight="bold"
+                    gutterBottom
+                    display="flex"
+                    alignItems="center"
+                  >
                     <ShowChartIcon fontSize="small" sx={{ mr: 1 }} />
                     Monthly Revenue ({year})
                   </Typography>
-                  <Card elevation={0} sx={{ bgcolor: '#f5f5f5', p: 2, height: 300 }}>
+                  <Card
+                    elevation={0}
+                    sx={{ bgcolor: "#f5f5f5", p: 2, height: 300 }}
+                  >
                     <BarChart
-                      xAxis={[{ 
-                        data: months.map(m => m.value.substring(0, 3)),
-                        scaleType: 'band',
-                      }]}
-                      series={[{ 
-                        data: monthlyRevenue,
-                        color: '#2196f3',
-                      }]}
+                      xAxis={[
+                        {
+                          data: months.map((m) => m.value.substring(0, 3)),
+                          scaleType: "band",
+                        },
+                      ]}
+                      series={[
+                        {
+                          data: monthlyRevenue,
+                          color: "#2196f3",
+                        },
+                      ]}
                       height={250}
                       margin={{ top: 10, bottom: 30, left: 40, right: 10 }}
                     />
@@ -373,35 +471,60 @@ const PaymentStats = () => {
               {/* Recent Transactions */}
               <Grid item xs={12}>
                 <Box mt={3}>
-                  <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
+                  <Typography
+                    variant="subtitle1"
+                    fontWeight="bold"
+                    gutterBottom
+                  >
                     Recent Transactions
                   </Typography>
-                  <List sx={{ bgcolor: '#f5f5f5', borderRadius: 1 }}>
+                  <List sx={{ bgcolor: "#f5f5f5", borderRadius: 1 }}>
                     {recentPayments.length > 0 ? (
                       recentPayments.map((payment) => {
-                        const course = courses.find(c => c?._id === payment.courseId);
+                        const course = courses.find(
+                          (c) => c?._id === payment.courseId
+                        );
                         return (
-                          <ListItem key={payment._id} alignItems="flex-start" sx={{ py: 1 }}>
-                            <Avatar 
-                              sx={{ mr: 2, bgcolor: 'primary.main' }}
-                            >
+                          <ListItem
+                            key={payment._id}
+                            alignItems="flex-start"
+                            sx={{ py: 1 }}
+                          >
+                            <Avatar sx={{ mr: 2, bgcolor: "primary.main" }}>
                               <PaymentIcon />
                             </Avatar>
                             <ListItemText
                               primary={
                                 <Typography variant="body1" fontWeight="medium">
-                                  {formatCurrency(payment.amount)} - {course?.title || 'Unknown Course'}
+                                  {formatCurrency(payment.amount)} -{" "}
+                                  {course?.title || "Unknown Course"}
                                 </Typography>
                               }
                               secondary={
-                                <Box display="flex" alignItems="center" justifyContent="space-between" mt={0.5}>
-                                  <Typography component="span" variant="body2" color="text.primary">
-                                    {payment.paymentMethod} • {new Date(payment.createdAt).toLocaleDateString()}
+                                <Box
+                                  display="flex"
+                                  alignItems="center"
+                                  justifyContent="space-between"
+                                  mt={0.5}
+                                >
+                                  <Typography
+                                    component="span"
+                                    variant="body2"
+                                    color="text.primary"
+                                  >
+                                    {payment.paymentMethod} •{" "}
+                                    {new Date(
+                                      payment.createdAt
+                                    ).toLocaleDateString()}
                                   </Typography>
-                                  <Chip 
-                                    size="small" 
-                                    label={payment.paymentStatus} 
-                                    color={payment.paymentStatus === 'success' ? 'success' : 'warning'}
+                                  <Chip
+                                    size="small"
+                                    label={payment.paymentStatus}
+                                    color={
+                                      payment.paymentStatus === "success"
+                                        ? "success"
+                                        : "warning"
+                                    }
                                   />
                                 </Box>
                               }
@@ -416,10 +539,10 @@ const PaymentStats = () => {
                     )}
                     <Divider />
                     <ListItem>
-                      <Button 
-                        fullWidth 
-                        size="small" 
-                        onClick={() => navigate('/admin/payments')}
+                      <Button
+                        fullWidth
+                        size="small"
+                        onClick={() => navigate("/admin/payments")}
                         endIcon={<ArrowForwardIcon />}
                       >
                         View All Transactions
@@ -436,4 +559,4 @@ const PaymentStats = () => {
   );
 };
 
-export default PaymentStats; 
+export default PaymentStats;

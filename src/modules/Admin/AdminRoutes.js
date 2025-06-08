@@ -12,7 +12,7 @@ import CategoryManager from './CourseMg/Category/category';
 
 const adminRoutes = [
   {
-    path: '/admin',
+    path: '/admin/dashboard',
     element: AdminDashboard,
   },
   {

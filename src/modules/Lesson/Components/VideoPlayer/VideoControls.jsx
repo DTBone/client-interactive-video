@@ -284,7 +284,7 @@ const VideoProgressBar = ({
             pointerEvents: "none",
             // Enhanced styling cho better visibility
             border: `1px solid ${alpha(theme.palette.common.white, 0.2)}`,
-            backdropFilter: "blur(4px)",
+            // backdropFilter: "blur(4px)", // Removed to prevent video blurring
           }}
         >
           {formatTime(isDragging ? dragTimeRef.current : hoverTime)}
@@ -629,8 +629,8 @@ const VideoControls = ({
           background: `linear-gradient(transparent, ${alpha(theme.palette.common.black, 0.8)})`,
           padding: theme.spacing(2),
           color: theme.palette.common.white,
-          // Enhanced backdrop for better visibility
-          backdropFilter: "blur(4px)",
+          // Removed backdrop filter to prevent video blurring
+          // backdropFilter: "blur(4px)",
         }}
       >
         {/* Enhanced Progress Bar với better sync */}
@@ -842,7 +842,7 @@ const VideoControls = ({
                 sx: {
                   backgroundColor: alpha(theme.palette.common.black, 0.9),
                   color: "white",
-                  backdropFilter: "blur(8px)",
+                  // backdropFilter: "blur(8px)", // Removed to prevent video blurring
                 },
               }}
             >
