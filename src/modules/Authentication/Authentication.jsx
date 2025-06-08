@@ -130,7 +130,6 @@ function Login() {
                     password: formData.password
                 };
                 const resultAction = await dispatch(login(credentials));
-                console.log('resultAction', resultAction);
 
                 if (resultAction.payload.status === 'success') {
                     setOpen(true);

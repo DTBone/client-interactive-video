@@ -1,11 +1,11 @@
-import axiosInstance from './axiosInstance';
+import { api } from "~/Config/api";
 
 
 const userService = {
     
     getUsers: async () => {
         try {
-            const response = await axiosInstance.get('/');
+            const response = await api.get('/users/');
             return response.data;
         } catch (error) {
             console.error("Error fetching users", error);
@@ -16,7 +16,7 @@ const userService = {
     getUserById: async (id, token) => {
 
         try {
-            const response = await axiosInstance.get(`/${id}`, {
+            const response = await api.get(`/users/${id}`, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                 },
@@ -29,7 +29,7 @@ const userService = {
     },
     getResetAccessToken: async () => {
         try {
-            const response = await axiosInstance.post(`/reset-access-token`);
+            const response = await api.post(`/reset-access-token`);
             return response.data;
         } catch (error) {
             console.error(error.status);
@@ -38,7 +38,7 @@ const userService = {
     },
     verifyCaptcha : async (token) =>{
         try {
-            const response = await axiosInstance.post(`/verifyCaptcha`, {
+            const response = await api.post(`/verifyCaptcha`, {
                 body: {
                     captchaToken: token
                 }

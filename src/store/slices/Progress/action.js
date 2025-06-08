@@ -27,7 +27,7 @@ export const updateProgrammingProgress = createAsyncThunk(
     async ({ moduleItemId, moduleId, data }, { rejectWithValue }) => {
         try {
             //console.log('data programming', data, moduleItemId, moduleId);
-            const res = await axiosInstance.put(`/progress/${moduleItemId}/programming`, {
+            const res = await api.put(`/progress/${moduleItemId}/programming`, {
                 progressProgramming: data,
                 moduleId: moduleId,
                 moduleItemId: moduleItemId
@@ -87,7 +87,7 @@ export const getGradeProgress = createAsyncThunk(
     async ({ courseId, ids = [] }, { rejectWithValue }) => {
         try {
             console.log('ids', ids);
-            const res = await axiosInstance.get(`/progress/${courseId}/grade`, {
+            const res = await api.get(`/progress/${courseId}/grade`, {
                 params: {
                     ids
                 }
@@ -108,7 +108,7 @@ export const sendProgressToServer = createAsyncThunk(
 
         console.log('progressData', progressData);
         try {
-            const res = await axiosInstance.post(`/progress/moduleItem/${moduleItemId}`, {
+            const res = await api.post(`/progress/moduleItem/${moduleItemId}`, {
                 params: {
                     progressData: progressData,
                     moduleItemId: moduleItemId
@@ -151,7 +151,7 @@ export const updateVideoProgress = createAsyncThunk(
     async ({ progressId, progressVideo }, { rejectWithValue }) => {
         try {
             console.log('Updating video progress:', { progressId, progressVideo });
-            const res = await axiosInstance.put(`/progress/lecture/${progressId}`, {
+            const res = await api.put(`/progress/lecture/${progressId}`, {
                 progressVideo
             });
             return res.data;

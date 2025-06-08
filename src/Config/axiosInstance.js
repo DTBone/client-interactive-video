@@ -1,7 +1,14 @@
 import axios from 'axios';
 
 const axiosInstance = axios.create({
-    baseURL: 'http://localhost:3000/api/v1',
+    baseURL: 'https://server-interactive-video.onrender.com/api/v1',
+    timeout: 100000,
+    withCredentials: true,
+    headers: {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': 'https://server-interactive-video.onrender.com',
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+    }
 });
 
 axiosInstance.interceptors.request.use(

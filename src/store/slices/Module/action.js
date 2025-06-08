@@ -1,11 +1,12 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
+import { api } from '~/Config/api';
 import axiosInstance from '~/Config/axiosInstance';
 
 export const createModule = createAsyncThunk(
     'module/addNewModule',
     async ({ courseId, formData }, { rejectWithValue }) => {
         try {
-            const { data } = await axiosInstance.post(
+            const { data } = await api.post(
                 `/learns/${courseId}/modules`,
                 formData
             );
@@ -20,7 +21,7 @@ export const getAllModules = createAsyncThunk(
     'module/getAllModules',
     async (courseId, { rejectWithValue }) => {
         try {
-            const { data } = await axiosInstance.get(`/learns/${courseId}/modules`);
+            const { data } = await api.get(`/learns/${courseId}/modules`);
             return data.data;
         } catch (error) {
             return rejectWithValue(error.message);
@@ -32,7 +33,7 @@ export const getModuleById = createAsyncThunk(
     'module/getModuleById',
     async ({ moduleId }, { rejectWithValue }) => {
         try {
-            const { data } = await axiosInstance.get(`/modules/${moduleId}`);
+            const { data } = await api.get(`/modules/${moduleId}`);
             return data;
         } catch (error) {
             return rejectWithValue(error.message);
@@ -44,7 +45,7 @@ export const updateModule = createAsyncThunk(
     'module/updateModule',
     async ({ courseId, moduleId, formData }, { rejectWithValue }) => {
         try {
-            const { data } = await axiosInstance.put(
+            const { data } = await api.put(
                 `/learns/${courseId}/modules/${moduleId}`,
                 formData
             );
@@ -59,7 +60,7 @@ export const deleteModule = createAsyncThunk(
     'module/deleteModule',
     async ({ courseId, moduleId, password }, { rejectWithValue }) => {
         try {
-            const verifyResponse = await axiosInstance.post('/auth/verify-password', {
+            const verifyResponse = await api.post('/auth/verify-password', {
                 password
             });
             if (!verifyResponse.data.success) {
@@ -67,7 +68,7 @@ export const deleteModule = createAsyncThunk(
             }
             // If verification successful, proceed with deletion
             if (verifyResponse.status === 200) {
-                const deleteResponse = await axiosInstance.delete(`/learns/${courseId}/modules/${moduleId}`);
+                const deleteResponse = await api.delete(`/learns/${courseId}/modules/${moduleId}`);
                 return moduleId;
             }
 
@@ -88,7 +89,7 @@ export const getAllModulesByModuleItemId = createAsyncThunk(
     async ({ itemId }, { rejectWithValue }) => {
         console.log('Received itemId in thunk:', itemId);
         try {
-            const { data } = await axiosInstance.get(`/learns/moduleitem/getAllModule/${itemId}`);
+            const { data } = await api.get(`/learns/moduleitem/getAllModule/${itemId}`);
             console.log('Received data:', data.data);
             return data.data;
         } catch (error) {
@@ -102,7 +103,7 @@ export const getModuleByItemId = createAsyncThunk(
     'module/getModuleByItemId',
     async ({ itemId }, { rejectWithValue }) => {
         try {
-            const { data } = await axiosInstance.get(`/learns/moduleitem/getModule/${itemId}`);
+            const { data } = await api.get(`/learns/moduleitem/getModule/${itemId}`);
             return data.data;
         } catch (error) {
             return rejectWithValue(error.message);
