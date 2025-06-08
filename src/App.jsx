@@ -11,8 +11,8 @@ import ForgetPassword from "./modules/Authentication/ForgetPassword";
 import { checkAuthStatus } from "~/store/slices/Auth/action";
 import { clearState } from "./store/slices/Auth/authSlice";
 
-// import HomeSection from "./pages/Home/index";
-import ShortLink from "./pages/ShortLink/shortLink";
+import HomeSection from "./pages/Home/index";
+import ShortLink from "./pages/ShortLink/ShortLink";
 import GithubAuth from "./pages/GithubAuth/GithubAuth";
 
 import HomeUser from "~/modules/User/HomeUser";

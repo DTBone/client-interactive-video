@@ -1,9 +1,9 @@
-import axiosInstance from "./axiosInstance_v2";
+import { api } from "~/Config/api";
 
 const paymentService = {
     createPayment: async (amount, courseId) => {
         try {
-            const response = await axiosInstance.post('/payments/create-payment', {
+            const response = await api.post('/payments/create-payment', {
                 amount: amount,
                 courseId: courseId,
                 userId: JSON.parse(localStorage.getItem('user'))._id,

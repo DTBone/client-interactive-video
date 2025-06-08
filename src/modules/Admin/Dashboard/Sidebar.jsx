@@ -63,7 +63,7 @@ const Sidebar = ({ open, handleDrawerClose }) => {
     {
       text: 'Dashboard',
       icon: <DashboardIcon />,
-      path: '/admin',
+      path: '/admin/dashboard',
       exact: true
     },
     {
