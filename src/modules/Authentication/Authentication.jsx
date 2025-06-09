@@ -14,6 +14,7 @@ import { jwtDecode } from 'jwt-decode';
 import { login, register, verifyCaptcha } from '~/store/slices/Auth/action';
 import styles from './Login.module.scss';
 import { setUser } from '~/store/userSlice';
+import logo from '~/assets/logo_codechef.png';
 
 function Login() {
     const dispatch = useDispatch();
@@ -256,7 +257,7 @@ function Login() {
         <div className="flex flex-col items-center w-screen h-screen">
             <div className={`${styles.wrapper} flex w-2/5 h-4/5 mt-5 p-5 flex-col items-center`}>
                 <div className="logo h-1/6 flex flex-col items-center">
-                    <img className="h-full" src="src/assets/logo_codechef.png" alt="logo" />
+                    <img className="h-full" src={logo} alt="logo" />
                 </div>
                 <div className="w-full h-2/3 form flex flex-col items-center gap-2">
                     <h1 className="font-bold text-3xl text-blue-700 uppercase">
