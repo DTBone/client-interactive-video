@@ -25,7 +25,7 @@ export default function AccountMenu({ user }) {
   const [notifications, setNotifications] = React.useState([]);
   const [unreadNotifications, setUnreadNotifications] = React.useState(0);
   const open = Boolean(anchorEl);
-  const socket = socketService.connect('http://localhost:3000')
+  const socket = socketService.connect(`${import.meta.env.VITE_URL_SERVER}`)
   const [notificationAnchorEl, setNotificationAnchorEl] = React.useState(null);
   const notificationOpen = Boolean(notificationAnchorEl);
 

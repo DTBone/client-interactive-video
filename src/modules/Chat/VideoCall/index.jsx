@@ -69,7 +69,7 @@ const VideoCall = () => {
 
     // Initialize socket connection
     useEffect(() => {
-        const socket = SocketService.connect('http://localhost:3000');
+        const socket = SocketService.connect(`${import.meta.env.VITE_URL_SERVER}`);
         socketRef.current = socket;
 
         socket.on('connect', () => {

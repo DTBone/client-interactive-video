@@ -9,7 +9,7 @@ import {api} from "~/Config/api.js";
 const ChatContainer = () => {
   const [activeConversation, setActiveConversation] = useState(null);
   const userId = JSON.parse(localStorage.getItem('user'))?._id;
-  let socket = SocketService.connect('http://localhost:3000');
+  let socket = SocketService.connect(`${import.meta.env.VITE_URL_SERVER}`);
 
   const handleSelecConversation = async (conversation) => {
     // const _id = conversation.username ? conversation._id : conversation.participants.find(p => p !== userId)._id;

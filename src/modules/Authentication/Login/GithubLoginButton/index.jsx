@@ -9,9 +9,9 @@ function GitHubLoginButton({window}) {
   const loginWithGitHub = () => {
     isProcessing = true;
     // const clientID = 'Ov23liIJcIj0tgbzdR0m';
-    // const redirectURI = 'http://localhost:3000/auth/github/callback';
+    // const redirectURI = `${import.meta.env.VITE_URL_SERVER}/auth/github/callback`;
     // window.location.href = `https://github.com/login/oauth/authorize?client_id=${clientID}&redirect_uri=${redirectURI}`;
-    window.location.href = 'http://localhost:3000/auth/github';
+    window.location.href = `${import.meta.env.VITE_URL_SERVER}/auth/github`;
 };
   return ( 
     <div onClick={loginWithGitHub} className='h-full bg-white rounded p-1 flex flex-row gap-2 items-center justify-center'>
