@@ -1,5 +1,5 @@
 import styles from './Home.module.scss';
-import CoursesLayout from '../../components/OurCourses';
+import CoursesLayout from '../../Components/OurCourses';
 function Home() {
 
     const courses = [
