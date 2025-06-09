@@ -3,7 +3,7 @@ import { Box, Paper, Grid2 as Grid } from '@mui/material';
 import ConversationList from '../ConversationList';
 import ChatWindow from '../ChatWindow';
 import UserList from '../UserList';
-import SocketService from '~/hooks/SocketService';
+import SocketService from '~/Hooks/SocketService';
 import {api} from "~/Config/api.js";
 
 const ChatContainer = () => {

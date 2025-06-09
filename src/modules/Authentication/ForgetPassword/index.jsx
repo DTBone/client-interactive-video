@@ -1,6 +1,6 @@
 import { Button, CircularProgress, TextField } from "@mui/material";
 import { useState } from "react";
-import ErrorModal from "~/pages/ErrorModal";
+import ErrorModal from "~/Pages/ErrorModal";
 import ModalForm from "./ModalForm";
 import axiosInstance from "~/services/api/axiosInstance";
 import { useRef } from "react";

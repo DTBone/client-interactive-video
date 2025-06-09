@@ -34,7 +34,7 @@ import NoteVideo from "./NoteVideo";
 import { getModuleItemProgress } from "~/store/slices/Progress/action";
 import Video from "../Components/VideoPlayer/Video";
 import { preloadInteractiveQuestion } from "~/store/slices/ModuleItem/action";
-import { useVideoQuestionPreloader } from "../hooks/usePreloadVideo";
+import { useVideoQuestionPreloader } from "../Hooks/usePreloadVideo";
 
 const Lecture = () => {
   const dispatch = useDispatch();

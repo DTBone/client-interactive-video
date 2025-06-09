@@ -15,8 +15,8 @@ import authService from '~/services/auth/authService';
 import Badge from '@mui/material/Badge';
 import { Notifications, School } from "@mui/icons-material";
 import { api } from "~/Config/api.js";
-import socketService from "~/hooks/SocketService.js";
-import NotificationMenu from "~/components/Header/components/Notification/index.jsx";
+import socketService from "~/Hooks/SocketService.js";
+import NotificationMenu from "~/Components/Header/components/Notification/index.jsx";
 import { useDispatch } from 'react-redux';
 
 export default function AccountMenu({ user }) {

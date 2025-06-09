@@ -10,7 +10,7 @@ import {
 } from '@mui/icons-material';
 import { styled } from '@mui/material/styles';
 import { Navigate, useNavigate, useParams } from 'react-router-dom';
-import { useNotification } from '~/hooks/useNotification';
+import { useNotification } from '~/Hooks/useNotification';
 import { useDispatch } from 'react-redux';
 import { createModule } from '~/store/slices/Module/action';
 import { toggleRefresh } from '~/store/slices/Module/moduleSlice';

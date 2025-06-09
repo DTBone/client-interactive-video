@@ -14,7 +14,7 @@ import {
 } from '@mui/icons-material';
 import { getCourseByID } from '~/store/slices/Course/action';
 import { clearError } from '~/store/slices/Course/courseSlice';
-import { useNotification } from '~/hooks/useNotification';
+import { useNotification } from '~/Hooks/useNotification';
 import { getAllModules } from '~/store/slices/Module/action';
 import IconComponent from '../../../../Components/Common/Button/IconComponent';
 
