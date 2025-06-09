@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 import userService from "~/services/api/userService";
-import ErrorModal from "~/pages/ErrorModal";
+import ErrorModal from "~/Pages/ErrorModal";
 import '~/index.css';
 import { useNavigate } from "react-router-dom";
 import { 

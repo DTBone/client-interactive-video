@@ -16,7 +16,7 @@ import MenuOpenIcon from '@mui/icons-material/MenuOpen';
 import Header from '~/Components/Header';
 import ListButton from './ListButton';
 import userService from '~/services/api/userService';
-import ErrorModal from '~/pages/ErrorModal';
+import ErrorModal from '~/Pages/ErrorModal';
 import ListButtonAdmin from './ListButtonAdmin';
 import backgroundGif from '~/assets/bg.jpg';
 import Footer from '~/Components/Footer';

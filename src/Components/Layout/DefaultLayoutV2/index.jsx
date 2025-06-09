@@ -12,7 +12,7 @@ import Header from '~/Components/Header';
 import userService from '~/services/api/userService';
 import { useDispatch, useSelector } from 'react-redux';
 import { setUser } from '~/store/userSlice';
-import ErrorModal from '~/pages/ErrorModal';
+import ErrorModal from '~/Pages/ErrorModal';
 
 
 
