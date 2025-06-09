@@ -1,7 +1,7 @@
 import { Button, TextField } from "@mui/material";
 import { useState } from "react";
 import { useLocation } from "react-router-dom";
-import ErrorModal from "~/pages/ErrorModal";
+import ErrorModal from "~/Pages/ErrorModal";
 import axiosInstance from "~/services/api/axiosInstance";
 import '~/index.css';
 
