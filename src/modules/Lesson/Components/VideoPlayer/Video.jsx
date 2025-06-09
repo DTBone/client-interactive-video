@@ -24,9 +24,9 @@ import {
 import PropTypes from "prop-types";
 import VideoControls from "./VideoControls";
 
-import useVideoQuestions from "../../Hooks/useVideoQuestion";
-import useVideoProgress from "../../Hooks/useVideoProgress";
-import { formatTime } from "../../Hooks/useFormatTime";
+import useVideoQuestions from "../../hooks/useVideoQuestion";
+import useVideoProgress from "../../hooks/useVideoProgress";
+import { formatTime } from "../../hooks/useFormatTime";
 import InteractiveQuestionDialog from "../InteractiveQuestionDialog";
 import { preloadInteractiveQuestion } from "~/store/slices/ModuleItem/action";
 import SnackbarAlert from "../SnackbarAlert";
