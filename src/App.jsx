@@ -28,8 +28,8 @@ import DefaultLayoutV2 from "~/components/Layout/DefaultLayoutV2";
 import ProtectedRoute from "~/components/ProtectedRoute";
 import ChatBot from "./components/ChatBot/chatbot";
 
-import ErrorPage from "./Pages/ErrorPage";
-import UnauthorizedPage from "./Pages/UnauthorizedPage";
+import ErrorPage from "./pages/ErrorPage";
+import UnauthorizedPage from "./pages/UnauthorizedPage";
 
 import EnrollToCourse from "~/modules/EnrollToCourse/EnrollToCourse";
 import Payment from "./modules/EnrollToCourse/Payment";
