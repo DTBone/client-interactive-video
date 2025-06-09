@@ -1,6 +1,6 @@
 import Grid from '@mui/material/Grid';
 import HeaderCourse from '~/Components/Common/Header/HeaderCourse'
-import SideBar from './Sidebar/SideBar';
+import SideBar from './SideBar/SideBar';
 import { Button, Divider, Typography } from '@mui/material';
 import { Outlet, useParams } from 'react-router-dom';
 import CustomScrollbar from '~/Components/Common/CustomScrollbar';
