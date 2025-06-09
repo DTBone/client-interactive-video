@@ -7,15 +7,18 @@ import {
   Link, 
   Divider,
   IconButton,
-  Stack
+  Stack,
+  Button
 } from '@mui/material';
 import FacebookIcon from '@mui/icons-material/Facebook';
 import TwitterIcon from '@mui/icons-material/Twitter';
 import InstagramIcon from '@mui/icons-material/Instagram';
 import LinkedInIcon from '@mui/icons-material/LinkedIn';
 import GitHubIcon from '@mui/icons-material/GitHub';
+import { useNavigate } from 'react-router-dom';
 
 function Footer() {
+  const navigate = useNavigate();
   return (
     <Box 
       component="footer" 
@@ -34,6 +37,14 @@ function Footer() {
             <Typography variant="h6" color="text.primary" gutterBottom>
               Code Chef
             </Typography>
+            
+            <Typography variant="body1" color="text.secondary">
+              If you are a teacher, please register here.
+            </Typography>
+            <Button variant="contained" color="primary" onClick={() => navigate('/career-register')}>
+              Register
+            </Button>
+            <Divider sx={{ mt: 2, mb: 2 }} />
             <Typography variant="body2" color="text.secondary">
               Empowering developers with the tools and resources they need to create amazing applications.
             </Typography>

@@ -11,9 +11,9 @@ import ForgetPassword from "./modules/Authentication/ForgetPassword";
 import { checkAuthStatus } from "~/store/slices/Auth/action";
 import { clearState } from "./store/slices/Auth/authSlice";
 
-import HomeSection from "./pages/Home/index";
-import ShortLink from "./pages/ShortLink/ShortLink";
-import GithubAuth from "./pages/GithubAuth/GithubAuth";
+import HomeSection from "./pages/Home";
+import ShortLink from "./pages/ShortLink";
+import GithubAuth from "./pages/GithubAuth";
 
 import HomeUser from "~/modules/User/HomeUser";
 import Profile from "~/modules/User/Profile";
@@ -78,6 +78,7 @@ import Editor from "./testFile";
 
 import ScrollToTop from "./Utils/scrollToTop";
 import CourseCertificate from "./modules/CourseDetail/CourseCertificate ";
+
 
 // import Certificate from './modules/User/Certificate/Certificate';
 

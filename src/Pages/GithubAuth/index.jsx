@@ -1,7 +1,6 @@
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { api } from '~/Config/api';
-import { Button } from '@mui/material';
 function GithubAuth() {
     const params = new URLSearchParams(window.location.search);
     const code = params.get('code');
