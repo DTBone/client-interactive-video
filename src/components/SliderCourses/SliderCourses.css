@@ -1,0 +1,35 @@
+.swiper_container {
+    width: 100%;
+    padding: 0;
+    position: relative;
+  }
+  
+  .swiper-slide {
+    filter: blur(0px);
+    opacity: 0.8;
+    width: 360px !important;
+    transition: all 0.3s ease;
+    height: auto !important;
+  }
+  
+  .swiper-slide-active {
+    opacity: 1;
+    transform: scale(1);
+    filter: blur(0);
+  }
+  
+  .swiper-slide-shadow-left,
+  .swiper-slide-shadow-right {
+    border-radius: 10px;
+  }
+  
+  .swiper-pagination {
+    position: relative;
+    margin-top: 20px;
+  }
+  
+  @media (max-width: 600px) {
+    .swiper_container {
+      padding: 1rem 0;
+    }
+  }
