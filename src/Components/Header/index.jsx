@@ -1,8 +1,8 @@
 /* eslint-disable react/prop-types */
 import styles from './Header.module.scss';
-import Navbar from './components/Navbar';
+import Navbar from './Components/Navbar';
 import { Link } from 'react-router-dom';
-import AvatarProfile from './components/Profile';
+import AvatarProfile from './Components/Profile';
 import logo from '../../assets/logo_codechef.png';
 // import { SearchIcon } from 'lucide-react';
 import { TextField, InputAdornment } from '@mui/material';

@@ -27,7 +27,7 @@ import DashboardLayout from "~/Components/Layout/DashBoardLayout";
 import DefaultLayout from "~/Components/Layout/DefaultLayout";
 import DefaultLayoutV2 from "~/Components/Layout/DefaultLayoutV2";
 import ProtectedRoute from "~/Components/ProtectedRoute";
-import ChatBot from "./components/ChatBot/chatbot";
+import ChatBot from "./Components/ChatBot/chatbot";
 
 import ErrorPage from "./Pages/ErrorPage";
 import UnauthorizedPage from "./Pages/UnauthorizedPage";

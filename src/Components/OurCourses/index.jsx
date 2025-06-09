@@ -1,8 +1,8 @@
 /* eslint-disable react/prop-types */
 import styles from './OurCourses.module.scss';
 import { alpha, styled } from '@mui/material/styles';
-import Filter from './components/Filter';
-import Course from './components/Course';
+import Filter from './Components/Filter';
+import Course from './Components/Course';
 import InputBase from '@mui/material/InputBase';
 import SearchIcon from '@mui/icons-material/Search';
 function CoursesLayout({ courses, title, isFilter}) {
