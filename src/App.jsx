@@ -12,8 +12,8 @@ import { checkAuthStatus } from "~/store/slices/Auth/action";
 import { clearState } from "./store/slices/Auth/authSlice";
 
 import HomeSection from "./Pages/Home/index";
-import ShortLink from "./Pages/ShortLink/ShortLink";
-import GithubAuth from "./Pages/GithubAuth/GithubAuth";
+import ShortLink from "./Pages/ShortLink";
+import GithubAuth from "./Pages/GithubAuth";
 
 import HomeUser from "~/modules/User/HomeUser";
 import Profile from "~/modules/User/Profile";
