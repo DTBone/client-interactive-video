@@ -2,10 +2,10 @@
 import Box from '@mui/material/Box';
 import Tab from '@mui/material/Tab';
 import { useState } from 'react'
-import About from './about';
-import Modules from './modules';
+import About from './About';
+import Modules from './Modules';
 import Progress from './Progress';
-import Reviews from './reviews';
+import Reviews from './Reviews';
 import { TabContext, TabList, TabPanel } from "@mui/lab";
 
 
