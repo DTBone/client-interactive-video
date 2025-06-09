@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { Typography, Box, useMediaQuery, useTheme, Button, alpha, IconButton } from "@mui/material";
-import Course from "./Components/Course";
+import Course from "./components/Course";
 import "~/index.css";
 import { useNavigate } from "react-router-dom";
 import SchoolIcon from '@mui/icons-material/School';
