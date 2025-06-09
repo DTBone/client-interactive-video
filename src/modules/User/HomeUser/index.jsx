@@ -2,12 +2,12 @@
 import { Box, Button, Divider, Paper, Typography } from '@mui/material';
 import { useEffect, useState, useCallback, useRef } from 'react';
 import '~/index.css';
-import CourseList from './Components/CourseList';
+import CourseList from './components/CourseList';
 import { getAllCourse } from "~/store/slices/Course/action.js";
 import { useDispatch, useSelector } from 'react-redux';
 import banner from '~/assets/Banner.png';
-import Banner from './Components/Banner';
-import Categories from './Components/Categories';
+import Banner from './components/Banner';
+import Categories from './components/Categories';
 import imageAbout from '~/assets/banner_about.webp';
 import roadmap from '~/assets/roadmap.png';
 import { HelpOutline, Map } from '@mui/icons-material';
@@ -15,7 +15,7 @@ import you from '~/assets/you.png';
 import Joyride, { STATUS } from 'react-joyride';
 import "./HomeUser.css";
 import { api } from '~/Config/api';
-import BannerSlider from './Components/Banner';
+import BannerSlider from './components/Banner';
 function HomeUser({ user }) {
     const dispatch = useDispatch();
     const [loading, setLoading] = useState(false);
