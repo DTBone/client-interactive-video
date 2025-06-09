@@ -1,7 +1,7 @@
 // /* eslint-disable react-refresh/only-export-components */
 // /* eslint-disable react/prop-types */
 // import { createContext, useContext, useState, useEffect } from 'react';
-// import SocketService from '../hooks/SocketService';
+// import SocketService from '../Hooks/SocketService';
 
 // const ChatContext = createContext();
 

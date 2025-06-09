@@ -8,7 +8,7 @@ import { styled } from '@mui/material/styles';
 
 import { useNavigate, useParams } from 'react-router-dom';
 import { Typography } from '@mui/material';
-import IconComponent from '~/components/Common/Button/IconComponent';
+import IconComponent from '~/Components/Common/Button/IconComponent';
 import CustomMenuItemButton from '~/modules/Lesson/Button/CustomMenuItemButton';
 import { useState } from 'react';
 

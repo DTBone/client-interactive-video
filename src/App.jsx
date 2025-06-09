@@ -11,9 +11,9 @@ import ForgetPassword from "./modules/Authentication/ForgetPassword";
 import { checkAuthStatus } from "~/store/slices/Auth/action";
 import { clearState } from "./store/slices/Auth/authSlice";
 
-import HomeSection from "./pages/Home/index";
-import ShortLink from "./pages/ShortLink/ShortLink";
-import GithubAuth from "./pages/GithubAuth/GithubAuth";
+import HomeSection from "./Pages/Home/index";
+import ShortLink from "./Pages/ShortLink/ShortLink";
+import GithubAuth from "./Pages/GithubAuth/GithubAuth";
 
 import HomeUser from "~/modules/User/HomeUser";
 import Profile from "~/modules/User/Profile";
@@ -23,10 +23,10 @@ import SearchPage from "./modules/User/SearchPage/SearchPage";
 import Blogs from "~/modules/User/Blogs";
 import Codespace from "./modules/User/Codespace/codespace";
 
-import DashboardLayout from "~/components/Layout/DashBoardLayout";
-import DefaultLayout from "~/components/Layout/DefaultLayout";
-import DefaultLayoutV2 from "~/components/Layout/DefaultLayoutV2";
-import ProtectedRoute from "~/components/ProtectedRoute";
+import DashboardLayout from "~/Components/Layout/DashBoardLayout";
+import DefaultLayout from "~/Components/Layout/DefaultLayout";
+import DefaultLayoutV2 from "~/Components/Layout/DefaultLayoutV2";
+import ProtectedRoute from "~/Components/ProtectedRoute";
 import ChatBot from "./components/ChatBot/chatbot";
 
 import ErrorPage from "./Pages/ErrorPage";

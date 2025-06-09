@@ -1,7 +1,7 @@
 /* eslint-disable react/prop-types */
 import { Button, Divider, Paper, Typography } from '@mui/material';
 import { useEffect, useState } from 'react';
-import Course from '~/components/SliderCourses/components/Course';
+import Course from '~/Components/SliderCourses/components/Course';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import theme from '~/theme';
 import { useNavigate } from 'react-router-dom';

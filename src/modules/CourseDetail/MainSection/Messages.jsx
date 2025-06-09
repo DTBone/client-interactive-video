@@ -7,7 +7,7 @@ import {
     MoreVertical,
     Circle
 } from 'lucide-react';
-import socketService from '~/hooks/SocketService';
+import socketService from '~/Hooks/SocketService';
 import { useSelector, useDispatch } from 'react-redux';
 import { createConversation, getConversationByFilter, getMessagesByConversationId } from '~/store/slices/Conversation/action';
 import { Box, Zoom } from '@mui/material';
