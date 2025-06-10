@@ -204,17 +204,12 @@ const useVideoProgress = ({
 
         // Trigger onQuizSubmit nếu video completed
         if (progressData.completionPercentage >= 100 && onQuizSubmit && !hasTriggeredCompletion.current) {
-          console.log("🎉 Video completed, triggering onQuizSubmit");
+          console.log("Video completed, triggering onQuizSubmit");
           console.log("Progress data:", progressData);
           hasTriggeredCompletion.current = true;
 
           // Call onQuizSubmit with completion data
-          onQuizSubmit({
-            type: "video_completed",
-            message: "Video completed successfully",
-            progressData: progressData,
-            timestamp: Date.now()
-          });
+          onQuizSubmit("video_completed");
         }
 
         loadAllModuleItemStatuses();

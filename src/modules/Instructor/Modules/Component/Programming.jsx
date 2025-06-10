@@ -131,7 +131,7 @@ const EditorWithFallback = ({
   const handleBeforeMount = (monaco) => {
     console.log("Monaco beforeMount for language:", language);
     // Configure Monaco for better performance
-    monaco.languages.typescript.typescriptDefaults.setEagerModelSync(true);
+    monaco?.languages?.typescript.typescriptDefaults.setEagerModelSync(true);
   };
 
   // Fallback after timeout
