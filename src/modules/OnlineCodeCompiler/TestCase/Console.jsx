@@ -3,7 +3,7 @@ import { useCode } from "../CodeContext";
 import { Typography } from "@mui/material";
 import spinnerLoading from "~/assets/spinnerLoading.gif";
 import { useDispatch, useSelector } from "react-redux";
-import { useNotification } from "~/hooks/useNotification";
+import { useNotification } from "~/Hooks/useNotification";
 import { getProgramming } from "~/store/slices/Compile/action";
 import { useParams } from "react-router-dom";
 import compile from "./../Code/Compile";

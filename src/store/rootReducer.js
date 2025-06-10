@@ -7,7 +7,7 @@ import moduleSlice from './slices/Module/moduleSlice';
 import progressSlice from './slices/Progress/progressSlice';
 import moduleItemSlice from './slices/ModuleItem/moduleItemSlice';
 import compileSlice from './slices/Compile/compileSlice';
-import studentSlice from './slices/StudentEnrollCourse/StudentSlice';
+import studentSlice from './slices/StudentEnrollCourse/studentSlice';
 import searchSlice from './slices/SearchCourseForUser/searchSlice';
 import userSlice from "./slices/User/userSlice";
 import searchCourseAPI from './slices/SearchCourseForUser/searchCourseAPI';

@@ -10,7 +10,7 @@ const Viewer = () => {
   
   useEffect(() => {
     console.log('mount');
-    socket.current = io('http://localhost:3000');
+    socket.current = io(`${import.meta.env.VITE_URL_SERVER}`);
     console.log('render', roomId);
     socket.current.emit('join-room', roomId);
     console.log('join-room', roomId);

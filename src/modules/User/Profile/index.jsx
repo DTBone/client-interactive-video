@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 import userService from "~/services/api/userService";
-import ErrorModal from "~/pages/ErrorModal";
+import ErrorModal from "~/Pages/ErrorModal";
 import '~/index.css';
 import { useNavigate } from "react-router-dom";
 import { 
@@ -17,13 +17,13 @@ import EmailIcon from '@mui/icons-material/Email';
 import PhoneIcon from '@mui/icons-material/Phone';
 import BadgeIcon from '@mui/icons-material/Badge';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
-import SliderCourses from "~/components/SliderCourses";
+import SliderCourses from "~/Components/SliderCourses";
 import ModalEditProfile from "./ModalEditProfile";
 import TransactionHistory from "./PaymentHistory";
 import { getAllCoursebyUser } from "~/store/slices/Course/action";
 import { useSelector } from "react-redux";
 import CourseList from "../HomeUser/components/CourseList";
-import Course from '~/components/SliderCourses/components/Course';
+import Course from '~/Components/SliderCourses/components/Course';
 
 function Profile() {
     const path = window.location.pathname;

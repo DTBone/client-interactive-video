@@ -12,7 +12,7 @@ import {
     LinearProgress,
     Box
 } from '@mui/material';
-import { useNotification } from '~/hooks/useNotification';
+import { useNotification } from '~/Hooks/useNotification';
 
 const FileUpload = ({ onFileChange, accept = '.pdf,.doc,.docx,.jpg,.jpeg,.png, .mp4, .webm', fileSelected }) => {
     const [isDragging, setIsDragging] = useState(false);

@@ -7,7 +7,7 @@ import {
     MoreVertical,
     Circle
 } from 'lucide-react';
-import socketService from '~/hooks/SocketService';
+import socketService from '~/Hooks/SocketService';
 import { useSelector, useDispatch } from 'react-redux';
 import { createConversation, getConversationByFilter, getMessagesByConversationId } from '~/store/slices/Conversation/action';
 import { Box, Zoom } from '@mui/material';
@@ -42,7 +42,7 @@ const Messages = () => {
     const [limit, setLimit] = useState(50);
     const [page, setPage] = useState(1);
     
-    let socket = socketService.connect('http://localhost:3000');
+    let socket = socketService.connect(`${import.meta.env.VITE_URL_SERVER}`);
     const scrollToBottom = () => {
         messagesEndRef?.current?.scrollIntoView({ behavior: 'smooth' });
       };

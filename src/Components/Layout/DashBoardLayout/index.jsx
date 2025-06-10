@@ -13,13 +13,13 @@ import IconButton from '@mui/material/IconButton';
 import MenuIcon from '@mui/icons-material/Menu';
 import MenuOpenIcon from '@mui/icons-material/MenuOpen';
 
-import Header from '~/components/Header';
+import Header from '~/Components/Header';
 import ListButton from './ListButton';
 import userService from '~/services/api/userService';
-import ErrorModal from '~/pages/ErrorModal';
+import ErrorModal from '~/Pages/ErrorModal';
 import ListButtonAdmin from './ListButtonAdmin';
 import backgroundGif from '~/assets/bg.jpg';
-import Footer from '~/components/Footer';
+import Footer from '~/Components/Footer';
 
 const AppBar = styled(MuiAppBar, {
   shouldForwardProp: (prop) => prop !== 'open',

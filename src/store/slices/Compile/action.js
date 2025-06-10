@@ -1,11 +1,12 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
+import { api } from '~/Config/api';
 import axiosInstance from '~/Config/axiosInstance';
 
 export const getProgramming = createAsyncThunk(
     'compile/getProgramming',
     async ({ problemId }, { rejectWithValue }) => {
         try {
-            const { data } = await axiosInstance.get(`/problem/${problemId}`);
+            const { data } = await api.get(`/problem/${problemId}`);
             return data.data;
         } catch (error) {
             if (error.response && error.response.data) {
@@ -20,7 +21,7 @@ export const compileRunCode = createAsyncThunk(
     '/compile/runcode',
     async ({ userCode, userLang, userInput, itemId, codeExecute }, { rejectWithValue }) => {
         try {
-            const { data } = await axiosInstance.post(`/problem/runcode/${itemId}`, {
+            const { data } = await api.post(`/problem/runcode/${itemId}`, {
                 code: userCode,
                 language: userLang.toLowerCase(),
                 input: userInput,
@@ -38,7 +39,7 @@ export const compileSubmitCode = createAsyncThunk(
     async ({ userCode, userLang, itemId, testcases, codeExecute, progressData }, { rejectWithValue }) => {
         try {
             //console.log("progressData: ", progressData)
-            const { data } = await axiosInstance.post(`/problem/submitcode/${itemId}`, {
+            const { data } = await api.post(`/problem/submitcode/${itemId}`, {
                 code: userCode,
                 language: userLang.toLowerCase(),
                 testcases,
@@ -56,7 +57,7 @@ export const getSubmission = createAsyncThunk(
     async ({ problemId }, { rejectWithValue }) => {
         try {
             //console.log("problemID: ", problemId);
-            const { data } = await axiosInstance.get(`/problem/submitcode/${problemId}`);
+            const { data } = await api.get(`/problem/submitcode/${problemId}`);
             return data.data;
         } catch (e) {
             return rejectWithValue(e.message);

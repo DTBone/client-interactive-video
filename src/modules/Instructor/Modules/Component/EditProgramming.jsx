@@ -20,7 +20,7 @@ import Editor from "@monaco-editor/react";
 import JoditEditor from "jodit-react";
 import { Add as AddIcon, Delete as DeleteIcon } from "@mui/icons-material";
 import { useNavigate, useParams } from "react-router-dom";
-import { useNotification } from "~/hooks/useNotification";
+import { useNotification } from "~/Hooks/useNotification";
 import * as Yup from "yup";
 import { useDispatch } from "react-redux";
 import { editProgrammingByItemId } from "~/store/slices/ModuleItem/action";

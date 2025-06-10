@@ -1,7 +1,7 @@
 // /* eslint-disable react-refresh/only-export-components */
 // /* eslint-disable react/prop-types */
 // import { createContext, useContext, useState, useEffect } from 'react';
-// import SocketService from '../hooks/SocketService';
+// import SocketService from '../Hooks/SocketService';
 
 // const ChatContext = createContext();
 
@@ -9,7 +9,7 @@
 //   const [conversations, setConversations] = useState([]);
 //   const [activeConversation, setActiveConversation] = useState(null);
 //   const [unreadCounts, setUnreadCounts] = useState({});
-//   const socket = SocketService.connect('http://localhost:3000');
+//   const socket = SocketService.connect(`${import.meta.env.VITE_URL_SERVER}`);
 
 //   useEffect(() => {
 //     if (!socket.socket) return;

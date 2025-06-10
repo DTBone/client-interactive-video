@@ -15,7 +15,7 @@ import {
 import { createModuleItemSupplement, editSupplementByItemId } from '~/store/slices/ModuleItem/action';
 import { useDispatch } from 'react-redux';
 import { toggleRefresh } from '~/store/slices/Module/moduleSlice';
-import { useNotification } from '~/hooks/useNotification';
+import { useNotification } from '~/Hooks/useNotification';
 import { useNavigate, useParams } from 'react-router-dom';
 import FileUpload from './FileUpload';
 

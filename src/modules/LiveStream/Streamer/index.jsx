@@ -31,7 +31,7 @@ function Streamer() {
 
   useEffect(() => {
     console.log('render')
-    socket.current = io('http://localhost:3000');
+    socket.current = io(`${import.meta.env.VITE_URL_SERVER}`);
     
     const initPeerConnection = async () => {
       peerConnection.current = new RTCPeerConnection();

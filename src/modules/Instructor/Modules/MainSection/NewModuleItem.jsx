@@ -21,7 +21,7 @@ import Lecture from '../Component/Lecture';
 import Quiz from '../Component/Quiz';
 import Programming from '../Component/Programming';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useNotification } from '~/hooks/useNotification';
+import { useNotification } from '~/Hooks/useNotification';
 import { getAllModules } from '~/store/slices/Module/action';
 
 // Styled components for enhanced UI

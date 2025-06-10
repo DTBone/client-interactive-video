@@ -1,4 +1,5 @@
 /* eslint-disable no-unused-vars */
+
 import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
@@ -14,6 +15,7 @@ import { jwtDecode } from "jwt-decode";
 import { login, register, verifyCaptcha } from "~/store/slices/Auth/action";
 import styles from "./Login.module.scss";
 import { setUser } from "~/store/userSlice";
+
 
 function Login() {
   const dispatch = useDispatch();
@@ -179,6 +181,15 @@ function Login() {
           return;
         }
 
+        if (isLogin) {
+            try {
+                const credentials = {
+                    email: formData.email,
+                    password: formData.password
+                };
+                const resultAction = await dispatch(login(credentials));
+
+
         const captchaResult = await dispatch(verifyCaptcha(captchaToken));
 
         if (
@@ -243,186 +254,485 @@ function Login() {
       facebookId: response.userID,
     };
 
-    try {
-      const resultAction = await dispatch(login(credentials));
-      console.log("resultAction", resultAction);
-      if (resultAction.meta.requestStatus === "fulfilled") {
-        setOpen(true);
-        const { user } = resultAction.payload.data;
-        navigate(`/homeuser?userid=${user.userId}`, { state: { user } });
-      }
-    } catch (err) {
-      setMessage("Facebook login failed. Please try again.");
-    }
-  };
 
-  const title = isLogin ? "Log In" : "Sign Up";
-  const ask = isLogin ? "Don't have an account?" : "Already have an account?";
-  const switchText = isLogin ? "Create new Account" : "Log In";
+//     try {
+//       const resultAction = await dispatch(login(credentials));
+//       console.log("resultAction", resultAction);
+//       if (resultAction.meta.requestStatus === "fulfilled") {
+//         setOpen(true);
+//         const { user } = resultAction.payload.data;
+//         navigate(`/homeuser?userid=${user.userId}`, { state: { user } });
+//       }
+//     } catch (err) {
+//       setMessage("Facebook login failed. Please try again.");
+//     }
+//   };
 
-  return (
-    <div className="flex flex-col items-center w-screen h-screen">
-      <div
-        className={`${styles.wrapper} flex w-2/5 h-4/5 mt-5 p-5 flex-col items-center`}
-      >
-        <div className="logo h-1/6 flex flex-col items-center">
-          <img
-            className="h-full"
-            src="src/assets/logo_codechef.png"
-            alt="logo"
-          />
-        </div>
-        <div className="w-full h-2/3 form flex flex-col items-center gap-2">
-          <h1 className="font-bold text-3xl text-blue-700 uppercase">
-            {title} to CodeChef
-          </h1>
-          <form
-            onSubmit={handleLogin}
-            className="w-4/5 h-auto p-5 flex flex-col items-center gap-2 bg-gradient-to-r from-blue-500 to-teal-400 rounded-lg"
-          >
-            {!isLogin && (
-              <>
-                <TextField
-                  // required
-                  name="fullname"
-                  autoComplete="off"
-                  variant="filled"
-                  label="Full name"
-                  placeholder="John Doe"
-                  value={formData.fullname}
-                  onChange={handleInputChange}
-                  sx={{
-                    width: "100%",
-                    backgroundColor: "white",
-                    borderRadius: "5px",
-                  }}
-                  // helperText={message && 'Please enter your full name'}
-                  // error={!!message}
-                />
-                <TextField
-                  // required
-                  name="username"
-                  autoComplete="off"
-                  variant="filled"
-                  label="User name"
-                  placeholder="johndoe123"
-                  value={formData.username}
-                  onChange={handleInputChange}
-                  sx={{
-                    width: "100%",
-                    backgroundColor: "white",
-                    borderRadius: "5px",
-                  }}
-                  // helperText={message && 'Please enter a valid username'}
-                  // error={!!message}
-                />
-              </>
-            )}
-            <TextField
-              // required
-              name="email"
-              autoComplete="off"
-              variant="filled"
-              label="Email"
-              placeholder="johndoe@gmail.com"
-              value={formData.email}
-              onChange={handleInputChange}
-              sx={{
-                width: "100%",
-                backgroundColor: "white",
-                borderRadius: "5px",
-              }}
-              // helperText={message && 'Invalid email'}
-              // error={!!message}
-            />
-            <TextField
-              // required
-              name="password"
-              autoComplete="off"
-              variant="filled"
-              label="Password"
-              type="password"
-              value={formData.password}
-              onChange={handleInputChange}
-              sx={{
-                width: "100%",
-                backgroundColor: "white",
-                borderRadius: "5px",
-              }}
-              // helperText={message}
-              // error={!!message}
-            />
-            {!isLogin && (
-              <TextField
-                // required
-                name="confirmPassword"
-                variant="filled"
-                autoComplete="off"
-                label="Confirm Password"
-                value={formData.confirmPassword}
-                onChange={handleInputChange}
-                sx={{
-                  width: "100%",
-                  backgroundColor: "white",
-                  borderRadius: "5px",
-                }}
-                // helperText={message && 'Passwords do not match'}
-                // error={!!message}
-              />
-            )}
-            {(message || error) && (
-              <Typography variant="subtitle1" color="error">
-                {message || error}
-              </Typography>
-            )}
-            {!isLogin && (
-              <ReCAPTCHA
-                sitekey="6Lf2jFcqAAAAAF3yHodwcNcSRXkqWSt0C4bFGnB4"
-                onChange={setCaptchaToken}
-              />
-            )}
-            <Button
-              type="submit"
-              ref={submitBtn}
-              className="w-full"
-              variant="contained"
-              color="secondary"
-              disabled={load}
-              sx={{ backgroundColor: "white", color: "black" }}
-            >
-              {load ? "Processing..." : title}
-            </Button>
-            {isLogin && (
-              <div className="groupButton self-start text-white">
-                <Link to="/forgot-password">Forgot Password?</Link>
-              </div>
-            )}
-          </form>
+//   const title = isLogin ? "Log In" : "Sign Up";
+//   const ask = isLogin ? "Don't have an account?" : "Already have an account?";
+//   const switchText = isLogin ? "Create new Account" : "Log In";
 
-          <div className="social w-4/5 flex flex-col px-5 py-2 items-center bg-gradient-to-r from-blue-500 to-teal-400 rounded-lg">
-            <div className="w-full flex flex-row gap-2 items-center justify-center">
-              <FacebookLogin
-                appId="1183791329364036"
-                autoLoad={false}
-                textButton="Facebook"
-                buttonStyle={{
-                  backgroundColor: "#0064e0",
-                  width: "100%",
-                  color: "white",
-                  borderRadius: "5px",
-                  padding: "10px",
-                  fontSize: "1rem",
-                  alignContent: "center",
-                }}
-                fields="name,email,picture"
-                callback={handleFacebookResponse}
-              />
-              <GoogleLogin
-                onSuccess={handleGoogleSuccess}
-                onError={() =>
-                  setMessage("Google login failed. Please try again.")
-                }
-              />
+//   return (
+//     <div className="flex flex-col items-center w-screen h-screen">
+//       <div
+//         className={`${styles.wrapper} flex w-2/5 h-4/5 mt-5 p-5 flex-col items-center`}
+//       >
+//         <div className="logo h-1/6 flex flex-col items-center">
+//           <img
+//             className="h-full"
+//             src="src/assets/logo_codechef.png"
+//             alt="logo"
+//           />
+//         </div>
+//         <div className="w-full h-2/3 form flex flex-col items-center gap-2">
+//           <h1 className="font-bold text-3xl text-blue-700 uppercase">
+//             {title} to CodeChef
+//           </h1>
+//           <form
+//             onSubmit={handleLogin}
+//             className="w-4/5 h-auto p-5 flex flex-col items-center gap-2 bg-gradient-to-r from-blue-500 to-teal-400 rounded-lg"
+//           >
+//             {!isLogin && (
+//               <>
+//                 <TextField
+//                   // required
+//                   name="fullname"
+//                   autoComplete="off"
+//                   variant="filled"
+//                   label="Full name"
+//                   placeholder="John Doe"
+//                   value={formData.fullname}
+//                   onChange={handleInputChange}
+//                   sx={{
+//                     width: "100%",
+//                     backgroundColor: "white",
+//                     borderRadius: "5px",
+//                   }}
+//                   // helperText={message && 'Please enter your full name'}
+//                   // error={!!message}
+//                 />
+//                 <TextField
+//                   // required
+//                   name="username"
+//                   autoComplete="off"
+//                   variant="filled"
+//                   label="User name"
+//                   placeholder="johndoe123"
+//                   value={formData.username}
+//                   onChange={handleInputChange}
+//                   sx={{
+//                     width: "100%",
+//                     backgroundColor: "white",
+//                     borderRadius: "5px",
+//                   }}
+//                   // helperText={message && 'Please enter a valid username'}
+//                   // error={!!message}
+//                 />
+//               </>
+//             )}
+//             <TextField
+//               // required
+//               name="email"
+//               autoComplete="off"
+//               variant="filled"
+//               label="Email"
+//               placeholder="johndoe@gmail.com"
+//               value={formData.email}
+//               onChange={handleInputChange}
+//               sx={{
+//                 width: "100%",
+//                 backgroundColor: "white",
+//                 borderRadius: "5px",
+//               }}
+//               // helperText={message && 'Invalid email'}
+//               // error={!!message}
+//             />
+//             <TextField
+//               // required
+//               name="password"
+//               autoComplete="off"
+//               variant="filled"
+//               label="Password"
+//               type="password"
+//               value={formData.password}
+//               onChange={handleInputChange}
+//               sx={{
+//                 width: "100%",
+//                 backgroundColor: "white",
+//                 borderRadius: "5px",
+//               }}
+//               // helperText={message}
+//               // error={!!message}
+//             />
+//             {!isLogin && (
+//               <TextField
+//                 // required
+//                 name="confirmPassword"
+//                 variant="filled"
+//                 autoComplete="off"
+//                 label="Confirm Password"
+//                 value={formData.confirmPassword}
+//                 onChange={handleInputChange}
+//                 sx={{
+//                   width: "100%",
+//                   backgroundColor: "white",
+//                   borderRadius: "5px",
+//                 }}
+//                 // helperText={message && 'Passwords do not match'}
+//                 // error={!!message}
+//               />
+//             )}
+//             {(message || error) && (
+//               <Typography variant="subtitle1" color="error">
+//                 {message || error}
+//               </Typography>
+//             )}
+//             {!isLogin && (
+//               <ReCAPTCHA
+//                 sitekey="6Lf2jFcqAAAAAF3yHodwcNcSRXkqWSt0C4bFGnB4"
+//                 onChange={setCaptchaToken}
+//               />
+//             )}
+//             <Button
+//               type="submit"
+//               ref={submitBtn}
+//               className="w-full"
+//               variant="contained"
+//               color="secondary"
+//               disabled={load}
+//               sx={{ backgroundColor: "white", color: "black" }}
+//             >
+//               {load ? "Processing..." : title}
+//             </Button>
+//             {isLogin && (
+//               <div className="groupButton self-start text-white">
+//                 <Link to="/forgot-password">Forgot Password?</Link>
+//               </div>
+//             )}
+//           </form>
+
+//           <div className="social w-4/5 flex flex-col px-5 py-2 items-center bg-gradient-to-r from-blue-500 to-teal-400 rounded-lg">
+//             <div className="w-full flex flex-row gap-2 items-center justify-center">
+//               <FacebookLogin
+//                 appId="1183791329364036"
+//                 autoLoad={false}
+//                 textButton="Facebook"
+//                 buttonStyle={{
+//                   backgroundColor: "#0064e0",
+//                   width: "100%",
+//                   color: "white",
+//                   borderRadius: "5px",
+//                   padding: "10px",
+//                   fontSize: "1rem",
+//                   alignContent: "center",
+//                 }}
+//                 fields="name,email,picture"
+//                 callback={handleFacebookResponse}
+//               />
+//               <GoogleLogin
+//                 onSuccess={handleGoogleSuccess}
+//                 onError={() =>
+//                   setMessage("Google login failed. Please try again.")
+//                 }
+//               />
+
+    const title = isLogin ? 'Log In' : 'Sign Up';
+    const ask = isLogin ? "Don't have an account?" : 'Already have an account?';
+    const switchText = isLogin ? 'Create new Account' : 'Log In';
+
+    return (
+        <div className="flex flex-col items-center w-screen h-screen">
+            <div className={`${styles.wrapper} flex w-2/5 h-4/5 mt-5 p-5 flex-col items-center`}>
+                <div className="logo h-1/6 flex flex-col items-center">
+                    <img className="h-full" src={logo} alt="logo" />
+                </div>
+                <div className="w-full h-2/3 form flex flex-col items-center gap-2">
+                    <h1 className="font-bold text-3xl text-blue-700 uppercase">
+                        {title} to CodeChef
+                    </h1>
+                    {/* <form
+                        onSubmit={handleLogin}
+                        className="w-4/5 h-auto p-5 flex flex-col items-center gap-2 bg-gradient-to-r from-blue-500 to-teal-400 rounded-lg"
+                    >
+                        {!isLogin && (
+                            <>
+                                <TextField
+                                    // required
+                                    name="fullname"
+                                    autoComplete="off"
+                                    variant="filled"
+                                    label="Full name"
+                                    placeholder="John Doe"
+                                    onChange={handleInputChange}
+                                    sx={{
+                                        width: '100%',
+                                        backgroundColor: 'white',
+                                        borderRadius: '5px',
+                                    }}
+                                />
+                                <TextField
+                                    required
+                                    name="username"
+                                    autoComplete="off"
+                                    variant="filled"
+                                    label="User name"
+                                    placeholder="johndoe123"
+                                    onChange={handleInputChange}
+                                    sx={{
+                                        width: '100%',
+                                        backgroundColor: 'white',
+                                        borderRadius: '5px',
+                                    }}
+                                />
+                            </>
+                        )}
+                        <TextField
+                            required
+                            name="email"
+                            autoComplete="off"
+                            variant="filled"
+                            label="Email"
+                            // type="email"
+                            placeholder="johndoe@gmail.com"
+                            onChange={handleInputChange}
+                            sx={{
+                                width: '100%',
+                                backgroundColor: 'white',
+                                borderRadius: '5px',
+                            }}
+                            helperText={message && 'Invalid email'}
+                            error={!!message}
+                        />
+                        <TextField
+                            required
+                            name="password"
+                            autoComplete="off"
+                            variant="filled"
+                            label="Password"
+                            type="password"
+                            onChange={handleInputChange}
+                            sx={{
+                                width: '100%',
+                                backgroundColor: 'white',
+                                borderRadius: '5px',
+                            }}
+                        />
+                        {!isLogin && (
+                            <TextField
+                                required
+                                name="confirmPassword"
+                                variant="filled"
+                                autoComplete="off"
+                                label="Confirm Password"
+                                type="password"
+                                onChange={handleInputChange}
+                                sx={{
+                                    width: '100%',
+                                    backgroundColor: 'white',
+                                    borderRadius: '5px',
+                                }}
+                            />
+                        )}
+                        {(message || error) && (
+                            <Typography variant="subtitle1" color="error">
+                                {message || error}
+                            </Typography>
+                        )}
+                        {!isLogin && (
+                            <ReCAPTCHA
+                                sitekey="6Lf2jFcqAAAAAF3yHodwcNcSRXkqWSt0C4bFGnB4"
+                                onChange={setCaptchaToken}
+                            />
+                        )}
+                        <Button
+                            type="submit"
+                            ref={submitBtn}
+                            className="w-full"
+                            variant="contained"
+                            color="secondary"
+                            disabled={load}
+                            sx={{ backgroundColor: 'white', color: 'black' }}
+                        >
+                            {load ? 'Processing...' : title}
+                        </Button>
+                        {isLogin && (
+                            <div className="groupButton self-start text-white">
+                                <Link to="/forgot-password">Forgot Password?</Link>
+                            </div>
+                        )}
+                    </form> */}
+                    <form
+                        onSubmit={handleLogin}
+                        className="w-4/5 h-auto p-5 flex flex-col items-center gap-2 bg-gradient-to-r from-blue-500 to-teal-400 rounded-lg"
+                    >
+                        {!isLogin && (
+                            <>
+                                <TextField
+                                    // required
+                                    name="fullname"
+                                    autoComplete="off"
+                                    variant="filled"
+                                    label="Full name"
+                                    placeholder="John Doe"
+                                    value={formData.fullname}
+                                    onChange={handleInputChange}
+                                    sx={{
+                                        width: '100%',
+                                        backgroundColor: 'white',
+                                        borderRadius: '5px',
+                                    }}
+                                // helperText={message && 'Please enter your full name'}
+                                // error={!!message}
+                                />
+                                <TextField
+                                    // required
+                                    name="username"
+                                    autoComplete="off"
+                                    variant="filled"
+                                    label="User name"
+                                    placeholder="johndoe123"
+                                    value={formData.username}
+                                    onChange={handleInputChange}
+                                    sx={{
+                                        width: '100%',
+                                        backgroundColor: 'white',
+                                        borderRadius: '5px',
+                                    }}
+                                // helperText={message && 'Please enter a valid username'}
+                                // error={!!message}
+                                />
+                            </>
+                        )}
+                        <TextField
+                            // required
+                            name="email"
+                            autoComplete="off"
+                            variant="filled"
+                            label="Email"
+                            placeholder="johndoe@gmail.com"
+                            value={formData.email}
+                            onChange={handleInputChange}
+                            sx={{
+                                width: '100%',
+                                backgroundColor: 'white',
+                                borderRadius: '5px',
+                            }}
+                        // helperText={message && 'Invalid email'}
+                        // error={!!message}
+                        />
+                        <TextField
+                            // required
+                            name="password"
+                            autoComplete="off"
+                            variant="filled"
+                            label="Password"
+                            type='password'
+
+                            value={formData.password}
+                            onChange={handleInputChange}
+                            sx={{
+                                width: '100%',
+                                backgroundColor: 'white',
+                                borderRadius: '5px',
+                            }}
+                        // helperText={message}
+                        // error={!!message}
+                        />
+                        {!isLogin && (
+                            <TextField
+                                // required
+                                name="confirmPassword"
+                                variant="filled"
+                                autoComplete="off"
+                                label="Confirm Password"
+
+                                value={formData.confirmPassword}
+                                onChange={handleInputChange}
+                                sx={{
+                                    width: '100%',
+                                    backgroundColor: 'white',
+                                    borderRadius: '5px',
+                                }}
+                            // helperText={message && 'Passwords do not match'}
+                            // error={!!message}
+                            />
+                        )}
+                        {(message || error) && (
+                            <Typography variant="subtitle1" color="error">
+                                {message || error}
+                            </Typography>
+                        )}
+                        {!isLogin && (
+                            <ReCAPTCHA
+                                sitekey="6Lf2jFcqAAAAAF3yHodwcNcSRXkqWSt0C4bFGnB4"
+                                onChange={setCaptchaToken}
+                            />
+                        )}
+                        <Button
+                            type="submit"
+                            ref={submitBtn}
+                            className="w-full"
+                            variant="contained"
+                            color="secondary"
+                            disabled={load}
+                            sx={{ backgroundColor: 'white', color: 'black' }}
+                        >
+                            {load ? 'Processing...' : title}
+                        </Button>
+                        {isLogin && (
+                            <div className="groupButton self-start text-white">
+                                <Link to="/forgot-password">Forgot Password?</Link>
+                            </div>
+                        )}
+                    </form>
+
+                    <div className="social w-4/5 flex flex-col px-5 py-2 items-center bg-gradient-to-r from-blue-500 to-teal-400 rounded-lg">
+                        <div className="w-full flex flex-row gap-2 items-center justify-center">
+                            <FacebookLogin
+                                appId="1183791329364036"
+                                autoLoad={false}
+                                textButton="Facebook"
+                                buttonStyle={{
+                                    backgroundColor: '#0064e0',
+                                    width: '100%',
+                                    color: 'white',
+                                    borderRadius: '5px',
+                                    padding: '10px',
+                                    fontSize: '1rem',
+                                    alignContent: 'center',
+                                }}
+                                fields="name,email,picture"
+                                callback={handleFacebookResponse}
+                            />
+                            <GoogleLogin
+                                onSuccess={handleGoogleSuccess}
+                                onError={() => setMessage('Google login failed. Please try again.')}
+                            />
+                        </div>
+                    </div>
+
+                    <Snackbar
+                        open={open}
+                        autoHideDuration={5000}
+                        onClose={handleClose}
+                        message={isLogin ? 'Login successful' : 'Register successful'}
+                    />
+
+                    <div className="ask">{ask}</div>
+                    <div className="switch w-4/5 flex flex-col px-5 py-2 items-center bg-gradient-to-r from-blue-500 to-teal-400 rounded-lg">
+                        <Button
+                            onClick={() => handleSignup()}
+                            className="w-full"
+                            variant="contained"
+                            color="secondary"
+                            disabled={load}
+                            sx={{ backgroundColor: 'white', color: 'black' }}
+                        >
+                            {load ? 'Processing...' : switchText}
+                        </Button>
+                    </div>
+                </div>
+
             </div>
           </div>
 

@@ -4,8 +4,8 @@ export const formatDate = (date) => {
 };
 
 export const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('en-US', {
+    return new Intl.NumberFormat('vi-VN', {
         style: 'currency',
-        currency: 'USD',
+        currency: 'VND',
     }).format(amount);
 };

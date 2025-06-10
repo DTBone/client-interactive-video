@@ -141,12 +141,12 @@ const Lecture = () => {
               {lecture?.title || "Video"}
             </Typography>
 
-            <EditNoteIcon
+            {/* <EditNoteIcon
               sx={{ fontSize: 30, color: "#1976d2", marginRight: "16px" }}
               onClick={handleOpenNote}
               className="cursor-pointer"
               titleAccess="Open note"
-            />
+            /> */}
           </div>
 
           <div className="flex flex-col h-full mt-4">
