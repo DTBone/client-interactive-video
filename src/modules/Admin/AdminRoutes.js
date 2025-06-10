@@ -8,6 +8,7 @@ import NotificationsAdmin from './Notifications';
 import SettingsAdmin from './Settings';
 import Payment from './Payment/payment';
 import CategoryManager from './CourseMg/Category/category';
+import AddAccountByExcel from './AddAccountByExcel';
 // Import new sections as they are developed
 
 const adminRoutes = [
@@ -50,6 +51,10 @@ const adminRoutes = [
   {
     path: '/admin/courses/categories',
     element: CategoryManager,
+  },
+  {
+    path: '/admin/accounts/add-by-excel',
+    element: AddAccountByExcel,
   },
   // etc.
 ];

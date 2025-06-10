@@ -3,16 +3,30 @@ import axios from 'axios';
 // import { setError } from '../../store/errorSlice';
 
 const axiosInstance = axios.create({
-    baseURL: 'https://server-interactive-video.onrender.com/api/v1',  // URL gốc cho API
+    baseURL: `${import.meta.env.VITE_URL_SERVER}/api/v1`,  // URL gốc cho API
     timeout: 100000,  // Giới hạn thời gian chờ,
     withCredentials: true,  // Gửi cookie khi gọi API từ domain khác
     headers: {
         'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': 'https://server-interactive-video.onrender.com',
+        'Access-Control-Allow-Origin': `${import.meta.env.VITE_URL_SERVER}`,
         'Authorization': `Bearer ${localStorage.getItem('token')}`
         // Thêm token hoặc các headers khác ở đây nếu cần
     }
 });
+
+axiosInstance.interceptors.request.use(
+    (config) => {
+        const token = localStorage.getItem('token');
+        if (token) {
+            config.headers['Authorization'] = `Bearer ${token}`;
+        }
+        return config;
+    },  
+    (error) => {
+        return Promise.reject(error);
+    }
+);
+
 // axiosInstance.interceptors.request.use(
 //     res => res,
 //     (error) => {
