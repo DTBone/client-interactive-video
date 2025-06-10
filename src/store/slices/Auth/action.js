@@ -1,11 +1,12 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { api } from '~/Config/api';
+import axiosInstance from '~/Config/axiosInstance';
 
 export const login = createAsyncThunk(
     'auth/login',
     async (credentials, { rejectWithValue }) => {
         try {
-            const response = await api.post('users/login', credentials);
+            const response = await axiosInstance.post('users/login', credentials);
             //console.log('API Response:', response);
             return response.data;
         } catch (error) {
@@ -19,7 +20,7 @@ export const logout = createAsyncThunk(
     'auth/logout',
     async (_, { rejectWithValue }) => {
         try {
-            const response = await api.post('users/logout');
+            const response = await axiosInstance.post('users/logout');
             return response.data;
         } catch (error) {
             return rejectWithValue(error.response?.data.error || 'Logout failed');

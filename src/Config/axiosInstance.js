@@ -1,7 +1,8 @@
 import axios from 'axios';
 
 const axiosInstance = axios.create({
-    baseURL: 'https://server-interactive-video.onrender.com/api/v1',
+    // baseURL: 'https://server-interactive-video.onrender.com/api/v1',
+    baseURL: 'http://localhost:3000/api/v1',
     timeout: 100000,
     withCredentials: true,
     headers: {
