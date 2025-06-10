@@ -11,6 +11,8 @@ import {
   useTheme,
   alpha,
   CircularProgress,
+  Snackbar,
+  Alert,
 } from "@mui/material";
 import {
   PlayArrow,
@@ -429,8 +431,87 @@ const VideoControls = ({
   const [isSeeking, setIsSeeking] = useState(false);
   const seekingTimeRef = useRef(null); // Ref để tránh re-render
 
+  // State for seek restriction notification
+  const [showSeekWarning, setShowSeekWarning] = useState(false);
+  const [seekWarningMessage, setSeekWarningMessage] = useState("");
+
   // Speed options
   const speedOptions = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 2];
+
+  // Function to check if seeking past unanswered questions is allowed
+  const canSeekToTime = useCallback(
+    (targetTime) => {
+      if (!questions || questions.length === 0) return { allowed: true };
+
+      // Find unanswered questions between current time and target time
+      const unansweredQuestions = questions.filter((question) => {
+        const isAnswered =
+          answeredQuestions.has(question._id) ||
+          answeredQuestions.has(question.startTime) ||
+          (question.history &&
+            Array.isArray(question.history) &&
+            question.history.some(
+              (record) =>
+                record.isCorrect === true || record.status === "completed"
+            ));
+
+        return (
+          !isAnswered &&
+          question.startTime > currentTime &&
+          question.startTime <= targetTime
+        );
+      });
+
+      if (unansweredQuestions.length > 0) {
+        const firstUnanswered = unansweredQuestions.sort(
+          (a, b) => a.startTime - b.startTime
+        )[0];
+        return {
+          allowed: false,
+          blockedQuestion: firstUnanswered,
+          message: `Bạn cần trả lời câu hỏi tại ${formatTime(firstUnanswered.startTime)} trước khi tiếp tục.`,
+        };
+      }
+
+      return { allowed: true };
+    },
+    [questions, answeredQuestions, currentTime, formatTime]
+  );
+
+  // Enhanced wrapper for handleTimeSeek with question validation
+  const handleRestrictedTimeSeek = useCallback(
+    (event, percentage) => {
+      const targetTime = (percentage / 100) * duration;
+      const seekValidation = canSeekToTime(targetTime);
+
+      if (!seekValidation.allowed) {
+        // Show warning message
+        setSeekWarningMessage(seekValidation.message);
+        setShowSeekWarning(true);
+
+        // Optionally, seek to the question instead
+        const questionPercentage =
+          (seekValidation.blockedQuestion.startTime / duration) * 100;
+        handleTimeSeek(event, questionPercentage);
+
+        // Trigger question click if available
+        if (onQuestionClick) {
+          onQuestionClick(seekValidation.blockedQuestion);
+        }
+
+        return;
+      }
+
+      // If seeking is allowed, proceed normally
+      handleTimeSeek(event, percentage);
+    },
+    [duration, canSeekToTime, handleTimeSeek, onQuestionClick]
+  );
+
+  // Close warning notification
+  const handleCloseSeekWarning = useCallback(() => {
+    setShowSeekWarning(false);
+  }, []);
 
   // Enhanced question statistics calculation với memoization
   const questionStats = useMemo(() => {
@@ -630,7 +711,7 @@ const VideoControls = ({
           padding: theme.spacing(2),
           color: theme.palette.common.white,
           // Enhanced backdrop for better visibility
-          backdropFilter: "blur(4px)",
+          // backdropFilter: "blur(4px)",
         }}
       >
         {/* Enhanced Progress Bar với better sync */}
@@ -640,7 +721,7 @@ const VideoControls = ({
           buffered={batteredRegions}
           questions={questions}
           answeredQuestions={answeredQuestions}
-          handleTimeSeek={handleTimeSeek}
+          handleTimeSeek={handleRestrictedTimeSeek}
           formatTime={formatTime}
           onQuestionClick={onQuestionClick}
         />
