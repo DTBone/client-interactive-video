@@ -2,9 +2,10 @@ import { Button, CircularProgress, TextField } from "@mui/material";
 import { useState } from "react";
 import ErrorModal from "~/Pages/ErrorModal";
 import ModalForm from "./ModalForm";
-import axiosInstance from "~/services/api/axiosInstance";
+// import axiosInstance from "~/services/api/axiosInstance";
 import { useRef } from "react";
 import '~/index.css';
+import { api } from "~/Config/api";
 
 function ForgetPassword() {
     const [email, setEmail] = useState('');
@@ -30,7 +31,7 @@ function ForgetPassword() {
         }
         if(!loading) setLoading(true);
         try {
-            const response = await axiosInstance.post('/forgot-password', {
+            const response = await api.post('/users/forgot-password', {
                 email
             });
             if (response.data.status === "success") {

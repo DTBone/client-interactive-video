@@ -1,12 +1,12 @@
 import axios from 'axios';
 
 const axiosInstance = axios.create({
-    baseURL: 'https://server-interactive-video.onrender.com/api/v1',
+    baseURL: `${import.meta.env.VITE_URL_SERVER}/api/v1`,
     timeout: 100000,
     withCredentials: true,
     headers: {
         'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': 'https://server-interactive-video.onrender.com',
+        'Access-Control-Allow-Origin': `${import.meta.env.VITE_URL_SERVER}`,
         'Authorization': `Bearer ${localStorage.getItem('token')}`
     }
 });

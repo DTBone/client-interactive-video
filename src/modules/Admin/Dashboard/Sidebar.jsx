@@ -69,8 +69,19 @@ const Sidebar = ({ open, handleDrawerClose }) => {
     {
       text: 'Account Manager',
       icon: <PeopleIcon/>,
-      path: '/admin/accounts',
-      exact: true
+      subMenu: true,
+      onClick: handleUserSubMenuClick,
+      open: openUserSubMenu,
+      subMenuItems: [
+        {
+          text: 'All Accounts',
+          path: '/admin/accounts',
+        },
+        {
+          text: 'Add Account By Excel',
+          path: '/admin/accounts/add-by-excel',
+        }
+      ]
     },
     {
       text: 'Course Management',
