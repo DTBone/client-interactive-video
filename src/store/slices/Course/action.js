@@ -150,17 +150,7 @@ export const enrollCourse = createAsyncThunk(
     }
 )
 
-export const getCertificateByCourseId = createAsyncThunk(
-    'course/getCertificateByCourseId',
-    async ({ courseId }, { rejectWithValue }) => {
-        try {
-            const { data } = await axiosInstance.get(`/learns/${courseId}/certificate`);
-            return data;
-        } catch (error) {
-            return rejectWithValue(error.message);
-        }
-    }
-)
+
 
 export const getAllCoursebyUser = createAsyncThunk(
     'course/getAllCoursebyUser',
@@ -185,3 +175,58 @@ export const getGradeByCourseId = createAsyncThunk(
         }
     }
 )
+
+export const uploadCertificate = createAsyncThunk(
+    'course/uploadCertificate',
+    async ({ formData }, { rejectWithValue }) => {
+        try {
+            // console.log("Upload certificate action called with FormData");
+
+            // Log FormData contents for debugging
+            for (let [key, value] of formData.entries()) {
+                console.log(`FormData ${key}:`, value instanceof File ? `File: ${value.name} (${value.size} bytes)` : value);
+            }
+
+            // Extract courseId from FormData để làm URL path
+            const courseId = formData.get('courseId');
+
+            if (!courseId) {
+                throw new Error('CourseId is required');
+            }
+
+            const config = {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            };
+
+            const { data } = await axiosInstance.post(
+                `/learns/certificate/${courseId}`,
+                formData,
+                config
+            );
+
+            console.log("Certificate upload response:", data);
+            return data;
+        } catch (error) {
+            console.error("Certificate upload error:", error);
+            const errorMessage = error.response?.data?.message ||
+                error.response?.data?.error ||
+                error.message ||
+                'Failed to upload certificate';
+            return rejectWithValue(errorMessage);
+        }
+    }
+)
+export const getCertificateByCourseId = createAsyncThunk(
+    'course/getCertificateByCourseId',
+    async ({ courseId }, { rejectWithValue }) => {
+        try {
+            const { data } = await axiosInstance.get(`/learns/certificate/${courseId}`);
+            return data;
+        } catch (error) {
+            return rejectWithValue(error.message);
+        }
+    }
+)
+
