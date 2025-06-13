@@ -7,7 +7,7 @@ import ModuleItem from './ModuleItem';
 import { useLocation } from 'react-router-dom';
 import { getModuleById } from "~/store/slices/Module/action.js";
 import { useDispatch, useSelector } from "react-redux";
-import { useNotification } from '~/hooks/useNotification';
+import { useNotification } from '~/Hooks/useNotification';
 
 const Module = () => {
     const [isOpen, setIsOpen] = useState(true);

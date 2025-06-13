@@ -8,11 +8,11 @@ import MuiAppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
 import CssBaseline from '@mui/material/CssBaseline';
 
-import Header from '~/components/Header';
+import Header from '~/Components/Header';
 import userService from '~/services/api/userService';
 import { useDispatch, useSelector } from 'react-redux';
 import { setUser } from '~/store/userSlice';
-import ErrorModal from '~/pages/ErrorModal';
+import ErrorModal from '~/Pages/ErrorModal';
 
 
 

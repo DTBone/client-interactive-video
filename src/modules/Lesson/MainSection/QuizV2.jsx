@@ -345,6 +345,11 @@ const QuizV2 = () => {
     };
   }, []);
 
+  // Debug effect để theo dõi showSubmitDialog
+  useEffect(() => {
+    console.log("showSubmitDialog changed:", showSubmitDialog);
+  }, [showSubmitDialog]);
+
   // Initial data load
   useEffect(() => {
     console.log("Component mounted, loading quiz data");
@@ -505,9 +510,20 @@ const QuizV2 = () => {
   const handleSubmitAttempt = () => {
     const unansweredCount =
       quizState.quiz.questions.length - getAnsweredCount();
+
+    console.log("HandleSubmitAttempt called:", {
+      unansweredCount,
+      totalQuestions: quizState.quiz.questions.length,
+      answeredCount: getAnsweredCount(),
+      isFullscreen: quizState.isFullscreen,
+      showSubmitDialog: showSubmitDialog,
+    });
+
     if (unansweredCount > 0) {
+      console.log("Setting showSubmitDialog to true");
       setShowSubmitDialog(true);
     } else {
+      console.log("All questions answered, submitting directly");
       handleSubmit();
     }
   };
@@ -1654,6 +1670,19 @@ const QuizV2 = () => {
       <Dialog
         open={showSubmitDialog}
         onClose={() => setShowSubmitDialog(false)}
+        sx={{
+          zIndex: quizState.isFullscreen ? 9999 : "auto",
+          "& .MuiDialog-container": {
+            zIndex: quizState.isFullscreen ? 9999 : "auto",
+          },
+          "& .MuiDialog-paper": {
+            zIndex: quizState.isFullscreen ? 9999 : "auto",
+          },
+        }}
+        disablePortal={quizState.isFullscreen}
+        container={
+          quizState.isFullscreen ? quizContainerRef.current : undefined
+        }
       >
         <DialogTitle>Submit Quiz Confirmation</DialogTitle>
         <DialogContent>
@@ -1673,6 +1702,19 @@ const QuizV2 = () => {
       <Dialog
         open={showWarningDialog}
         onClose={() => setShowWarningDialog(false)}
+        sx={{
+          zIndex: quizState.isFullscreen ? 9999 : "auto",
+          "& .MuiDialog-container": {
+            zIndex: quizState.isFullscreen ? 9999 : "auto",
+          },
+          "& .MuiDialog-paper": {
+            zIndex: quizState.isFullscreen ? 9999 : "auto",
+          },
+        }}
+        disablePortal={quizState.isFullscreen}
+        container={
+          quizState.isFullscreen ? quizContainerRef.current : undefined
+        }
       >
         <DialogTitle sx={{ color: "warning.main" }}>
           ⚠️ Security Warning
@@ -1699,6 +1741,13 @@ const QuizV2 = () => {
         autoHideDuration={4000}
         onClose={() => setSnackbarOpen(false)}
         message={snackbarMessage}
+        sx={{
+          zIndex: quizState.isFullscreen ? 9999 : "auto",
+        }}
+        disablePortal={quizState.isFullscreen}
+        container={
+          quizState.isFullscreen ? quizContainerRef.current : undefined
+        }
       />
     </Box>
   );

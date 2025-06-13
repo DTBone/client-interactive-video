@@ -34,7 +34,7 @@ import {
 } from '@mui/icons-material';
 import { useNavigate, useParams } from 'react-router-dom';
 import FileUpload from './FileUpload';
-import { useNotification } from '~/hooks/useNotification';
+import { useNotification } from '~/Hooks/useNotification';
 import { createModuleItemSupplement } from '~/store/slices/ModuleItem/action';
 import { useDispatch } from 'react-redux';
 import { toggleRefresh } from '~/store/slices/Module/moduleSlice';

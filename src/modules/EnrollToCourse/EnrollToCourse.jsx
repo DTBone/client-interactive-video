@@ -23,7 +23,7 @@ import Breadcrumb from "../../Components/Common/Breadcrumbs/Breadcrumb";
 import EnrollCourseBtn from "./Button/EnrollCourseBtn";
 import CourseRegisFailed from "./Notification/CourseRegisFailed";
 import SuccessfulCourseRegis from "./Notification/SuccessfulCourseRegis";
-import Tabcourse from "./Tab/tabcourse";
+import Tabcourse from "./Tab/Tabcourse";
 import courseService from "../../services/api/courseService";
 
 import { useNavigate, useParams } from "react-router-dom";

@@ -1,6 +1,6 @@
 ﻿import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { LocalSee, NoPhotography, Mic, MicOff, PhoneEnabled, PhoneDisabled, Monitor } from '@mui/icons-material';
-import SocketService from "~/hooks/SocketService.js";
+import SocketService from "~/Hooks/SocketService.js";
 
 const VideoCall = () => {
     const localVideoRef = useRef(null);
@@ -69,7 +69,7 @@ const VideoCall = () => {
 
     // Initialize socket connection
     useEffect(() => {
-        const socket = SocketService.connect('http://localhost:3000');
+        const socket = SocketService.connect(`${import.meta.env.VITE_URL_SERVER}`);
         socketRef.current = socket;
 
         socket.on('connect', () => {

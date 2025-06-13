@@ -14,7 +14,7 @@ import {
 } from '@mui/icons-material';
 import { useNavigate, useParams } from 'react-router-dom';
 import FileUpload from './FileUpload';
-import { useNotification } from '~/hooks/useNotification';
+import { useNotification } from '~/Hooks/useNotification';
 import QuizQuestionForm from './QuizQuestionForm';
 import { createModuleItemLecture, editLectureByItemId } from '~/store/slices/ModuleItem/action';
 import { useDispatch, useSelector } from 'react-redux';

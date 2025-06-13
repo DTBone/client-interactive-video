@@ -15,8 +15,8 @@ import authService from '~/services/auth/authService';
 import Badge from '@mui/material/Badge';
 import { Notifications, School } from "@mui/icons-material";
 import { api } from "~/Config/api.js";
-import socketService from "~/hooks/SocketService.js";
-import NotificationMenu from "~/components/Header/components/Notification/index.jsx";
+import socketService from "~/Hooks/SocketService.js";
+import NotificationMenu from "~/Components/Header/components/Notification/index.jsx";
 import { useDispatch } from 'react-redux';
 
 export default function AccountMenu({ user }) {
@@ -25,7 +25,7 @@ export default function AccountMenu({ user }) {
   const [notifications, setNotifications] = React.useState([]);
   const [unreadNotifications, setUnreadNotifications] = React.useState(0);
   const open = Boolean(anchorEl);
-  const socket = socketService.connect('http://localhost:3000')
+  const socket = socketService.connect(`${import.meta.env.VITE_URL_SERVER}`)
   const [notificationAnchorEl, setNotificationAnchorEl] = React.useState(null);
   const notificationOpen = Boolean(notificationAnchorEl);
 
@@ -78,20 +78,21 @@ export default function AccountMenu({ user }) {
   const navigate = useNavigate();
 
   const handleLogout = async () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    await dispatch({ type: 'CLEAR_STORE' });
-    handleClose();
     try {
       const response = await authService.logout();
       if (response.status === 'success') {
         // dispatch(logout());
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        await dispatch({ type: 'CLEAR_STORE' });
+        handleClose();
         navigate('/signin');
       }
     }
     catch (error) {
       console.log(error);
     }
+    
   }
   const handleProfile = () => {
     const user1 = JSON.parse(localStorage.getItem('user'));

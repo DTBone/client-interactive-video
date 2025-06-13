@@ -6,7 +6,7 @@ import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import CloudDoneIcon from "@mui/icons-material/CloudDone";
 import compile from "./Compile";
 import { useCode } from "../CodeContext";
-import { useNotification } from "~/hooks/useNotification";
+import { useNotification } from "~/Hooks/useNotification";
 import { useDispatch, useSelector } from "react-redux";
 import {
   compileRunCode,

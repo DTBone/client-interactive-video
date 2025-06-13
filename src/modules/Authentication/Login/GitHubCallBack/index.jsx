@@ -6,7 +6,7 @@ function GitHubCallback() {
 
         if (code) {
             // Send code to backend
-            fetch('http://localhost:3000/auth/github/callback', {
+            fetch(`${import.meta.env.VITE_URL_SERVER}/auth/github/callback`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ code }),

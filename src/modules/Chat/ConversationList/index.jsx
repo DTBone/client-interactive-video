@@ -14,7 +14,7 @@ import {
 } from '@mui/material';
 import { Group as GroupIcon, Person as PersonIcon } from '@mui/icons-material';
 import { SearchIcon } from 'lucide-react';
-import useDebounce from "~/hooks/useDebounce.js";
+import useDebounce from "~/Hooks/useDebounce.js";
 import {api} from "~/Config/api.js";
 import SearchUsersPopper from "~/modules/Chat/SearchUser/index.jsx";
 

@@ -1,5 +1,5 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
-import axiosInstance from '~/Config/axiosInstance';
+import { api } from '~/Config/api';
 
 export const createModuleItemSupplement = createAsyncThunk(
     'module/moduleItem/addNewSupplement',
@@ -16,7 +16,7 @@ export const createModuleItemSupplement = createAsyncThunk(
                 },
             };
 
-            const { data } = await axiosInstance.post(
+            const { data } = await api.post(
                 `/learns/${courseId}/modules/${moduleId}/supplement`,
                 formData,
                 config
@@ -45,7 +45,7 @@ export const createModuleItemLecture = createAsyncThunk(
                     'Content-Type': 'multipart/form-data',
                 },
             };
-            const { data } = await axiosInstance.post(
+            const { data } = await api.post(
                 `/learns/${courseId}/modules/${moduleId}/lecture`,
                 formData,
                 config
@@ -64,7 +64,7 @@ export const createModuleItemQuiz = createAsyncThunk(
     'module/moduleItem/addNewQuiz',
     async ({ courseId, moduleId, quizData }, { rejectWithValue }) => {
         try {
-            const { data } = await axiosInstance.post(`/learns/${courseId}/modules/${moduleId}/quiz`, quizData);
+            const { data } = await api.post(`/learns/${courseId}/modules/${moduleId}/quiz`, quizData);
             return data;
         } catch (error) {
             return rejectWithValue(error.message);
@@ -76,7 +76,7 @@ export const createModuleItemProgramming = createAsyncThunk(
     'module/moduleItem/addNewProgramming',
     async ({ courseId, moduleId, formData }, { rejectWithValue }) => {
         try {
-            const { data } = await axiosInstance.post(`/learns/${courseId}/modules/${moduleId}/programming`, formData);
+            const { data } = await api.post(`/learns/${courseId}/modules/${moduleId}/programming`, formData);
             return data;
         } catch (error) {
             return rejectWithValue(error.message);
@@ -88,7 +88,7 @@ export const getModuleItemById = createAsyncThunk(
     'module/moduleItem/getModuleItemById',
     async ({ moduleItemId }, { rejectWithValue }) => {
         try {
-            const { data } = await axiosInstance.get(`/learns/moduleitem/${moduleItemId}`);
+            const { data } = await api.get(`/learns/moduleitem/${moduleItemId}`);
             return data;
         } catch (error) {
             return rejectWithValue(error.message);
@@ -112,7 +112,7 @@ export const editSupplementByItemId = createAsyncThunk(
                 },
             };
 
-            const { data } = await axiosInstance.put(
+            const { data } = await api.put(
                 `/moduleitem/supplement/${itemId}`,
                 formData,
                 config
@@ -140,7 +140,7 @@ export const editLectureByItemId = createAsyncThunk(
                     'Content-Type': 'multipart/form-data',
                 },
             };
-            const { data } = await axiosInstance.put(
+            const { data } = await api.put(
                 `/moduleitem/lecture/${itemId}`,
                 formData,
                 config
@@ -159,7 +159,7 @@ export const editQuizByItemId = createAsyncThunk(
     'module/moduleItem/editQuiz',
     async ({ itemId, quizData }, { rejectWithValue }) => {
         try {
-            const { data } = await axiosInstance.put(`/moduleitem/quiz/${itemId}`, quizData);
+            const { data } = await api.put(`/moduleitem/quiz/${itemId}`, quizData);
             return data;
         } catch (error) {
             return rejectWithValue(error.message);
@@ -170,7 +170,7 @@ export const editProgrammingByItemId = createAsyncThunk(
     'module/moduleItem/editProgramming',
     async ({ itemId, formData }, { rejectWithValue }) => {
         try {
-            const { data } = await axiosInstance.put(`/moduleitem/programming/${itemId}`, formData);
+            const { data } = await api.put(`/moduleitem/programming/${itemId}`, formData);
             return data;
         } catch (error) {
             return rejectWithValue(error.message);
@@ -186,7 +186,7 @@ export const preloadInteractiveQuestion = createAsyncThunk(
         console.log('moduleItemId', moduleItemId)
 
         try {
-            const { data } = await axiosInstance.post(`/moduleitem/lecture/${videoId}/interactive`,
+            const { data } = await api.post(`/moduleitem/lecture/${videoId}/interactive`,
                 
                 {
                     params: { videoId }
@@ -202,7 +202,7 @@ export const updateInteractiveQuestion = createAsyncThunk(
     'progress/updateInteractiveQuestion',
     async ({ moduleItemId, currentQuestion, selectedAnswer, status, videoId }, { rejectWithValue }) => {
         try {
-            const res = await axiosInstance.put(`/moduleitem/lecture/${moduleItemId}/interactive/${currentQuestion._id}`, {
+            const res = await api.put(`/moduleitem/lecture/${moduleItemId}/interactive/${currentQuestion._id}`, {
                 currentQuestion,
                 selectedAnswer,
                 status,

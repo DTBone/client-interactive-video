@@ -22,7 +22,7 @@ import spinnerLoading from '~/assets/spinnerLoading.gif';
 import Breadcrumb from '~/Components/Common/Breadcrumbs/Breadcrumb';
 import ImageUpload from './UploadImage';
 import { clearCurrentCourse, clearError } from '~/store/slices/Course/courseSlice';
-import { useNotification } from '~/hooks/useNotification';
+import { useNotification } from '~/Hooks/useNotification';
 import { uploadToCloudnary } from '~/Utils/uploadToCloudnary';
 import Header from '~/Components/Header';
 import FileUpload from '../Modules/Component/FileUpload';
