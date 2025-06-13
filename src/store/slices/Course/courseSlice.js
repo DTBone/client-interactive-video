@@ -1,4 +1,4 @@
-import { approveCourse, createCourse, getAllCourse, getAllCoursebyUser, getCertificateByCourseId, getCourseByID, getCourseByInstructor, getGradeByCourseId, rejectCourse, updateCourse } from "./action";
+import { approveCourse, createCourse, getAllCourse, getAllCoursebyUser, getCertificateByCourseId, getCourseByID, getCourseByInstructor, getGradeByCourseId, rejectCourse, updateCourse, uploadCertificate } from "./action";
 import { createSlice } from '@reduxjs/toolkit';
 const courseSlice = createSlice({
     name: 'course',
@@ -114,7 +114,7 @@ const courseSlice = createSlice({
                 state.loading = false;
                 state.error = action.payload;
             })
-            .addCase(getCertificateByCourseId.pending, (state, action) => {
+            .addCase(getCertificateByCourseId.pending, (state) => {
                 state.loading = true;
                 state.error = null;
             })
@@ -151,6 +151,24 @@ const courseSlice = createSlice({
                 state.loading = false;
                 state.error = action.payload;
             })
+
+            // Upload Certificate
+            .addCase(uploadCertificate.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(uploadCertificate.fulfilled, (state, action) => {
+                state.loading = false;
+                // Có thể cập nhật certificate state nếu cần
+                if (action.payload) {
+                    state.certificate = action.payload;
+                }
+                state.error = null;
+            })
+            .addCase(uploadCertificate.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            });
     },
 });
 export const { clearCurrentCourse, clearError } = courseSlice.actions;

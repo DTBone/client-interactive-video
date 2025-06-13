@@ -191,7 +191,7 @@ const Overview = () => {
       className="p-6 bg-white rounded-lg shadow-lg"
     >
       {/* Certificate Button */}
-      {checkProgress && (
+      {overallProgress === 100 && (
         <Box display="flex" justifyContent="flex-end" mb={2}>
           <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
             <button
