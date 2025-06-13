@@ -9,7 +9,7 @@ import { toast } from 'react-toastify';
 import robot from '~/assets/DefaultImage/robot.png';
 const ChatBot = () => {
   const isAdmin = useSelector(state => state.auth.user?.role !== 'student');
-  const isLogin = useSelector(state => state.auth.isLogin);
+  const isLogin = localStorage.getItem('token') ? true : false;
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState('');
