@@ -86,7 +86,8 @@ const Overview = () => {
           ? Math.round(progressData.courseCompletion.percentage)
           : 0
       );
-      console.log("progressData", progressData, overallProgress);
+      console.log("progressData", progressData);
+      console.log("overallProgress", overallProgress);
     }
   }, [progressData]);
 

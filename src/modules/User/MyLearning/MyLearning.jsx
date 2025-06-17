@@ -28,7 +28,6 @@ TabButton.propTypes = {
 };
 
 const MyLearning = () => {
-
   const [activeTab, setActiveTab] = useState("progress");
   const { courses, loading } = useSelector((state) => state.course);
   const dispatch = useDispatch();
@@ -41,13 +40,12 @@ const MyLearning = () => {
     setActiveTab(tabId);
   };
 
-
   const filteredCourses = courses?.filter((course) =>
     activeTab === "progress"
-      ? course.progress?.status === "in-progress"
+      ? course.progress?.status === "in-progress" ||
+        course.progress?.status === "not-started"
       : course.progress?.status === "completed"
   );
-
 
   return (
     <Box sx={{ maxWidth: "1200px", mx: "auto", p: { xs: 2, md: 4 } }}>

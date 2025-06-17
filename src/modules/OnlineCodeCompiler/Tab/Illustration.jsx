@@ -16,11 +16,11 @@ function Illustration() {
   )?.codeExecute;
 
   const generateChartCode = async () => {
-    console.log("🚀 Starting chart generation...");
-    console.log("User Code:", userCode);
-    console.log("Language:", userLang);
-    console.log("Input Format:", problem?.inputFormat);
-    console.log("Code Execute:", codeExecute);
+    // console.log("🚀 Starting chart generation...");
+    // console.log("User Code:", userCode);
+    // console.log("Language:", userLang);
+    // console.log("Input Format:", problem?.inputFormat);
+    // console.log("Code Execute:", codeExecute);
 
     setLoading(true);
     try {
@@ -31,11 +31,11 @@ function Illustration() {
         codeExecute,
       });
 
-      console.log("res", res);
-      console.log("✅ API Response:", res.data);
-      console.log("📊 Chart Code received:", res.data.data);
-      console.log("📊 Chart Code type:", typeof res.data.data);
-      console.log("📊 Chart Code length:", res.data.data?.length || 0);
+      // console.log("res", res);
+      // console.log("✅ API Response:", res.data);
+      // console.log("📊 Chart Code received:", res.data.data);
+      // console.log("📊 Chart Code type:", typeof res.data.data);
+      // console.log("📊 Chart Code length:", res.data.data?.length || 0);
 
       if (
         res.data.data &&
@@ -44,23 +44,23 @@ function Illustration() {
       ) {
         setChartCode(res.data.data);
         setErrorState(null);
-        console.log("✅ Chart code set successfully!");
+        //console.log("✅ Chart code set successfully!");
       } else {
-        console.warn("⚠️ Invalid chart code received:", res.data.data);
+        //console.warn("⚠️ Invalid chart code received:", res.data.data);
         setErrorState("Invalid chart data received from server");
       }
 
       setLoading(false);
     } catch (error) {
-      console.error("❌ Chart generation error:", error);
-      console.error("❌ Error response:", error.response?.data);
+      //console.error("❌ Chart generation error:", error);
+      //console.error("❌ Error response:", error.response?.data);
       setErrorState(error.response?.data?.error || "Failed to generate chart");
       setLoading(false);
     }
   };
 
   const handleRerender = async () => {
-    console.log("🔄 Re-rendering chart...");
+    //console.log("🔄 Re-rendering chart...");
     await generateChartCode();
   };
 
@@ -72,10 +72,10 @@ function Illustration() {
   };
 
   // Debug current state
-  console.log("🔍 Current state:");
-  console.log("- chartCode:", chartCode ? "HAS_DATA" : "NO_DATA");
-  console.log("- loading:", loading);
-  console.log("- errorState:", errorState);
+  // console.log("🔍 Current state:");
+  // console.log("- chartCode:", chartCode ? "HAS_DATA" : "NO_DATA");
+  // console.log("- loading:", loading);
+  // console.log("- errorState:", errorState);
 
   return (
     <Box
