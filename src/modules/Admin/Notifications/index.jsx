@@ -115,15 +115,17 @@ const NotificationsAdmin = () => {
     };
     
     loadInitialUsers();
-  }, [dispatch]);
+  }, [dispatch, openSendDialog]);
 
   const handleSearchUsers = async (event, value) => {
     if (!value) return;
-    
+    console.log('value', value);
     setSearchLoading(true);
     try {
       const result = await dispatch(getAllAccount({
-        search: value
+        filters: {
+          search: value
+        }
       }));
       
       if (getAllAccount.fulfilled.match(result)) {
@@ -199,9 +201,16 @@ const NotificationsAdmin = () => {
     );
   };
 
-  const handleDeleteNotification = (id) => {
-    // In a real app, would call API to delete notification
-    setNotifications(notifications.filter((notification) => notification.id !== id));
+  const handleDeleteNotification = async (id) => {
+    try {
+      const response = await api.delete(`/notifications/detail/${id}`);
+      if (response.data.success) {
+        toast.success(response.data.message);
+        fetchNotificationsHistory();
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Failed to delete notification');
+    }
   };
 
   const handleViewNotification = (notification) => {
@@ -392,7 +401,9 @@ const NotificationsAdmin = () => {
                           <IconButton 
                             edge="end" 
                             aria-label="delete"
-                            onClick={() => handleDeleteNotification(notification.id)}
+                            onClick={() => {
+                              setSelectedNotification(notification)
+                            }}
                             size="small"
                           >
                             <DeleteIcon />
@@ -513,7 +524,10 @@ const NotificationsAdmin = () => {
             <DialogActions>
               <Button onClick={handleCloseViewDialog}>Close</Button>
               <Button 
-                onClick={() => handleDeleteNotification(selectedNotification.id)} 
+                onClick={() => {
+                  handleDeleteNotification(selectedNotification._id);
+                  handleCloseViewDialog();
+                }} 
                 color="error"
                 startIcon={<DeleteIcon />}
               >
@@ -569,6 +583,7 @@ const NotificationsAdmin = () => {
             <Autocomplete
               fullWidth
               options={users}
+              value={users.find(user => user._id === newNotification.userId)}
               getOptionLabel={(option) => option.profile.fullname + ' - ' + option.email}
               renderInput={(params) => (
                 <TextField
@@ -596,7 +611,7 @@ const NotificationsAdmin = () => {
                 }
               }
               onChange={(event, value) => setNewNotification({...newNotification, userId: value?._id || ''})}
-              onInputChange={handleSearchUsers}
+              onInputChange={(event, value) => handleSearchUsers(event, value)}
               sx={{ mb: 2 }}
             />
           )}

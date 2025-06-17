@@ -57,7 +57,12 @@ const VideoProgressBar = ({
   // Enhanced mouse move handler với throttling
   const handleMouseMove = useCallback(
     throttle((event) => {
-      const rect = event.currentTarget.getBoundingClientRect();
+      const target = event.currentTarget;
+      if (!target) return;
+
+      const rect = target.getBoundingClientRect();
+      if (!rect) return;
+
       const position = (event.clientX - rect.left) / rect.width;
       const time = position * duration;
       setHoverTime(time);
@@ -74,8 +79,13 @@ const VideoProgressBar = ({
 
   const handleMouseDown = useCallback(
     (event) => {
+      const target = event.currentTarget;
+      if (!target) return;
+
+      const rect = target.getBoundingClientRect();
+      if (!rect) return;
+
       setIsDragging(true);
-      const rect = event.currentTarget.getBoundingClientRect();
       const position = (event.clientX - rect.left) / rect.width;
       const time = position * duration;
       const clampedTime = Math.max(0, Math.min(duration, time));
@@ -103,7 +113,12 @@ const VideoProgressBar = ({
     (event) => {
       // Chỉ handle click nếu không phải dragging
       if (!isDragging) {
-        const rect = event.currentTarget.getBoundingClientRect();
+        const target = event.currentTarget;
+        if (!target) return;
+
+        const rect = target.getBoundingClientRect();
+        if (!rect) return;
+
         const position = (event.clientX - rect.left) / rect.width;
         const percentage = Math.max(0, Math.min(100, position * 100));
         handleTimeSeek(event, percentage);

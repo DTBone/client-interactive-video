@@ -94,11 +94,11 @@ function App() {
         try {
           const resultAction = await dispatch(checkAuthStatus());
           if (checkAuthStatus.fulfilled.match(resultAction)) {
-            console.log(
-              "Auth check success:",
-              resultAction.payload,
-              auth.isAuthenticated
-            );
+            // console.log(
+            //   "Auth check success:",
+            //   resultAction.payload,
+            //   auth.isAuthenticated
+            // );
           } else {
             throw new Error("Auth check failed");
           }

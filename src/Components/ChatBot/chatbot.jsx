@@ -8,7 +8,8 @@ import { Box, Tooltip, Typography, List, ListItem, ListItemText, Button, Chip } 
 import { toast } from 'react-toastify';
 import robot from '~/assets/DefaultImage/robot.png';
 const ChatBot = () => {
-  const isAdmin = useSelector(state => state.auth.user?.role === 'admin');
+  const isAdmin = useSelector(state => state.auth.user?.role !== 'student');
+  const isLogin = localStorage.getItem('token') ? true : false;
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState('');
@@ -159,7 +160,7 @@ const ChatBot = () => {
     
     <>
       {/* Nút nổi */}
-      {!isAdmin && (
+      {!isAdmin && isLogin && (
         <button
         className="fixed bottom-6 right-6 z-50 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg p-[4px] flex items-center justify-center focus:outline-none"
         onClick={() => setOpen(o => !o)}

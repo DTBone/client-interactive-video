@@ -57,24 +57,24 @@ const Video = () => {
     useSelector((state) => state.progress.progress) || [],
     moduleItemId
   );
-
-  const [hasPreloaded, setHasPreloaded] = useState(false);
-  useEffect(() => {
-    if (!hasPreloaded) {
-      let videoId = location.state?.item?.video._id;
-      if (videoId) {
-        console.log("Preloading interactive questions for video:", videoId);
-        dispatch(preloadInteractiveQuestion({ moduleItemId, videoId }));
-        setHasPreloaded(true);
-      }
-    }
-  }, [
-    hasPreloaded,
-    dispatch,
-    lectureId,
-    moduleItemId,
-    // location.state?.item?.video,
-  ]);
+  console.log("videoRef", videoRef);
+  // const [hasPreloaded, setHasPreloaded] = useState(false);
+  // useEffect(() => {
+  //   if (!hasPreloaded) {
+  //     let videoId = location.state?.item?.video._id;
+  //     if (videoId) {
+  //       console.log("Preloading interactive questions for video:", videoId);
+  //       dispatch(preloadInteractiveQuestion({ moduleItemId, videoId }));
+  //       setHasPreloaded(true);
+  //     }
+  //   }
+  // }, [
+  //   hasPreloaded,
+  //   dispatch,
+  //   lectureId,
+  //   moduleItemId,
+  //   // location.state?.item?.video,
+  // ]);
   useEffect(() => {
     setLectureData(lecture);
     setQuestion(lecture?.questions || []);

@@ -1,5 +1,5 @@
 ﻿/* eslint-disable react/prop-types */
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { 
   Box, 
   Paper, 
@@ -164,7 +164,6 @@ function CustomStepIcon(props) {
     2: <CodeIcon />,
     3: <BoltIcon />,
   };
-  console.log(props.icon);
   return (
     <StepIconRoot ownerState={{ completed, active }} className={className}>
       {icons[String(props.icon)]}
@@ -178,6 +177,8 @@ const RoadmapDisplay = ({data, setRoadmapOutSide, refreshRoadmap}) => {
   const [expanded, setExpanded] = useState('panel0');
   const theme = useTheme();
   const navigate = useNavigate();
+  const [showFirework, setShowFirework] = useState(false);
+  const fireworkRef = useRef(null);
 
   const handleChange = (panel) => (event, newExpanded) => {
     setExpanded(newExpanded ? panel : false);
@@ -189,6 +190,78 @@ const RoadmapDisplay = ({data, setRoadmapOutSide, refreshRoadmap}) => {
     setRoadmapData(data);
   }, [data]);
   
+  useEffect(() => {
+    if (roadmapData.progress === 100) {
+      setShowFirework(true);
+      console.log('showFirework');
+      setTimeout(() => setShowFirework(false), 4000);
+    }
+  }, [roadmapData.progress]);
+
+  // Firework effect
+  useEffect(() => {
+    if (!showFirework) return;
+    const canvas = fireworkRef.current;
+    const ctx = canvas.getContext('2d');
+    const W = canvas.width = window.innerWidth;
+    const H = canvas.height = window.innerHeight;
+    let particles = [];
+  
+    function randomColor() {
+      const colors = ['#ff5252', '#ffb142', '#fffa65', '#32ff7e', '#18dcff', '#7d5fff', '#cd84f1'];
+      return colors[Math.floor(Math.random() * colors.length)];
+    }
+  
+    function createFirework() {
+      const x = Math.random() * W * 0.8 + W * 0.1;
+      const y = Math.random() * H * 0.3 + H * 0.1;
+      const count = 40 + Math.random() * 30;
+      for (let i = 0; i < count; i++) {
+        const angle = (Math.PI * 2 * i) / count;
+        const speed = 2 + Math.random() * 3;
+        particles.push({
+          x, y,
+          vx: Math.cos(angle) * speed,
+          vy: Math.sin(angle) * speed,
+          alpha: 1,
+          color: randomColor()
+        });
+      }
+    }
+  
+    function animate() {
+      ctx.clearRect(0, 0, W, H);
+      for (let i = 0; i < particles.length; i++) {
+        const p = particles[i];
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += 0.02;
+        p.alpha -= 0.012;
+        ctx.globalAlpha = Math.max(p.alpha, 0);
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
+        ctx.fillStyle = p.color;
+        ctx.fill();
+      }
+      particles = particles.filter(p => p.alpha > 0);
+      
+      requestAnimationFrame(animate);
+      
+    }
+  
+    // Gọi 5 lần fireworks
+    for (let i = 0; i < 10; i++) {
+      setTimeout(createFirework, i * 100);
+    }
+  
+    animate();
+  
+    return () => {
+      ctx.clearRect(0, 0, W, H);
+    };
+  }, [showFirework]);
+  
+
   async function StartPhase(phase) {
     try{
         const rs = await api.put(`/roadmap/${roadmapData._id}`, {
@@ -244,9 +317,28 @@ const RoadmapDisplay = ({data, setRoadmapOutSide, refreshRoadmap}) => {
 
   return (
     <Box sx={{ maxWidth: 1000, margin: '0 auto', p: 3 }}>
+      {/* Firework Canvas */}
+      {showFirework && (
+        <canvas
+          ref={fireworkRef}
+          style={{
+            position: 'fixed',
+            left: 0,
+            top: 0,
+            width: '100vw',
+            height: '100vh',
+            pointerEvents: 'none',
+            zIndex: 9999
+          }}
+        />
+      )}
       <RoadmapHeader elevation={0}>
         <Typography variant="h3" component="h1" gutterBottom fontWeight="bold">
-          {roadmapData.title}
+          {roadmapData.title} 
+          {roadmapData.progress === 100 && (
+            <Chip label="Completed" sx={{ ml: 2, color: 'white', backgroundColor: 'red' }}
+             />
+          )}
         </Typography>
         
         <Typography variant="h6" sx={{ mb: 4, opacity: 0.9 }}>
@@ -266,6 +358,7 @@ const RoadmapDisplay = ({data, setRoadmapOutSide, refreshRoadmap}) => {
               color="secondary"
             />
           </Box>
+          
         </Box>
 
         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 2 }}>

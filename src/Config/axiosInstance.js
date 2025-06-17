@@ -7,7 +7,7 @@ const axiosInstance = axios.create({
     withCredentials: true,
     headers: {
         'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': 'https://server-interactive-video.onrender.com',
+        'Access-Control-Allow-Origin': `http://localhost:3000/api/v1`,
         'Authorization': `Bearer ${localStorage.getItem('token')}`
     }
 });

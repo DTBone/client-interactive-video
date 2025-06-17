@@ -6,7 +6,7 @@ import Fade from '@mui/material/Fade';
 import Typography from '@mui/material/Typography';
 import { useNavigate } from 'react-router-dom';
 import { Button, TextField } from '@mui/material';
-import axiosInstance from '~/services/api/axiosInstance';
+import { api } from '~/Config/api';
 
 const style = {
   position: 'absolute',
@@ -55,7 +55,7 @@ export default function ModalForm() {
     btnSend.current.disabled = true;
     btnSend.current.style.backgroundColor = 'gray';
     try {
-      const response = await axiosInstance.post('/reset-password', {
+      const response = await api.post('/users/reset-password', {
         password,
         code
       });

@@ -227,7 +227,7 @@ const useVideoProgress = ({
     const now = Date.now();
 
     // Cập nhật mỗi 100ms để UI mượt hơn
-    if (now - lastUpdateTimeRef.current < 100) return;
+    if (now - lastUpdateTimeRef.current < 1000) return;
     lastUpdateTimeRef.current = now;
 
     const progressData = calculateProgress();
@@ -288,7 +288,7 @@ const useVideoProgress = ({
   const throttledUpdateProgress = useCallback(
     throttle(() => {
       updateLocalProgress();
-    }, 100), // Giảm xuống 100ms để UI responsive hơn
+    }, 1000), // Giảm xuống 100ms để UI responsive hơn
     [updateLocalProgress]
   );
 

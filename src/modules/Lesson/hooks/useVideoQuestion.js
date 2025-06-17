@@ -470,44 +470,51 @@ const useVideoQuestions = (questions, progress, videoRef) => {
         status: "incorrect",
         videoId: location.state?.item?.video,
       })
-    );
+    )
+      .then((response) => {
+        if (response.payload?.data?.nextQuestion) {
+          const nextQuestion = response.payload.data.nextQuestion;
+          setCurrentQuestion(nextQuestion);
+          setSelectedAnswer([]);
+          setDialogAlert("Incorrect answer. Here's another question to try!");
+          setIsProcessingAnswer(false);
+
+          // Clear message after delay
+          timeoutRef.current = setTimeout(() => {
+            setDialogAlert("");
+          }, 2000);
+
+          return;
+        }
+      });
 
     // Nếu đang trả lời câu hỏi thay thế và trả lời sai
-    if (currentQuestion.isAlternative) {
-      console.log(
-        "Incorrect answer for alternative question, showing another alternative"
-      );
+    // if (currentQuestion.isAlternative) {
+    //   console.log(
+    //     "Incorrect answer for alternative question, showing another alternative"
+    //   );
 
-      // Lấy một câu hỏi thay thế khác từ history
-      const anotherAlternative = getRandomQuestionFromHistory(originalQuestion);
+    //   // Lấy một câu hỏi thay thế khác từ history
+    //   // const anotherAlternative = getRandomQuestionFromHistory(originalQuestion);
 
-      if (
-        anotherAlternative &&
-        anotherAlternative.question !== currentQuestion.question
-      ) {
-        // Hiển thị câu hỏi thay thế khác
-        const newAlternativeQuestion = {
-          ...originalQuestion,
-          question: anotherAlternative.question,
-          answers: anotherAlternative.answers,
-          status: "in-progress",
-          isAlternative: true,
-          originalQuestion: originalQuestion.question,
-        };
+    //   if (
+    //     anotherAlternative &&
+    //     anotherAlternative.question !== currentQuestion.question
+    //   ) {
+    //     // Hiển thị câu hỏi thay thế khác
+    //     const newAlternativeQuestion = {
+    //       ...originalQuestion,
+    //       question: anotherAlternative.question,
+    //       answers: anotherAlternative.answers,
+    //       status: "in-progress",
+    //       isAlternative: true,
+    //       originalQuestion: originalQuestion.question,
+    //     };
 
-        setCurrentQuestion(newAlternativeQuestion);
-        setSelectedAnswer([]);
-        setDialogAlert("Incorrect answer. Here's another question to try!");
-        setIsProcessingAnswer(false);
+    //     setCurrentQuestion(newAlternativeQuestion);
 
-        // Clear message after delay
-        timeoutRef.current = setTimeout(() => {
-          setDialogAlert("");
-        }, 2000);
-
-        return;
-      }
-    }
+    //   }
+    // }
 
     // Logic cũ cho câu hỏi mặc định hoặc khi không có câu hỏi thay thế
     if (!currentQuestion.isAlternative) {
